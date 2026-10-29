@@ -1,0 +1,16 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+runs/
+out/
+models/dataset.pkl
+.DS_Store
+.claude/
+*.log
+PLAN.md
+models/dataset_real.pkl
+bench/results/run.log
+bench/results/*.log

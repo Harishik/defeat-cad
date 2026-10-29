@@ -1,0 +1,210 @@
+{
+ "dataset": "MFCAD (15,488 machining parts, 16 face classes)",
+ "split": "test",
+ "parts_attempted": 2000,
+ "parts_ok": 2000,
+ "failures": [],
+ "seconds_per_part": 1.293,
+ "rule": {
+  "feature_vs_stock": {
+   "precision": 0.9826,
+   "recall": 0.9103,
+   "f1": 0.9451,
+   "support": 32091,
+   "accuracy": 0.9252
+  },
+  "per_class": {
+   "faces": 45348,
+   "accuracy": 0.7539,
+   "macro_f1": 0.5277,
+   "miou": 0.4392,
+   "per_class": {
+    "base": {
+     "precision": 0.8157,
+     "recall": 0.9611,
+     "f1": 0.8825,
+     "support": 13257,
+     "iou": 0.7896
+    },
+    "cut": {
+     "precision": 0.8509,
+     "recall": 0.8351,
+     "f1": 0.8429,
+     "support": 22261,
+     "iou": 0.7285
+    },
+    "step": {
+     "precision": 0.4338,
+     "recall": 0.3468,
+     "f1": 0.3855,
+     "support": 8243,
+     "iou": 0.2387
+    },
+    "chamfer": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "support": 1587,
+     "iou": 0.0
+    }
+   },
+   "confusion": {
+    "base": {
+     "base": 12741,
+     "protrusion": 516
+    },
+    "cut": {
+     "cut": 18590,
+     "step": 2313,
+     "base": 1119,
+     "protrusion": 239
+    },
+    "step": {
+     "base": 1701,
+     "cut": 3258,
+     "step": 2859,
+     "protrusion": 425
+    },
+    "chamfer": {
+     "step": 1419,
+     "protrusion": 110,
+     "base": 58
+    }
+   }
+  },
+  "step_faces_flagged_as_feature": 0.7936
+ },
+ "gnn": {
+  "feature_vs_stock": {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "support": 32091,
+   "accuracy": 1.0
+  },
+  "per_class": {
+   "faces": 45348,
+   "accuracy": 0.9649,
+   "macro_f1": 0.7296,
+   "miou": 0.7119,
+   "per_class": {
+    "base": {
+     "precision": 0.9999,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 13257,
+     "iou": 0.9999
+    },
+    "cut": {
+     "precision": 0.9903,
+     "recall": 0.9999,
+     "f1": 0.995,
+     "support": 22261,
+     "iou": 0.9901
+    },
+    "step": {
+     "precision": 0.8577,
+     "recall": 1.0,
+     "f1": 0.9234,
+     "support": 8243,
+     "iou": 0.8577
+    },
+    "chamfer": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "support": 1587,
+     "iou": 0.0
+    }
+   },
+   "confusion": {
+    "base": {
+     "base": 13257
+    },
+    "cut": {
+     "cut": 22258,
+     "base": 1,
+     "chamfer": 2
+    },
+    "step": {
+     "step": 8243
+    },
+    "chamfer": {
+     "step": 1368,
+     "cut": 219
+    }
+   }
+  },
+  "step_faces_flagged_as_feature": 1.0
+ },
+ "fused": {
+  "feature_vs_stock": {
+   "precision": 0.9826,
+   "recall": 0.9104,
+   "f1": 0.9451,
+   "support": 32091,
+   "accuracy": 0.9252
+  },
+  "per_class": {
+   "faces": 45348,
+   "accuracy": 0.7539,
+   "macro_f1": 0.5277,
+   "miou": 0.4392,
+   "per_class": {
+    "base": {
+     "precision": 0.8158,
+     "recall": 0.9611,
+     "f1": 0.8825,
+     "support": 13257,
+     "iou": 0.7897
+    },
+    "cut": {
+     "precision": 0.8509,
+     "recall": 0.8351,
+     "f1": 0.8429,
+     "support": 22261,
+     "iou": 0.7285
+    },
+    "step": {
+     "precision": 0.4338,
+     "recall": 0.3468,
+     "f1": 0.3855,
+     "support": 8243,
+     "iou": 0.2387
+    },
+    "chamfer": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "support": 1587,
+     "iou": 0.0
+    }
+   },
+   "confusion": {
+    "base": {
+     "base": 12741,
+     "protrusion": 516
+    },
+    "cut": {
+     "cut": 18590,
+     "step": 2313,
+     "base": 1117,
+     "protrusion": 239,
+     "chamfer": 2
+    },
+    "step": {
+     "base": 1701,
+     "cut": 3258,
+     "step": 2859,
+     "protrusion": 425
+    },
+    "chamfer": {
+     "step": 1419,
+     "protrusion": 110,
+     "base": 58
+    }
+   }
+  },
+  "step_faces_flagged_as_feature": 0.7936
+ }
+}

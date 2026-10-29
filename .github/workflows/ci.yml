@@ -1,0 +1,31 @@
+name: CI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / py${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-14]
+        python: ["3.11"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: System libraries (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libgl1 libglu1-mesa libxrender1 libxcursor1 libxft2 libxinerama1 libxi6
+      - name: Install (CPU-only PyTorch)
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -r requirements.txt
+      - name: Tests
+        run: python -m pytest -q tests

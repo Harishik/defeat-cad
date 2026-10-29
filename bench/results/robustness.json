@@ -1,0 +1,39 @@
+{
+ "dataset": "Fusion 360 Gallery extended STEP, official test split (real designer models)",
+ "parts": 500,
+ "completed": 499,
+ "completion_rate": 0.998,
+ "failure_reasons": {
+  "timeout": 1
+ },
+ "failed_items": [
+  [
+   "('49118_4612c924_0', True)",
+   "timeout"
+  ]
+ ],
+ "output_valid_rate": 1.0,
+ "parts_with_features_to_remove": 202,
+ "feature_removal_success_rate": 0.9318,
+ "median_faces": 10,
+ "median_face_reduction_pct": 26.10153256704981,
+ "median_volume_change_pct": 1.49231455997931,
+ "seconds_per_part": {
+  "median": 0.526,
+  "p90": 4.546
+ },
+ "mesh_subset": {
+  "n": 22,
+  "median_tet_reduction_pct": 17.850443827436827,
+  "p10_tet_reduction_pct": 0.43000876716903935,
+  "p90_tet_reduction_pct": 96.37975618766161
+ },
+ "stress_subset": {
+  "n": 19,
+  "median_abs_deflection_change_pct": 3.836886584303267,
+  "p90_abs_deflection_change_pct": 64.47098734918833,
+  "median_abs_peak_stress_change_pct": 14.56650390810965,
+  "p90_abs_peak_stress_change_pct": 74.53732996537012,
+  "share_within_5pct_deflection": 0.5789
+ }
+}

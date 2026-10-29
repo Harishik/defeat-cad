@@ -1,0 +1,260 @@
+{
+ "dataset": "Fusion 360 Gallery segmentation, extended STEP (official test split)",
+ "parts_attempted": 1500,
+ "parts_ok": 1500,
+ "faces": 33363,
+ "failure_reasons": {},
+ "seconds_per_part": 0.92,
+ "rule": {
+  "fillet": {
+   "precision": 0.5341,
+   "recall": 0.8889,
+   "f1": 0.6672,
+   "support": 3500,
+   "accuracy": 0.907
+  },
+  "chamfer": {
+   "precision": 0.6604,
+   "recall": 0.4823,
+   "f1": 0.5575,
+   "support": 734,
+   "accuracy": 0.9832
+  },
+  "cut_indicative": {
+   "precision": 0.5254,
+   "recall": 0.612,
+   "f1": 0.5654,
+   "support": 6639,
+   "accuracy": 0.8128
+  },
+  "per_class": {
+   "faces": 33363,
+   "accuracy": 0.7336,
+   "macro_f1": 0.6504,
+   "miou": 0.4911,
+   "per_class": {
+    "base": {
+     "precision": 0.8795,
+     "recall": 0.7535,
+     "f1": 0.8117,
+     "support": 22490,
+     "iou": 0.683
+    },
+    "cut": {
+     "precision": 0.5254,
+     "recall": 0.612,
+     "f1": 0.5654,
+     "support": 6639,
+     "iou": 0.3941
+    },
+    "fillet": {
+     "precision": 0.5341,
+     "recall": 0.8889,
+     "f1": 0.6672,
+     "support": 3500,
+     "iou": 0.5006
+    },
+    "chamfer": {
+     "precision": 0.6604,
+     "recall": 0.4823,
+     "f1": 0.5575,
+     "support": 734,
+     "iou": 0.3865
+    }
+   },
+   "confusion": {
+    "base": {
+     "base": 16947,
+     "cut": 3490,
+     "chamfer": 157,
+     "fillet": 1896
+    },
+    "chamfer": {
+     "chamfer": 354,
+     "base": 273,
+     "fillet": 21,
+     "cut": 86
+    },
+    "cut": {
+     "cut": 4063,
+     "base": 1754,
+     "fillet": 797,
+     "chamfer": 25
+    },
+    "fillet": {
+     "fillet": 3111,
+     "base": 295,
+     "cut": 94
+    }
+   }
+  }
+ },
+ "gnn": {
+  "fillet": {
+   "precision": 0.7999,
+   "recall": 0.9034,
+   "f1": 0.8485,
+   "support": 3500,
+   "accuracy": 0.9662
+  },
+  "chamfer": {
+   "precision": 0.7408,
+   "recall": 0.7166,
+   "f1": 0.7285,
+   "support": 734,
+   "accuracy": 0.9882
+  },
+  "cut_indicative": {
+   "precision": 0.3243,
+   "recall": 0.4356,
+   "f1": 0.3718,
+   "support": 6639,
+   "accuracy": 0.707
+  },
+  "per_class": {
+   "faces": 33361,
+   "accuracy": 0.6724,
+   "macro_f1": 0.6747,
+   "miou": 0.5346,
+   "per_class": {
+    "base": {
+     "precision": 0.8014,
+     "recall": 0.7049,
+     "f1": 0.75,
+     "support": 22488,
+     "iou": 0.6001
+    },
+    "cut": {
+     "precision": 0.3243,
+     "recall": 0.4356,
+     "f1": 0.3718,
+     "support": 6639,
+     "iou": 0.2283
+    },
+    "fillet": {
+     "precision": 0.7999,
+     "recall": 0.9034,
+     "f1": 0.8485,
+     "support": 3500,
+     "iou": 0.7369
+    },
+    "chamfer": {
+     "precision": 0.7408,
+     "recall": 0.7166,
+     "f1": 0.7285,
+     "support": 734,
+     "iou": 0.573
+    }
+   },
+   "confusion": {
+    "base": {
+     "cut": 5806,
+     "base": 15851,
+     "chamfer": 134,
+     "fillet": 697
+    },
+    "chamfer": {
+     "chamfer": 526,
+     "base": 165,
+     "cut": 35,
+     "fillet": 8
+    },
+    "cut": {
+     "base": 3611,
+     "cut": 2892,
+     "fillet": 86,
+     "chamfer": 50
+    },
+    "fillet": {
+     "fillet": 3162,
+     "cut": 186,
+     "base": 152
+    }
+   }
+  }
+ },
+ "fused": {
+  "fillet": {
+   "precision": 0.8119,
+   "recall": 0.8683,
+   "f1": 0.8392,
+   "support": 3500,
+   "accuracy": 0.9651
+  },
+  "chamfer": {
+   "precision": 0.8252,
+   "recall": 0.624,
+   "f1": 0.7106,
+   "support": 734,
+   "accuracy": 0.9888
+  },
+  "cut_indicative": {
+   "precision": 0.5254,
+   "recall": 0.612,
+   "f1": 0.5654,
+   "support": 6639,
+   "accuracy": 0.8128
+  },
+  "per_class": {
+   "faces": 33361,
+   "accuracy": 0.7746,
+   "macro_f1": 0.7374,
+   "miou": 0.596,
+   "per_class": {
+    "base": {
+     "precision": 0.8571,
+     "recall": 0.813,
+     "f1": 0.8345,
+     "support": 22488,
+     "iou": 0.7159
+    },
+    "cut": {
+     "precision": 0.5254,
+     "recall": 0.612,
+     "f1": 0.5654,
+     "support": 6639,
+     "iou": 0.3941
+    },
+    "fillet": {
+     "precision": 0.8119,
+     "recall": 0.8683,
+     "f1": 0.8392,
+     "support": 3500,
+     "iou": 0.7229
+    },
+    "chamfer": {
+     "precision": 0.8252,
+     "recall": 0.624,
+     "f1": 0.7106,
+     "support": 734,
+     "iou": 0.5511
+    }
+   },
+   "confusion": {
+    "base": {
+     "base": 18282,
+     "chamfer": 85,
+     "fillet": 631,
+     "cut": 3490
+    },
+    "chamfer": {
+     "chamfer": 458,
+     "base": 182,
+     "cut": 86,
+     "fillet": 8
+    },
+    "cut": {
+     "cut": 4063,
+     "base": 2499,
+     "fillet": 65,
+     "chamfer": 12
+    },
+    "fillet": {
+     "fillet": 3039,
+     "base": 367,
+     "cut": 94
+    }
+   }
+  }
+ }
+}

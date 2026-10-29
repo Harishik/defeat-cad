@@ -1,0 +1,264 @@
+{
+ "validation_parts": 400,
+ "best": {
+  "veto": 0.4,
+  "add": 0.5,
+  "fillet_f1": 0.8756,
+  "chamfer_f1": 0.7307,
+  "mean": 0.8032
+ },
+ "grid": [
+  {
+   "veto": 0.05,
+   "add": 0.5,
+   "fillet_f1": 0.8523,
+   "chamfer_f1": 0.7419,
+   "mean": 0.7971
+  },
+  {
+   "veto": 0.05,
+   "add": 0.6,
+   "fillet_f1": 0.8489,
+   "chamfer_f1": 0.7302,
+   "mean": 0.7895
+  },
+  {
+   "veto": 0.05,
+   "add": 0.7,
+   "fillet_f1": 0.8464,
+   "chamfer_f1": 0.7281,
+   "mean": 0.7873
+  },
+  {
+   "veto": 0.05,
+   "add": 0.8,
+   "fillet_f1": 0.8452,
+   "chamfer_f1": 0.7133,
+   "mean": 0.7792
+  },
+  {
+   "veto": 0.05,
+   "add": 0.9,
+   "fillet_f1": 0.8434,
+   "chamfer_f1": 0.7206,
+   "mean": 0.782
+  },
+  {
+   "veto": 0.05,
+   "add": 1.01,
+   "fillet_f1": 0.8403,
+   "chamfer_f1": 0.6113,
+   "mean": 0.7258
+  },
+  {
+   "veto": 0.1,
+   "add": 0.5,
+   "fillet_f1": 0.8582,
+   "chamfer_f1": 0.739,
+   "mean": 0.7986
+  },
+  {
+   "veto": 0.1,
+   "add": 0.6,
+   "fillet_f1": 0.8548,
+   "chamfer_f1": 0.7273,
+   "mean": 0.7911
+  },
+  {
+   "veto": 0.1,
+   "add": 0.7,
+   "fillet_f1": 0.8523,
+   "chamfer_f1": 0.7251,
+   "mean": 0.7887
+  },
+  {
+   "veto": 0.1,
+   "add": 0.8,
+   "fillet_f1": 0.8511,
+   "chamfer_f1": 0.7101,
+   "mean": 0.7806
+  },
+  {
+   "veto": 0.1,
+   "add": 0.9,
+   "fillet_f1": 0.8493,
+   "chamfer_f1": 0.7174,
+   "mean": 0.7833
+  },
+  {
+   "veto": 0.1,
+   "add": 1.01,
+   "fillet_f1": 0.8462,
+   "chamfer_f1": 0.6075,
+   "mean": 0.7268
+  },
+  {
+   "veto": 0.2,
+   "add": 0.5,
+   "fillet_f1": 0.8665,
+   "chamfer_f1": 0.7332,
+   "mean": 0.7998
+  },
+  {
+   "veto": 0.2,
+   "add": 0.6,
+   "fillet_f1": 0.8631,
+   "chamfer_f1": 0.7213,
+   "mean": 0.7922
+  },
+  {
+   "veto": 0.2,
+   "add": 0.7,
+   "fillet_f1": 0.8605,
+   "chamfer_f1": 0.719,
+   "mean": 0.7897
+  },
+  {
+   "veto": 0.2,
+   "add": 0.8,
+   "fillet_f1": 0.8593,
+   "chamfer_f1": 0.7039,
+   "mean": 0.7816
+  },
+  {
+   "veto": 0.2,
+   "add": 0.9,
+   "fillet_f1": 0.8575,
+   "chamfer_f1": 0.7111,
+   "mean": 0.7843
+  },
+  {
+   "veto": 0.2,
+   "add": 1.01,
+   "fillet_f1": 0.8544,
+   "chamfer_f1": 0.6,
+   "mean": 0.7272
+  },
+  {
+   "veto": 0.3,
+   "add": 0.5,
+   "fillet_f1": 0.8688,
+   "chamfer_f1": 0.7366,
+   "mean": 0.8027
+  },
+  {
+   "veto": 0.3,
+   "add": 0.6,
+   "fillet_f1": 0.8653,
+   "chamfer_f1": 0.7247,
+   "mean": 0.795
+  },
+  {
+   "veto": 0.3,
+   "add": 0.7,
+   "fillet_f1": 0.8626,
+   "chamfer_f1": 0.7225,
+   "mean": 0.7926
+  },
+  {
+   "veto": 0.3,
+   "add": 0.8,
+   "fillet_f1": 0.8614,
+   "chamfer_f1": 0.7073,
+   "mean": 0.7844
+  },
+  {
+   "veto": 0.3,
+   "add": 0.9,
+   "fillet_f1": 0.8595,
+   "chamfer_f1": 0.7146,
+   "mean": 0.7871
+  },
+  {
+   "veto": 0.3,
+   "add": 1.01,
+   "fillet_f1": 0.8563,
+   "chamfer_f1": 0.6033,
+   "mean": 0.7298
+  },
+  {
+   "veto": 0.4,
+   "add": 0.5,
+   "fillet_f1": 0.8756,
+   "chamfer_f1": 0.7307,
+   "mean": 0.8032
+  },
+  {
+   "veto": 0.4,
+   "add": 0.6,
+   "fillet_f1": 0.8721,
+   "chamfer_f1": 0.7187,
+   "mean": 0.7954
+  },
+  {
+   "veto": 0.4,
+   "add": 0.7,
+   "fillet_f1": 0.8694,
+   "chamfer_f1": 0.7163,
+   "mean": 0.7929
+  },
+  {
+   "veto": 0.4,
+   "add": 0.8,
+   "fillet_f1": 0.8682,
+   "chamfer_f1": 0.701,
+   "mean": 0.7846
+  },
+  {
+   "veto": 0.4,
+   "add": 0.9,
+   "fillet_f1": 0.8663,
+   "chamfer_f1": 0.7082,
+   "mean": 0.7873
+  },
+  {
+   "veto": 0.4,
+   "add": 1.01,
+   "fillet_f1": 0.863,
+   "chamfer_f1": 0.5956,
+   "mean": 0.7293
+  },
+  {
+   "veto": 0.5,
+   "add": 0.5,
+   "fillet_f1": 0.8703,
+   "chamfer_f1": 0.7307,
+   "mean": 0.8005
+  },
+  {
+   "veto": 0.5,
+   "add": 0.6,
+   "fillet_f1": 0.8666,
+   "chamfer_f1": 0.7187,
+   "mean": 0.7927
+  },
+  {
+   "veto": 0.5,
+   "add": 0.7,
+   "fillet_f1": 0.8639,
+   "chamfer_f1": 0.7163,
+   "mean": 0.7901
+  },
+  {
+   "veto": 0.5,
+   "add": 0.8,
+   "fillet_f1": 0.8626,
+   "chamfer_f1": 0.701,
+   "mean": 0.7818
+  },
+  {
+   "veto": 0.5,
+   "add": 0.9,
+   "fillet_f1": 0.8606,
+   "chamfer_f1": 0.7082,
+   "mean": 0.7844
+  },
+  {
+   "veto": 0.5,
+   "add": 1.01,
+   "fillet_f1": 0.8572,
+   "chamfer_f1": 0.5956,
+   "mean": 0.7264
+  }
+ ]
+}

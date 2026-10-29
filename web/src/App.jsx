@@ -1,0 +1,546 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence, motion, LayoutGroup } from 'framer-motion'
+import Viewer from './Viewer'
+import { api, CLASS_META } from './api'
+
+const spring = { type: 'spring', bounce: 0, duration: 0.4 }
+const springSoft = { type: 'spring', bounce: 0.15, duration: 0.45 }
+
+function useDark() {
+  const q = typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)') : null
+  const [d, setD] = useState(q?.matches ?? false)
+  useEffect(() => {
+    if (!q) return
+    const f = (e) => setD(e.matches)
+    q.addEventListener('change', f)
+    return () => q.removeEventListener('change', f)
+  }, [])
+  return d
+}
+
+// ------------------------------------------------------------------ icons (inline, 1.6 stroke)
+const I = {
+  logo: (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M12 2.8 20 7.4v9.2L12 21.2 4 16.6V7.4L12 2.8Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><path d="M4.5 7.6 12 12l7.5-4.4M12 12v8.8" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/></svg>
+  ),
+  upload: <svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M12 15V4m0 0-4 4m4-4 4 4M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  send: <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M12 19V5m0 0-6 6m6-6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  play: <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L8.5 4.64A1 1 0 0 0 7 5.5Z"/></svg>,
+  check: <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  back: <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="m14.5 6-6 6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  dl: <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  sparkle: <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2.5c.5 4.6 2.4 6.9 7 7.5-4.6.6-6.5 2.9-7 7.5-.5-4.6-2.4-6.9-7-7.5 4.6-.6 6.5-2.9 7-7.5Zm6.5 12c.25 2 1.1 3 3 3.25-1.9.25-2.75 1.25-3 3.25-.25-2-1.1-3-3-3.25 1.9-.25 2.75-1.25 3-3.25Z"/></svg>,
+  close: <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
+}
+
+// ------------------------------------------------------------------ helpers
+const fmt = (n, d = 1) => (n == null ? '—' : Number(n).toLocaleString(undefined, { maximumFractionDigits: d, minimumFractionDigits: 0 }))
+
+function Pressable({ className = '', children, ...p }) {
+  return (
+    <motion.button whileTap={{ scale: 0.96 }} transition={{ type: 'spring', bounce: 0, duration: 0.18 }} className={className} {...p}>
+      {children}
+    </motion.button>
+  )
+}
+
+// ------------------------------------------------------------------ welcome
+function Welcome({ onOpen, onUpload, onCreate, busy, llm }) {
+  const [samples, setSamples] = useState([])
+  const [drag, setDrag] = useState(false)
+  const [prompt, setPrompt] = useState('')
+  const file = useRef()
+  useEffect(() => { api.samples().then(setSamples).catch(() => {}) }, [])
+  return (
+    <motion.div className="welcome" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={spring}
+      onDragOver={(e) => { e.preventDefault(); setDrag(true) }} onDragLeave={() => setDrag(false)}
+      onDrop={(e) => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files[0]; f && onUpload(f) }}>
+      <motion.div className="hero" initial={{ y: 18, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...spring, delay: 0.05 }}>
+        <div className="eyebrow">{I.logo}<span>DeFeat</span></div>
+        <h1>Simulation‑ready CAD.<br /><span className="grad">In a sentence.</span></h1>
+        <p className="lede">Drop in a mold part. DeFeat finds every hole, fillet, rib, boss and logo, decides what matters for your analysis, and hands back a clean STEP — plus the code that made it.</p>
+      </motion.div>
+
+      <motion.div className={`drop ${drag ? 'drag' : ''}`} initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...spring, delay: 0.12 }}
+        onClick={() => file.current.click()}>
+        <input ref={file} type="file" accept=".step,.stp,.iges,.igs,.brep" hidden onChange={(e) => e.target.files[0] && onUpload(e.target.files[0])} />
+        <div className="drop-icon">{I.upload}</div>
+        <div className="drop-title">Drop a STEP file, or click to choose</div>
+        <div className="drop-sub">STEP · IGES · BREP — processed locally, nothing leaves this machine</div>
+      </motion.div>
+
+      <motion.form className="ask" initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...spring, delay: 0.18 }}
+        onSubmit={(e) => { e.preventDefault(); prompt.trim() && onCreate(prompt.trim()) }}>
+        <span className="ask-icon">{I.sparkle}</span>
+        <input value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="…or describe a part to create — “a 60 mm flange with six M6 bolt holes”" />
+        <Pressable className="send" type="submit" disabled={!prompt.trim()}>{I.send}</Pressable>
+      </motion.form>
+      <div className="llm-note">{llm ? <><span className="dot ok" />Local AI ready · open-source model, offline</> : <><span className="dot" />AI model offline — keyword assistant active</>}</div>
+
+      <motion.div className="samples" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+        <div className="samples-label">Or try a sample</div>
+        <div className="sample-row">
+          {samples.map((s, i) => (
+            <motion.button key={s.name} className="sample" onClick={() => onOpen(s.name)} disabled={busy}
+              initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...spring, delay: 0.32 + i * 0.05 }}
+              whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }}>
+              <div className="sample-title">{s.title}</div>
+              <div className="sample-sub">{s.name} · {s.kb} KB</div>
+            </motion.button>
+          ))}
+        </div>
+      </motion.div>
+      <AnimatePresence>{busy && <Loader steps={busy.steps} title={busy.title} />}</AnimatePresence>
+    </motion.div>
+  )
+}
+
+// ------------------------------------------------------------------ staged loader
+function Loader({ title, steps = [], progress }) {
+  return (
+    <motion.div className="loader-scrim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+      <motion.div className="loader glass" initial={{ scale: 0.94, opacity: 0, filter: 'blur(8px)' }} animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
+        exit={{ scale: 0.97, opacity: 0, filter: 'blur(6px)' }} transition={spring}>
+        <div className="orb"><span /><span /><span /></div>
+        <div className="loader-title">{title}</div>
+        {progress != null && (
+          <div className="bar"><motion.div className="bar-fill" animate={{ width: `${Math.max(4, progress * 100)}%` }} transition={spring} /></div>
+        )}
+        <div className="steps">
+          <AnimatePresence initial={false}>
+            {steps.slice(-5).map((s, i, arr) => (
+              <motion.div key={s + i + arr.length} className={`step ${i === arr.length - 1 ? 'live' : 'done'}`} layout
+                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={spring}>
+                <span className="tick">{i === arr.length - 1 ? <span className="pulse" /> : I.check}</span>{s}
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
+// ------------------------------------------------------------------ feature panel
+function FeaturePanel({ sum, selected, setSelected, hovered, setHovered, onToggle, onClass }) {
+  const groups = useMemo(() => {
+    const g = {}
+    for (const f of sum.features) (g[f.kind] ||= []).push(f)
+    return Object.entries(g).sort((a, b) => Object.keys(CLASS_META).indexOf(a[0]) - Object.keys(CLASS_META).indexOf(b[0]))
+  }, [sum])
+  const listRef = useRef()
+  useEffect(() => {
+    if (selected == null) return
+    listRef.current?.querySelector(`[data-f="${selected}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [selected])
+  return (
+    <div className="features" ref={listRef}>
+      {groups.map(([kind, fs]) => {
+        const meta = CLASS_META[kind] || CLASS_META.protrusion
+        const nRm = fs.filter((f) => f.decision.action === 'remove').length
+        return (
+          <div className="fgroup" key={kind}>
+            <div className="fgroup-head">
+              <span className="swatch" style={{ background: meta.color }} />
+              <span className="fgroup-title">{meta.label}</span>
+              <span className="count">{nRm}/{fs.length} removed</span>
+              <div className="mini-seg">
+                <button onClick={() => onClass(kind, 'remove')} className={nRm === fs.length ? 'on' : ''}>All</button>
+                <button onClick={() => onClass(kind, 'auto')} className={nRm > 0 && nRm < fs.length ? 'on' : ''}>Auto</button>
+                <button onClick={() => onClass(kind, 'keep')} className={nRm === 0 ? 'on' : ''}>None</button>
+              </div>
+            </div>
+            {fs.map((f) => {
+              const rm = f.decision.action === 'remove'
+              return (
+                <motion.div layout key={f.id} data-f={f.id} className={`frow ${selected === f.id ? 'sel' : ''} ${hovered === f.id ? 'hov' : ''}`}
+                  onMouseEnter={() => setHovered(f.id)} onMouseLeave={() => setHovered(null)} onClick={() => setSelected(selected === f.id ? null : f.id)}>
+                  <div className="frow-main">
+                    <div className="frow-title">{f.note}<span className="fid">#{f.id}</span></div>
+                    <div className="frow-why">{f.decision.reason}</div>
+                    {f.gnn && (
+                      <div className={`ai ${f.gnn.agree ? 'yes' : 'no'}`} title={Object.entries(f.gnn.probs).map(([k, v]) => `${k} ${(v * 100).toFixed(0)}%`).join(' · ')}>
+                        {I.sparkle}{f.gnn.agree ? `GNN agrees · ${(f.gnn.agree_p * 100).toFixed(0)}%` : `GNN says ${f.gnn.label} · ${(f.gnn.p * 100).toFixed(0)}% — review`}
+                      </div>
+                    )}
+                  </div>
+                  <button className={`toggle ${rm ? 'rm' : 'kp'}`} onClick={(e) => { e.stopPropagation(); onToggle(f.id, rm ? 'keep' : 'remove') }}
+                    aria-label={rm ? 'Remove' : 'Keep'}>
+                    <motion.span className="knob" layout transition={spring} />
+                    <span className="tlabel">{rm ? 'Remove' : 'Keep'}</span>
+                  </button>
+                </motion.div>
+              )
+            })}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ------------------------------------------------------------------ chat
+const SUGGESTIONS = [
+  'Prep this for a modal analysis and run it',
+  'Remove the logo and fillets under 3 mm, keep all holes',
+  'Give me the Python code',
+  'Build a CFD flow domain around it',
+]
+
+function ChatPanel({ sid, messages, setMessages, onResult, llm }) {
+  const [text, setText] = useState('')
+  const [thinking, setThinking] = useState(false)
+  const end = useRef()
+  useEffect(() => { end.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, thinking])
+  const send = async (msg) => {
+    const m = (msg ?? text).trim()
+    if (!m || thinking) return
+    setText('')
+    setMessages((x) => [...x, { role: 'user', content: m }])
+    setThinking(true)
+    try {
+      const r = await api.chat(sid, m)
+      setMessages((x) => [...x, { role: 'assistant', content: r.reply, calls: r.calls, via: r.via, seconds: r.seconds }])
+      onResult(r)
+    } catch (e) {
+      setMessages((x) => [...x, { role: 'assistant', content: `Something went wrong: ${e.message}` }])
+    } finally {
+      setThinking(false)
+    }
+  }
+  return (
+    <div className="chat">
+      <div className="chat-scroll">
+        {messages.length === 0 && (
+          <div className="chat-empty">
+            <div className="chat-empty-title">Tell DeFeat what you need</div>
+            <div className="chat-empty-sub">Plain English works. I'll only change the model through the same exact tools as the buttons — you see every change before it runs.</div>
+            <div className="sugs">
+              {SUGGESTIONS.map((s) => <Pressable key={s} className="sug" onClick={() => send(s)}>{s}</Pressable>)}
+            </div>
+          </div>
+        )}
+        {messages.map((m, i) => (
+          <motion.div key={i} className={`msg ${m.role}`} initial={{ opacity: 0, y: 10, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={springSoft}>
+            <div className="bubble">{m.content}</div>
+            {m.calls?.length > 0 && (
+              <div className="calls">
+                {m.calls.map((c, k) => (
+                  <span className="call" key={k}><code>{c.name}</code>{Object.keys(c.arguments || {}).length ? ` ${Object.entries(c.arguments).map(([a, b]) => `${a}=${Array.isArray(b) ? b.join(',') : b}`).join(' ')}` : ''}</span>
+                ))}
+              </div>
+            )}
+            {m.via && <div className="via">{m.via} · {m.seconds}s</div>}
+          </motion.div>
+        ))}
+        {thinking && (
+          <motion.div className="msg assistant" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <div className="bubble typing"><span /><span /><span /></div>
+          </motion.div>
+        )}
+        <div ref={end} />
+      </div>
+      <form className="chat-input" onSubmit={(e) => { e.preventDefault(); send() }}>
+        <input value={text} onChange={(e) => setText(e.target.value)} placeholder={llm ? 'Ask or instruct…' : 'Instruct (keyword mode)…'} />
+        <Pressable className="send" type="submit" disabled={!text.trim() || thinking}>{I.send}</Pressable>
+      </form>
+    </div>
+  )
+}
+
+// ------------------------------------------------------------------ results sheet
+function Stat({ label, value, sub, accent }) {
+  return (
+    <div className="stat">
+      <div className="stat-v" style={accent ? { color: accent } : null}>{value}</div>
+      <div className="stat-l">{label}</div>
+      {sub && <div className="stat-s">{sub}</div>}
+    </div>
+  )
+}
+
+function Results({ sid, res, onClose }) {
+  const [tab, setTab] = useState('python')
+  const [verify, setVerify] = useState(null)
+  const g = res.metrics.geometry, m = res.metrics.mesh, fea = res.metrics.fea
+  const failed = Object.keys(res.metrics.failed || {}).length
+  return (
+    <motion.div className="results glass" initial={{ y: 40, opacity: 0, scale: 0.98 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 40, opacity: 0 }} transition={spring}>
+      <div className="results-head">
+        <div>
+          <div className="results-title">Ready for meshing</div>
+          <div className="results-sub">{res.metrics.removed.length} features removed{failed ? ` · ${failed} kept (kernel could not remove)` : ''} · {res.metrics.strategy} · {fmt(res.metrics.seconds, 1)} s</div>
+        </div>
+        <Pressable className="icon-btn" onClick={onClose}>{I.close}</Pressable>
+      </div>
+      <div className="stats">
+        {m?.tet_reduction_pct != null && <Stat label="Mesh elements" value={`−${fmt(m.tet_reduction_pct, 0)}%`} sub={`${fmt(m.original.tets, 0)} → ${fmt(m.defeatured.tets, 0)} tets`} accent="var(--accent)" />}
+        <Stat label="Faces" value={`${g.faces[0]} → ${g.faces[1]}`} sub={`−${fmt(100 * (1 - g.faces[1] / g.faces[0]), 0)}%`} />
+        <Stat label="Volume change" value={`${g.volume_delta_pct >= 0 ? '+' : ''}${fmt(g.volume_delta_pct, 2)}%`} sub={g.bbox_changed ? 'bounding box changed' : 'bounding box unchanged'} />
+        <Stat label="Max deviation" value={`${fmt(g.deviation.max, 2)} mm`} sub={`mean ${fmt(g.deviation.mean, 2)} mm`} />
+        {m?.defeatured?.ok && <Stat label="Mesh quality (min)" value={fmt(m.defeatured.q_min, 2)} sub={`was ${fmt(m.original.q_min, 2)} · SICN`} />}
+        {m?.speedup && <Stat label="Meshing time" value={`${fmt(m.speedup, 1)}× faster`} sub={`${fmt(m.original.seconds, 2)} s → ${fmt(m.defeatured.seconds, 2)} s`} />}
+      </div>
+      {fea?.delta && (
+        <div className="fea">
+          <div className="fea-head">
+            <div className="fea-title">Static stress check</div>
+            <div className="fea-sub">{fea.load_case}</div>
+          </div>
+          <div className="stats">
+            <Stat label="Tip deflection" value={`${fea.delta.tip_disp_delta_pct >= 0 ? '+' : ''}${fmt(fea.delta.tip_disp_delta_pct, 2)}%`} sub={`${fmt(fea.original.tip_disp, 4)} → ${fmt(fea.defeatured.tip_disp, 4)} mm`} accent={Math.abs(fea.delta.tip_disp_delta_pct) < 5 ? 'var(--green)' : '#ff9f0a'} />
+            <Stat label="Peak stress (p99)" value={`${fea.delta.vm_p99_delta_pct >= 0 ? '+' : ''}${fmt(fea.delta.vm_p99_delta_pct, 2)}%`} sub={`${fmt(fea.original.vm_p99, 2)} → ${fmt(fea.defeatured.vm_p99, 2)} MPa`} accent={Math.abs(fea.delta.vm_p99_delta_pct) < 5 ? 'var(--green)' : '#ff9f0a'} />
+            <Stat label="Solve time" value={`${fmt(fea.original.seconds / Math.max(fea.defeatured.seconds, 0.01), 1)}× faster`} sub={`${fmt(fea.original.dofs, 0)} → ${fmt(fea.defeatured.dofs, 0)} DOFs`} />
+          </div>
+        </div>
+      )}
+      <div className="downloads">
+        <a className="dl primary" href={api.download(sid, 'step')}>{I.dl}Simplified STEP</a>
+        <a className="dl" href={api.download(sid, 'report')} target="_blank" rel="noreferrer">{I.dl}Report</a>
+        <a className="dl" href={api.download(sid, 'py')}>{I.dl}Python</a>
+        <a className="dl" href={api.download(sid, 'cpp')}>{I.dl}C++</a>
+      </div>
+      <div className="code-card">
+        <div className="code-head">
+          <div className="seg small">
+            {['python', 'cpp'].map((t) => <button key={t} className={tab === t ? 'on' : ''} onClick={() => setTab(t)}>{t === 'python' ? 'Python' : 'C++'}</button>)}
+          </div>
+          <Pressable className="verify" onClick={async () => { setVerify('running'); try { setVerify(await api.verify(sid)) } catch (e) { setVerify({ ok: false }) } }}>
+            {verify === 'running' ? 'Re-running script…' : verify?.ok ? <>{I.check} Reproduces result exactly ({verify.faces[0]} faces)</> : verify ? 'Verification failed' : 'Verify script reproduces this result'}
+          </Pressable>
+        </div>
+        <pre className="code"><code>{res.code[tab]}</code></pre>
+      </div>
+    </motion.div>
+  )
+}
+
+// ------------------------------------------------------------------ workspace
+function Workspace({ initial, onExit, dark, llm }) {
+  const [sum, setSum] = useState(initial)
+  const [orig, setOrig] = useState(null)
+  const [resMesh, setResMesh] = useState(null)
+  const [res, setRes] = useState(null)
+  const [showRes, setShowRes] = useState(false)
+  const [mode, setMode] = useState('original')
+  const [wipe, setWipe] = useState(0.5)
+  const [tab, setTab] = useState('features')
+  const [selected, setSelected] = useState(null)
+  const [hovered, setHovered] = useState(null)
+  const [run, setRun] = useState(null)
+  const [messages, setMessages] = useState([])
+  const sid = sum.id
+
+  useEffect(() => { api.mesh(sid, 'original').then(setOrig) }, [sid])
+
+  const applyPolicy = useCallback(async (body) => setSum(await api.policy(sid, body)), [sid])
+
+  const poll = useCallback(async () => {
+    setRun({ steps: ['Starting'], progress: 0.02 })
+    for (;;) {
+      await new Promise((r) => setTimeout(r, 350))
+      const st = await api.status(sid)
+      const s = st.status
+      setRun({ steps: s.steps.map((x) => x.msg), progress: s.progress })
+      if (!s.busy) {
+        if (s.stage === 'done') {
+          const [r, m] = await Promise.all([api.result(sid), api.mesh(sid, 'result')])
+          setRes(r); setResMesh(m); setSum(r.summary)
+          setRun(null); setShowRes(true); setMode('compare'); setWipe(0.5)
+        } else {
+          setRun(null)
+          alert(s.error || 'Run failed')
+        }
+        return
+      }
+    }
+  }, [sid])
+
+  const runNow = async () => { await api.run(sid); poll() }
+
+  const onChatResult = (r) => {
+    if (r.summary) setSum(r.summary)
+    for (const a of r.actions || []) {
+      if (a.type === 'run') poll()
+      if (a.type === 'focus' && a.features?.length) setSelected(a.features[0])
+      if (a.type === 'download' && a.format === 'fluid') window.open(`/api/session/${sid}/download_fluid`)
+      if (a.type === 'download' && res && a.format !== 'fluid') { setShowRes(true) }
+      if (a.type === 'create_job') watchJob(a.job)
+    }
+  }
+  const watchJob = async (jid) => {
+    for (;;) {
+      await new Promise((r) => setTimeout(r, 800))
+      const j = await api.job(jid)
+      if (j.done) {
+        if (j.session) {
+          setMessages((x) => [...x, { role: 'assistant', content: 'Part created. Opening it now — the code that built it is in this message.\n\n' + (j.code || '') }])
+          const s = await api.session(j.session)
+          onExit(s)
+        } else setMessages((x) => [...x, { role: 'assistant', content: `I couldn't build a valid solid from that (${j.error}). Try adding dimensions.` }])
+        return
+      }
+    }
+  }
+
+  const rmCount = sum.features.filter((f) => f.decision.action === 'remove').length
+  const preset = sum.policy.preset
+  return (
+    <motion.div className="workspace" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+      <Viewer original={orig} result={resMesh} features={sum.features} mode={mode} wipe={wipe} dark={dark}
+        selected={selected} hovered={hovered} onPick={(id) => { setSelected(id); if (id != null) setTab('features') }} onHover={setHovered} />
+      {mode === 'compare' && resMesh && (
+        <>
+          <div className="wipe-line"><span>Original</span><span>Simplified</span></div>
+          <input className="wipe" type="range" min="0.02" max="0.98" step="0.001" value={wipe} onChange={(e) => setWipe(+e.target.value)} />
+        </>
+      )}
+
+      {/* top bar */}
+      <motion.div className="topbar glass" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={spring}>
+        <Pressable className="icon-btn" onClick={() => onExit(null)} title="Back">{I.back}</Pressable>
+        <div className="part">
+          <div className="part-name">{sum.name}</div>
+          <div className="part-sub">{sum.faces} faces · {sum.size.map((v) => fmt(v, 0)).join(' × ')} mm · {sum.features.length} features</div>
+        </div>
+        <div className="seg">
+          <LayoutGroup id="preset">
+            {Object.entries(sum.presets).map(([k, p]) => (
+              <button key={k} className={preset === k ? 'on' : ''} onClick={() => applyPolicy({ preset: k })} title={p.blurb}>
+                {preset === k && <motion.span layoutId="seg-pill" className="pill" transition={spring} />}
+                <span>{p.label.split(' ')[0] === 'Linear' ? 'Static' : p.label.split(' (')[0]}</span>
+              </button>
+            ))}
+          </LayoutGroup>
+        </div>
+        <div className="hctl" title="Target mesh element size">
+          <span className="hlabel">h</span>
+          <input type="range" min="0.5" max={Math.max(10, Math.ceil(sum.char_len / 12))} step="0.5" value={sum.policy.h}
+            onChange={(e) => setSum({ ...sum, policy: { ...sum.policy, h: +e.target.value } })}
+            onPointerUp={(e) => applyPolicy({ h: +e.target.value })} onKeyUp={(e) => applyPolicy({ h: +e.target.value })} />
+          <span className="hval">{fmt(sum.policy.h, 1)} mm</span>
+        </div>
+        <Pressable className="run" onClick={runNow} disabled={!!run || rmCount === 0}>
+          {I.play}<span>Simplify {rmCount}</span>
+        </Pressable>
+      </motion.div>
+
+      {/* view switch */}
+      {resMesh && (
+        <motion.div className="viewswitch glass" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={spring}>
+          <LayoutGroup id="view">
+            {[['original', 'Original'], ['compare', 'Compare'], ['result', 'Simplified']].map(([k, l]) => (
+              <button key={k} className={mode === k ? 'on' : ''} onClick={() => setMode(k)}>
+                {mode === k && <motion.span layoutId="view-pill" className="pill" transition={spring} />}
+                <span>{l}</span>
+              </button>
+            ))}
+          </LayoutGroup>
+          {res && !showRes && <button className="link" onClick={() => setShowRes(true)}>Results</button>}
+        </motion.div>
+      )}
+
+      {/* legend */}
+      <div className="legend">
+        {Object.entries(sum.feature_counts).map(([k, n]) => (
+          <span className="chip" key={k}><span className="swatch" style={{ background: (CLASS_META[k] || CLASS_META.protrusion).color }} />{(CLASS_META[k] || {}).label || k} <b>{n}</b></span>
+        ))}
+        <span className="chip muted">Bright = will be removed · faded = kept</span>
+      </div>
+
+      {/* side panel */}
+      <motion.div className="side glass" initial={{ x: 30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ ...spring, delay: 0.05 }}>
+        <div className="side-tabs">
+          <LayoutGroup id="tabs">
+            {[['features', `Features`], ['chat', 'Assistant']].map(([k, l]) => (
+              <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>
+                {tab === k && <motion.span layoutId="tab-pill" className="pill" transition={spring} />}
+                <span>{l}{k === 'features' ? ` · ${sum.features.length}` : ''}</span>
+              </button>
+            ))}
+          </LayoutGroup>
+        </div>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div key={tab} className="side-body" initial={{ opacity: 0, x: tab === 'chat' ? 16 : -16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: tab === 'chat' ? 16 : -16 }} transition={spring}>
+            {tab === 'features' ? (
+              <FeaturePanel sum={sum} selected={selected} setSelected={setSelected} hovered={hovered} setHovered={setHovered}
+                onToggle={(id, a) => applyPolicy({ feature_overrides: { [id]: a } })}
+                onClass={(kind, a) => {
+                  const fo = Object.fromEntries(sum.features.filter((f) => f.kind === kind).map((f) => [f.id, 'auto']))
+                  const ov = { ...sum.policy.overrides }
+                  if (a === 'auto') delete ov[kind]; else ov[kind] = { remove: a === 'remove' ? 'always' : 'never' }
+                  applyPolicy({ overrides: ov, merge: false, feature_overrides: fo })
+                }} />
+            ) : (
+              <ChatPanel sid={sid} messages={messages} setMessages={setMessages} onResult={onChatResult} llm={llm} />
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </motion.div>
+
+      <AnimatePresence>{run && <Loader title="Simplifying" steps={run.steps} progress={run.progress} />}</AnimatePresence>
+      <AnimatePresence>{showRes && res && <Results sid={sid} res={res} onClose={() => setShowRes(false)} />}</AnimatePresence>
+    </motion.div>
+  )
+}
+
+// ------------------------------------------------------------------ app
+export default function App() {
+  const dark = useDark()
+  const [session, setSession] = useState(null)
+  const [busy, setBusy] = useState(null)
+  const [llm, setLlm] = useState(false)
+  const [err, setErr] = useState(null)
+  useEffect(() => { api.health().then((h) => setLlm(h.llm)).catch(() => {}) }, [])
+  useEffect(() => { document.documentElement.dataset.theme = dark ? 'dark' : 'light' }, [dark])
+
+  const open = async (fn, title) => {
+    setErr(null)
+    const steps = ['Reading geometry', 'Building face-adjacency graph', 'Recognizing features', 'Deciding what matters']
+    let i = 1
+    setBusy({ title, steps: steps.slice(0, 1) })
+    const t = setInterval(() => { i = Math.min(steps.length, i + 1); setBusy({ title, steps: steps.slice(0, i) }) }, 650)
+    try { setSession(await fn()) } catch (e) { setErr(e.message) } finally { clearInterval(t); setBusy(null) }
+  }
+  const create = async (prompt) => {
+    setErr(null)
+    setBusy({ title: 'Designing your part', steps: ['Writing CadQuery code with the local model'] })
+    try {
+      const r = await api.chat(null, prompt.match(/\b(make|create|design|build|model)\b/i) ? prompt : `Create a part: ${prompt}`)
+      const job = r.actions?.find((a) => a.type === 'create_job')?.job
+      if (!job) { setBusy(null); setErr(r.reply); return }
+      for (;;) {
+        await new Promise((res) => setTimeout(res, 800))
+        const j = await api.job(job)
+        setBusy({ title: 'Designing your part', steps: ['Writing CadQuery code with the local model', ...j.steps] })
+        if (j.done) {
+          if (j.session) setSession(await api.session(j.session))
+          else setErr(`Couldn't build a valid solid: ${j.error}`)
+          break
+        }
+      }
+    } catch (e) { setErr(e.message) } finally { setBusy(null) }
+  }
+
+  return (
+    <div className="app">
+      <AnimatePresence mode="wait">
+        {session ? (
+          <Workspace key={session.id} initial={session} dark={dark} llm={llm} onExit={(s) => setSession(s)} />
+        ) : (
+          <Welcome key="welcome" busy={busy} llm={llm}
+            onOpen={(n) => open(() => api.openSample(n), 'Opening sample')}
+            onUpload={(f) => open(() => api.upload(f), `Reading ${f.name}`)}
+            onCreate={create} />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {err && (
+          <motion.div className="toast glass" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }} transition={spring} onClick={() => setErr(null)}>
+            {err}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
