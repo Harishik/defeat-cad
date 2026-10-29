@@ -14,11 +14,11 @@ It decides what matters for your analysis and removes the rest. Then it **proves
 ![CI](https://github.com/Harishik/defeat-cad/actions/workflows/ci.yml/badge.svg)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/features-dark.png">
-  <img alt="DeFeat recognizing features on a bracket" src="docs/images/features-light.png" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/welcome-dark.png">
+  <img alt="DeFeat" src="docs/images/welcome-light.png" width="100%">
 </picture>
 
-<sub>Every recognized feature is colour-coded. Bright features will be removed; faded ones are kept, with a plain-English reason and a second opinion from the GNN.</sub>
+<sub>The hero is a live dot-matrix render of a real part. Highlighted dots are the features DeFeat will remove; they dissolve away to show the simulation-ready result.</sub>
 
 </div>
 
@@ -32,10 +32,10 @@ It decides what matters for your analysis and removes the rest. Then it **proves
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/results-dark.png"><img src="docs/images/results-light.png" alt="Results sheet"></picture></td>
 </tr>
 <tr>
+<td width="50%"><b>Every feature, explained</b><br><sub>Colour-coded by class, with a plain-English keep/remove reason and a GNN second opinion. Click a chip to isolate a class, or press <kbd>⌘K</kbd> for the command palette.</sub><br><br>
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/features-dark.png"><img src="docs/images/features-light.png" alt="Feature panel"></picture></td>
 <td width="50%"><b>Talk to your part</b><br><sub>A local open-source LLM turns plain English into exact tool calls. No CAD skills needed, and nothing leaves the machine.</sub><br><br>
 <img src="docs/images/assistant-light.png" alt="Assistant"></td>
-<td width="50%"><b>Real molded parts</b><br><sub>Rib grids, screw bosses, vents and markings on a printer-chassis style part.</sub><br><br>
-<img src="docs/images/chassis-light.png" alt="Printer chassis"></td>
 </tr>
 </table>
 

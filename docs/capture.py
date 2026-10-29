@@ -54,7 +54,6 @@ def main():
 
             if scheme == "light" and not a.skip_chat:
                 open_sample(page, a.url, "Printer Chassis")
-                shot(page, "chassis-light.png")
                 page.get_by_text("Assistant", exact=True).click()
                 page.wait_for_timeout(600)
                 page.locator(".chat-input input").fill(

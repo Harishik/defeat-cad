@@ -49,6 +49,32 @@ def samples():
     return out
 
 
+_PREVIEWS: dict[str, dict] = {}
+
+
+@app.get("/api/preview/{name}")
+def preview(name: str):
+    """Lightweight mesh + which faces would be removed, for the welcome-page dot renders (cached)."""
+    name = os.path.basename(name)
+    if name in _PREVIEWS:
+        return _PREVIEWS[name]
+    p = os.path.join(SAMPLES, name)
+    if not os.path.exists(p):
+        raise HTTPException(404)
+    from .decide import Policy, decide, default_h
+    from .graph import build_graph
+    from .recognize import Recognizer
+    shape = occ.read_cad(p)
+    g = build_graph(shape, curvature=False)
+    feats = Recognizer(g).run()
+    d = decide(feats, Policy("static", default_h(g.char_len)))
+    removable = sorted({fid for f in feats if d[f.id].action == "remove" for fid in f.faces})
+    out = {"mesh": mesh_payload(shape), "removable": removable, "features": len(feats),
+           "faces": len(g.nodes), "remove": sum(1 for f in feats if d[f.id].action == "remove")}
+    _PREVIEWS[name] = out
+    return out
+
+
 @app.post("/api/sample/{name}")
 def open_sample(name: str):
     p = os.path.join(SAMPLES, os.path.basename(name))

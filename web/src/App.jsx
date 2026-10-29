@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion, LayoutGroup } from 'framer-motion'
 import Viewer from './Viewer'
+import DotPart from './DotPart'
 import { api, CLASS_META } from './api'
 
 const spring = { type: 'spring', bounce: 0, duration: 0.4 }
@@ -45,63 +46,151 @@ function Pressable({ className = '', children, ...p }) {
 }
 
 // ------------------------------------------------------------------ welcome
-function Welcome({ onOpen, onUpload, onCreate, busy, llm }) {
+const STATS = [
+  { v: '0.84', l: 'fillet F1 on 1,500 real designer parts' },
+  { v: '500', l: 'random real-world parts run end to end' },
+  { v: '100%', l: 'valid solids out, never a broken model' },
+  { v: '−55%', l: 'mesh elements on the sample bracket' },
+]
+
+function usePreview(name) {
+  const [d, setD] = useState(null)
+  useEffect(() => { if (name) fetch(`/api/preview/${encodeURIComponent(name)}`).then((r) => r.json()).then(setD).catch(() => {}) }, [name])
+  return d
+}
+
+function SampleCard({ s, i, onOpen, busy, dark }) {
+  const data = usePreview(s.name)
+  return (
+    <motion.button className="card" onClick={() => onOpen(s.name)} disabled={busy}
+      initial={{ y: 24, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} viewport={{ once: true }}
+      transition={{ ...spring, delay: i * 0.06 }} whileTap={{ scale: 0.985 }}>
+      <div className="card-media">
+        {data && <DotPart data={data} count={9000} size={1.35} interactive={false} distance={1.05}
+          accent={dark ? '#d4ff3f' : '#ff5a1f'} base={dark ? '#d9d9de' : '#2b2b30'} />}
+        <span className="badge">{data ? `${data.remove} of ${data.features} features removable` : 'Loading…'}</span>
+      </div>
+      <div className="card-foot">
+        <div>
+          <div className="card-title">{s.title}</div>
+          <div className="card-meta mono">{s.name} · {data ? `${data.faces} faces` : '—'} · {s.kb} KB</div>
+        </div>
+        <span className="arrow">↗</span>
+      </div>
+    </motion.button>
+  )
+}
+
+function Welcome({ onOpen, onUpload, onCreate, busy, llm, dark }) {
   const [samples, setSamples] = useState([])
   const [drag, setDrag] = useState(false)
   const [prompt, setPrompt] = useState('')
   const file = useRef()
+  const promptRef = useRef()
+  const hero = usePreview('l_bracket.step')
   useEffect(() => { api.samples().then(setSamples).catch(() => {}) }, [])
+  useEffect(() => {
+    const k = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); promptRef.current?.focus() } }
+    window.addEventListener('keydown', k)
+    return () => window.removeEventListener('keydown', k)
+  }, [])
+  const rise = (d) => ({ initial: { y: 22, opacity: 0, filter: 'blur(6px)' }, animate: { y: 0, opacity: 1, filter: 'blur(0px)' }, transition: { ...spring, duration: 0.6, delay: d } })
   return (
-    <motion.div className="welcome" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={spring}
+    <motion.div className="welcome" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.985 }} transition={spring}
       onDragOver={(e) => { e.preventDefault(); setDrag(true) }} onDragLeave={() => setDrag(false)}
       onDrop={(e) => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files[0]; f && onUpload(f) }}>
-      <motion.div className="hero" initial={{ y: 18, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...spring, delay: 0.05 }}>
-        <div className="eyebrow">{I.logo}<span>DeFeat</span></div>
-        <h1>Simulation‑ready CAD.<br /><span className="grad">In a sentence.</span></h1>
-        <p className="lede">Drop in a mold part. DeFeat finds every hole, fillet, rib, boss and logo, decides what matters for your analysis, and hands back a clean STEP — plus the code that made it.</p>
-      </motion.div>
+      <div className="grid-bg" aria-hidden />
+      <nav className="wnav">
+        <div className="brand"><DotMark /><span>DeFeat</span></div>
+        <button className="kbar" onClick={() => promptRef.current?.focus()}>
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.7"/><path d="m16 16 4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>
+          <span>Describe a part or a task</span><kbd>⌘K</kbd>
+        </button>
+        <div className={`status ${llm ? 'on' : ''}`}><span className="led" />{llm ? 'Local AI online' : 'Keyword mode'}</div>
+      </nav>
 
-      <motion.div className={`drop ${drag ? 'drag' : ''}`} initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...spring, delay: 0.12 }}
-        onClick={() => file.current.click()}>
-        <input ref={file} type="file" accept=".step,.stp,.iges,.igs,.brep" hidden onChange={(e) => e.target.files[0] && onUpload(e.target.files[0])} />
-        <div className="drop-icon">{I.upload}</div>
-        <div className="drop-title">Drop a STEP file, or click to choose</div>
-        <div className="drop-sub">STEP · IGES · BREP — processed locally, nothing leaves this machine</div>
-      </motion.div>
+      <section className="whero">
+        <div className="whero-copy">
+          <motion.div className="pill-badge" {...rise(0.05)}><span className="spark" />Open source · runs fully offline</motion.div>
+          <motion.h1 {...rise(0.1)}><span className="nowrap">Simulation‑ready</span> <span className="nowrap">CAD, in a</span> sentence.</motion.h1>
+          <motion.p className="lede" {...rise(0.16)}>
+            Drop in a mold part. DeFeat finds every <b>hole, fillet, rib, boss and logo</b>, decides what matters for <b>your analysis</b>,
+            and hands back a clean STEP — <b>proven</b> by meshing and a stress check on both models.
+          </motion.p>
 
-      <motion.form className="ask" initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...spring, delay: 0.18 }}
-        onSubmit={(e) => { e.preventDefault(); prompt.trim() && onCreate(prompt.trim()) }}>
-        <span className="ask-icon">{I.sparkle}</span>
-        <input value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="…or describe a part to create — “a 60 mm flange with six M6 bolt holes”" />
-        <Pressable className="send" type="submit" disabled={!prompt.trim()}>{I.send}</Pressable>
-      </motion.form>
-      <div className="llm-note">{llm ? <><span className="dot ok" />Local AI ready · open-source model, offline</> : <><span className="dot" />AI model offline — keyword assistant active</>}</div>
-
-      <motion.div className="samples" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-        <div className="samples-label">Or try a sample</div>
-        <div className="sample-row">
-          {samples.map((s, i) => (
-            <motion.button key={s.name} className="sample" onClick={() => onOpen(s.name)} disabled={busy}
-              initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...spring, delay: 0.32 + i * 0.05 }}
-              whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }}>
-              <div className="sample-title">{s.title}</div>
-              <div className="sample-sub">{s.name} · {s.kb} KB</div>
-            </motion.button>
-          ))}
+          <motion.div className={`command ${drag ? 'drag' : ''}`} {...rise(0.22)}>
+            <button className="drop-row" onClick={() => file.current.click()}>
+              <span className="drop-ico">{I.upload}</span>
+              <span className="drop-txt"><b>Drop a STEP file</b> or click to choose<span className="mono dim"> · STEP · IGES · BREP</span></span>
+              <span className="drop-go">↗</span>
+            </button>
+            <input ref={file} type="file" accept=".step,.stp,.iges,.igs,.brep" hidden onChange={(e) => e.target.files[0] && onUpload(e.target.files[0])} />
+            <form className="ask-row" onSubmit={(e) => { e.preventDefault(); prompt.trim() && onCreate(prompt.trim()) }}>
+              <span className="ask-ico">{I.sparkle}</span>
+              <input ref={promptRef} value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="…or describe a part: “a 60 mm flange with six M6 bolt holes”" />
+              <Pressable className="send" type="submit" disabled={!prompt.trim()}>{I.send}</Pressable>
+            </form>
+          </motion.div>
+          <motion.div className="fine mono" {...rise(0.28)}>Nothing leaves this machine · OpenCASCADE · gmsh · PyTorch Geometric · Ollama</motion.div>
         </div>
-      </motion.div>
+
+        <motion.div className="whero-art" initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ ...spring, duration: 1, delay: 0.15 }}>
+          {hero && <DotPart data={hero} count={16000} size={1.6} accent={dark ? '#d4ff3f' : '#ff5a1f'} base={dark ? '#e6e6ea' : '#26262b'} />}
+          <div className="art-legend mono">
+            <span><i className="lg acc" />removed for simulation</span>
+            <span><i className="lg base" />kept</span>
+          </div>
+        </motion.div>
+      </section>
+
+      <motion.section className="stats-row" {...rise(0.34)}>
+        {STATS.map((s) => (
+          <div className="bigstat" key={s.v}><div className="bigstat-v">{s.v}</div><div className="bigstat-l">{s.l}</div></div>
+        ))}
+      </motion.section>
+
+      <section className="cards">
+        <div className="section-head"><span className="mono dim">01</span><h2>Try a sample part</h2><span className="mono dim">{samples.length} parts</span></div>
+        <div className="card-grid">
+          {samples.map((s, i) => <SampleCard key={s.name} s={s} i={i} onOpen={onOpen} busy={busy} dark={dark} />)}
+        </div>
+      </section>
       <AnimatePresence>{busy && <Loader steps={busy.steps} title={busy.title} />}</AnimatePresence>
     </motion.div>
   )
 }
 
+function DotMark() {
+  // 5x5 dot-matrix "D" with one accent dot: the removed feature
+  const on = ['11111', '10001', '10001', '10001', '11110']
+  return (
+    <svg viewBox="0 0 25 25" width="22" height="22" aria-hidden>
+      {on.flatMap((row, y) => [...row].map((c, x) => c === '1' &&
+        <circle key={`${x}${y}`} cx={x * 5 + 2.5} cy={y * 5 + 2.5} r="1.7" fill={x === 4 && y === 4 ? 'var(--accent)' : 'currentColor'} />))}
+      <circle cx={22.5} cy={22.5} r="1.7" fill="var(--accent)" />
+    </svg>
+  )
+}
+
 // ------------------------------------------------------------------ staged loader
+function DotLoader() {
+  return (
+    <div className="dotloader" aria-hidden>
+      {Array.from({ length: 49 }, (_, i) => {
+        const x = i % 7, y = Math.floor(i / 7)
+        const d = Math.hypot(x - 3, y - 3)
+        return <span key={i} style={{ animationDelay: `${d * 0.11}s`, opacity: d > 3.4 ? 0 : 1 }} />
+      })}
+    </div>
+  )
+}
+
 function Loader({ title, steps = [], progress }) {
   return (
     <motion.div className="loader-scrim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
       <motion.div className="loader glass" initial={{ scale: 0.94, opacity: 0, filter: 'blur(8px)' }} animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
         exit={{ scale: 0.97, opacity: 0, filter: 'blur(6px)' }} transition={spring}>
-        <div className="orb"><span /><span /><span /></div>
+        <DotLoader />
         <div className="loader-title">{title}</div>
         {progress != null && (
           <div className="bar"><motion.div className="bar-fill" animate={{ width: `${Math.max(4, progress * 100)}%` }} transition={spring} /></div>
@@ -187,7 +276,7 @@ const SUGGESTIONS = [
   'Build a CFD flow domain around it',
 ]
 
-function ChatPanel({ sid, messages, setMessages, onResult, llm }) {
+function ChatPanel({ sid, messages, setMessages, onResult, llm, queued, clearQueued }) {
   const [text, setText] = useState('')
   const [thinking, setThinking] = useState(false)
   const end = useRef()
@@ -208,6 +297,7 @@ function ChatPanel({ sid, messages, setMessages, onResult, llm }) {
       setThinking(false)
     }
   }
+  useEffect(() => { if (queued) { clearQueued?.(); send(queued) } }, [queued])
   return (
     <div className="chat">
       <div className="chat-scroll">
@@ -316,6 +406,57 @@ function Results({ sid, res, onClose }) {
 }
 
 // ------------------------------------------------------------------ workspace
+// ------------------------------------------------------------------ command palette
+function CommandPalette({ open, onClose, commands, onAsk }) {
+  const [q, setQ] = useState('')
+  const [i, setI] = useState(0)
+  const inp = useRef()
+  useEffect(() => { if (open) { setQ(''); setI(0); setTimeout(() => inp.current?.focus(), 30) } }, [open])
+  const list = useMemo(() => {
+    const t = q.trim().toLowerCase()
+    const hits = commands.filter((c) => !t || (c.label + ' ' + (c.group || '') + ' ' + (c.keys || '')).toLowerCase().includes(t))
+    return t ? [...hits, { id: 'ask', group: 'Assistant', label: `Ask the assistant: “${q.trim()}”`, run: () => onAsk(q.trim()), icon: I.sparkle }] : hits
+  }, [q, commands, onAsk])
+  useEffect(() => { setI(0) }, [q])
+  const go = (c) => { onClose(); c && setTimeout(() => c.run(), 60) }
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div className="cmdk-scrim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} onMouseDown={onClose}>
+          <motion.div className="cmdk glass" onMouseDown={(e) => e.stopPropagation()}
+            initial={{ y: -12, scale: 0.97, opacity: 0, filter: 'blur(6px)' }} animate={{ y: 0, scale: 1, opacity: 1, filter: 'blur(0px)' }}
+            exit={{ y: -8, scale: 0.98, opacity: 0, filter: 'blur(4px)' }} transition={spring}>
+            <div className="cmdk-input">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.7"/><path d="m16 16 4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>
+              <input ref={inp} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Type a command, or ask anything…"
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowDown') { e.preventDefault(); setI((v) => Math.min(list.length - 1, v + 1)) }
+                  else if (e.key === 'ArrowUp') { e.preventDefault(); setI((v) => Math.max(0, v - 1)) }
+                  else if (e.key === 'Enter') { e.preventDefault(); go(list[i]) }
+                  else if (e.key === 'Escape') onClose()
+                }} />
+              <kbd>esc</kbd>
+            </div>
+            <div className="cmdk-list">
+              {list.length === 0 && <div className="cmdk-empty">No matches</div>}
+              {list.map((c, k) => (
+                <div key={c.id} className={`cmdk-item ${k === i ? 'on' : ''}`} onMouseEnter={() => setI(k)} onClick={() => go(c)}>
+                  {k === i && <motion.span layoutId="cmdk-hl" className="cmdk-hl" transition={{ type: 'spring', bounce: 0, duration: 0.25 }} />}
+                  <span className="cmdk-ico">{c.icon || '›'}</span>
+                  <span className="cmdk-label">{c.label}</span>
+                  <span className="cmdk-group mono">{c.group}</span>
+                  {c.keys && <kbd>{c.keys}</kbd>}
+                </div>
+              ))}
+            </div>
+            <div className="cmdk-foot mono"><span>↑↓ navigate</span><span>↵ run</span><span>DeFeat</span></div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
 function Workspace({ initial, onExit, dark, llm }) {
   const [sum, setSum] = useState(initial)
   const [orig, setOrig] = useState(null)
@@ -329,7 +470,19 @@ function Workspace({ initial, onExit, dark, llm }) {
   const [hovered, setHovered] = useState(null)
   const [run, setRun] = useState(null)
   const [messages, setMessages] = useState([])
+  const [isolate, setIsolate] = useState(null)
+  const [palette, setPalette] = useState(false)
+  const [queued, setQueued] = useState(null)
   const sid = sum.id
+
+  useEffect(() => {
+    const k = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setPalette((v) => !v) }
+      else if (e.key === 'Escape') setIsolate(null)
+    }
+    window.addEventListener('keydown', k)
+    return () => window.removeEventListener('keydown', k)
+  }, [])
 
   useEffect(() => { api.mesh(sid, 'original').then(setOrig) }, [sid])
 
@@ -385,9 +538,27 @@ function Workspace({ initial, onExit, dark, llm }) {
 
   const rmCount = sum.features.filter((f) => f.decision.action === 'remove').length
   const preset = sum.policy.preset
+  const dl = (kind) => () => window.open(api.download(sid, kind))
+  const commands = [
+    { id: 'run', group: 'Action', label: `Simplify — remove ${rmCount} features`, run: runNow, icon: I.play, keys: '↵' },
+    ...Object.entries(sum.presets).map(([k, p]) => ({ id: `p-${k}`, group: 'Preset', label: `Prepare for ${p.label}`, run: () => applyPolicy({ preset: k }) })),
+    ...(resMesh ? [['original', 'Show original'], ['compare', 'Compare before / after'], ['result', 'Show simplified']].map(([k, l]) => ({ id: `v-${k}`, group: 'View', label: l, run: () => setMode(k) })) : []),
+    ...Object.keys(sum.feature_counts).map((k) => ({ id: `i-${k}`, group: 'Isolate', label: `Isolate ${(CLASS_META[k] || {}).label || k}`, run: () => setIsolate(k) })),
+    { id: 'chat', group: 'Assistant', label: 'Open the assistant', run: () => setTab('chat'), icon: I.sparkle },
+    ...(res ? [
+      { id: 'd-step', group: 'Download', label: 'Download simplified STEP', run: dl('step'), icon: I.dl },
+      { id: 'd-rep', group: 'Download', label: 'Open the report', run: dl('report'), icon: I.dl },
+      { id: 'd-py', group: 'Download', label: 'Download Python script', run: dl('py'), icon: I.dl },
+      { id: 'd-cpp', group: 'Download', label: 'Download C++ program', run: dl('cpp'), icon: I.dl },
+      { id: 'res', group: 'View', label: 'Show results', run: () => setShowRes(true) },
+    ] : []),
+    { id: 'home', group: 'Navigate', label: 'Back to start', run: () => onExit(null), icon: I.back },
+  ]
+  const viewFeatures = isolate ? sum.features.filter((f) => f.kind === isolate) : sum.features
   return (
     <motion.div className="workspace" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
-      <Viewer original={orig} result={resMesh} features={sum.features} mode={mode} wipe={wipe} dark={dark}
+      <div className="ws-grid" aria-hidden />
+      <Viewer original={orig} result={resMesh} features={viewFeatures} mode={mode} wipe={wipe} dark={dark}
         selected={selected} hovered={hovered} onPick={(id) => { setSelected(id); if (id != null) setTab('features') }} onHover={setHovered} />
       {mode === 'compare' && resMesh && (
         <>
@@ -420,6 +591,7 @@ function Workspace({ initial, onExit, dark, llm }) {
             onPointerUp={(e) => applyPolicy({ h: +e.target.value })} onKeyUp={(e) => applyPolicy({ h: +e.target.value })} />
           <span className="hval">{fmt(sum.policy.h, 1)} mm</span>
         </div>
+        <button className="kbtn" onClick={() => setPalette(true)} title="Command palette"><kbd>⌘K</kbd></button>
         <Pressable className="run" onClick={runNow} disabled={!!run || rmCount === 0}>
           {I.play}<span>Simplify {rmCount}</span>
         </Pressable>
@@ -443,9 +615,12 @@ function Workspace({ initial, onExit, dark, llm }) {
       {/* legend */}
       <div className="legend">
         {Object.entries(sum.feature_counts).map(([k, n]) => (
-          <span className="chip" key={k}><span className="swatch" style={{ background: (CLASS_META[k] || CLASS_META.protrusion).color }} />{(CLASS_META[k] || {}).label || k} <b>{n}</b></span>
+          <motion.button className={`chip ${isolate === k ? 'on' : ''} ${isolate && isolate !== k ? 'off' : ''}`} key={k} whileTap={{ scale: 0.95 }}
+            onClick={() => setIsolate(isolate === k ? null : k)} title={isolate === k ? 'Show all' : 'Isolate this class'}>
+            <span className="swatch" style={{ background: (CLASS_META[k] || CLASS_META.protrusion).color }} />{(CLASS_META[k] || {}).label || k} <b className="mono">{n}</b>
+          </motion.button>
         ))}
-        <span className="chip muted">Bright = will be removed · faded = kept</span>
+        <span className="chip muted">{isolate ? 'Esc to show all' : 'Bright = removed · faded = kept · click to isolate'}</span>
       </div>
 
       {/* side panel */}
@@ -472,12 +647,15 @@ function Workspace({ initial, onExit, dark, llm }) {
                   applyPolicy({ overrides: ov, merge: false, feature_overrides: fo })
                 }} />
             ) : (
-              <ChatPanel sid={sid} messages={messages} setMessages={setMessages} onResult={onChatResult} llm={llm} />
+              <ChatPanel sid={sid} messages={messages} setMessages={setMessages} onResult={onChatResult} llm={llm}
+                queued={queued} clearQueued={() => setQueued(null)} />
             )}
           </motion.div>
         </AnimatePresence>
       </motion.div>
 
+      <CommandPalette open={palette} onClose={() => setPalette(false)} commands={commands}
+        onAsk={(t) => { setTab('chat'); setQueued(t) }} />
       <AnimatePresence>{run && <Loader title="Simplifying" steps={run.steps} progress={run.progress} />}</AnimatePresence>
       <AnimatePresence>{showRes && res && <Results sid={sid} res={res} onClose={() => setShowRes(false)} />}</AnimatePresence>
     </motion.div>
@@ -528,7 +706,7 @@ export default function App() {
         {session ? (
           <Workspace key={session.id} initial={session} dark={dark} llm={llm} onExit={(s) => setSession(s)} />
         ) : (
-          <Welcome key="welcome" busy={busy} llm={llm}
+          <Welcome key="welcome" busy={busy} llm={llm} dark={dark}
             onOpen={(n) => open(() => api.openSample(n), 'Opening sample')}
             onUpload={(f) => open(() => api.upload(f), `Reading ${f.name}`)}
             onCreate={create} />
