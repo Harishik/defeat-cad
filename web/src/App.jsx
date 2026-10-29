@@ -221,7 +221,11 @@ function FeaturePanel({ sum, selected, setSelected, hovered, setHovered, onToggl
   const listRef = useRef()
   useEffect(() => {
     if (selected == null) return
-    listRef.current?.querySelector(`[data-f="${selected}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    const box = listRef.current, row = box?.querySelector(`[data-f="${selected}"]`)
+    if (!box || !row) return
+    const top = row.offsetTop - box.offsetTop, bottom = top + row.offsetHeight
+    if (top < box.scrollTop + 40) box.scrollTo({ top: top - 48, behavior: 'smooth' })
+    else if (bottom > box.scrollTop + box.clientHeight) box.scrollTo({ top: bottom - box.clientHeight + 12, behavior: 'smooth' })
   }, [selected])
   return (
     <div className="features" ref={listRef}>
@@ -281,7 +285,11 @@ function ChatPanel({ sid, messages, setMessages, onResult, llm, queued, clearQue
   const [text, setText] = useState('')
   const [thinking, setThinking] = useState(false)
   const end = useRef()
-  useEffect(() => { end.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, thinking])
+  useEffect(() => {
+    // scroll only the chat list; scrollIntoView would also scroll the page and shift the workspace
+    const box = end.current?.parentElement
+    if (box) box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' })
+  }, [messages, thinking])
   const send = async (msg) => {
     const m = (msg ?? text).trim()
     if (!m || thinking) return

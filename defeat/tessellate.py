@@ -12,8 +12,11 @@ from . import occ
 
 def tessellate(shape, faces=None, lin_defl=None, ang_defl=0.35):
     """Returns (vertices[N,3] float32, triangles[M,3] int32, face_id[M] int32)."""
-    if faces is None:
-        faces = occ.faces_of(shape)
+    # Mesh a deep copy: BRepMesh writes triangulation and tolerances into the shape it meshes,
+    # which can make an otherwise valid solid fail BRepCheck. The model itself is never touched.
+    from OCP.BRepBuilderAPI import BRepBuilderAPI_Copy
+    shape = BRepBuilderAPI_Copy(shape, True, False).Shape()
+    faces = occ.faces_of(shape)   # same indexed order as the original's faces
     if lin_defl is None:
         x0, y0, z0, x1, y1, z1 = occ.bbox(shape)
         lin_defl = max(1e-3, 0.0015 * max(x1 - x0, y1 - y0, z1 - z0))

@@ -13,27 +13,34 @@
   ]
  ],
  "output_valid_rate": 1.0,
+ "invalid_inputs": 0,
  "parts_with_features_to_remove": 202,
- "feature_removal_success_rate": 0.9318,
+ "feature_removal_success_rate": 0.8961,
  "median_faces": 10,
- "median_face_reduction_pct": 26.10153256704981,
- "median_volume_change_pct": 1.49231455997931,
+ "median_face_reduction_pct": 25.0,
+ "median_volume_change_pct": 1.2963602051951004,
  "seconds_per_part": {
-  "median": 0.526,
-  "p90": 4.546
+  "median": 0.742,
+  "p90": 5.658
  },
  "mesh_subset": {
-  "n": 22,
-  "median_tet_reduction_pct": 17.850443827436827,
-  "p10_tet_reduction_pct": 0.43000876716903935,
-  "p90_tet_reduction_pct": 96.37975618766161
+  "n": 27,
+  "median_tet_reduction_pct": 1.5411308430291897,
+  "p10_tet_reduction_pct": 0.0,
+  "p90_tet_reduction_pct": 46.48059904697073
+ },
+ "stress_guard": {
+  "triggered": 9,
+  "accepted": 9,
+  "share_within_5pct_before_guard": 0.5909,
+  "median_features_restored": 2
  },
  "stress_subset": {
-  "n": 19,
-  "median_abs_deflection_change_pct": 3.836886584303267,
-  "p90_abs_deflection_change_pct": 64.47098734918833,
-  "median_abs_peak_stress_change_pct": 14.56650390810965,
-  "p90_abs_peak_stress_change_pct": 74.53732996537012,
-  "share_within_5pct_deflection": 0.5789
+  "n": 22,
+  "median_abs_deflection_change_pct": 0.4986541173587022,
+  "p90_abs_deflection_change_pct": 3.836886584303267,
+  "median_abs_peak_stress_change_pct": 0.7175199784861294,
+  "p90_abs_peak_stress_change_pct": 12.213167432403763,
+  "share_within_5pct_deflection": 0.9091
  }
 }

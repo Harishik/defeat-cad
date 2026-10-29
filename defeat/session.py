@@ -15,7 +15,7 @@ from collections import Counter
 import numpy as np
 
 from . import codegen, occ
-from .decide import PRESETS, Policy, decide, default_h
+from .decide import PRESETS, Decision, Policy, decide, default_h
 from .execute import defeature
 from .graph import build_graph
 from .recognize import recognize
@@ -151,8 +151,15 @@ class Session:
                 if with_mesh:
                     self._step(f"Meshing both models (h = {self.policy.h:g}) and running a static stress check", 0.72)
                     mesh = mesh_compare(self.shape, er.shape, self.policy.h)
+                guard = None
+                if with_mesh and self.guard_tol and (mesh or {}).get("fea"):
+                    guard = self._stress_guard(er, mesh)
+                    if guard and guard.get("accepted"):
+                        er, mesh = self.result, guard["mesh"]
+                        geo = geometry_report(self.shape, er.shape)
                 self._step("Writing STEP, code and report", 0.9)
                 self.metrics = {"geometry": geo, "mesh": mesh, "fea": (mesh or {}).get("fea"), "removed": er.removed,
+                                "guard": {k: v for k, v in (guard or {}).items() if k != "mesh"} or None,
                                 "failed": {str(k): v for k, v in er.failed.items()},
                                 "strategy": er.strategy, "seconds": er.seconds}
                 self._export()
@@ -162,6 +169,53 @@ class Session:
             except Exception as e:  # noqa
                 self.status.update(stage="error", busy=False, error=f"{type(e).__name__}: {e}")
                 raise
+
+    guard_tol = 5.0   # % deflection change the stress guard accepts (None/0 disables it)
+
+    def _stress_guard(self, er, mesh, rounds=(0.25, 0.5, 0.75)):
+        """If simplifying moved tip deflection by more than guard_tol %, restore the largest removed
+        features (by surface area) in growing batches until the change is back within tolerance."""
+        from . import fea
+        from .execute import worker
+        from .validate import step_bytes
+        d0 = ((mesh.get("fea") or {}).get("delta") or {}).get("tip_disp_delta_pct")
+        if d0 is None or abs(d0) <= self.guard_tol:
+            return {"triggered": False, "deflection_delta_pct": d0}
+        self._step(f"Stress guard: deflection moved {d0:+.1f}% (> {self.guard_tol:g}%), restoring key features", 0.8)
+        removed = [f for f in self.features if f.id in er.removed]
+        area = {f.id: sum(self.graph.nodes[x].area for x in f.faces) for f in removed}
+        removed.sort(key=lambda f: -area[f.id])
+        bc = fea.load_case(occ.bbox(self.shape))
+        orig_fea = mesh["fea"]["original"]
+        best = None
+        for frac in rounds:
+            k = max(1, round(frac * len(removed)))
+            keep = {f.id for f in removed[:k]}
+            dec = {i: (Decision(i, "keep", "Kept by the stress guard: removing it changed the part's stiffness")
+                       if i in keep else d) for i, d in self.decisions.items()}
+            er2 = defeature(self.shape, self.features, dec)
+            r = worker().call("defeat.fea:mesh_and_solve", step_bytes(er2.shape), self.policy.h, bc, timeout=300)
+            if not (r.get("ok") and r.get("fea", {}).get("ok")):
+                continue
+            new_fea = r.pop("fea")
+            delta = fea.compare(orig_fea, new_fea)
+            d = delta["tip_disp_delta_pct"]
+            self._step(f"Stress guard: kept {k} largest features → deflection {d:+.1f}%", 0.84)
+            cand = {"k": k, "delta": d, "er": er2, "dec": dec, "fea": new_fea, "delta_all": delta, "mesh_stats": r}
+            if best is None or abs(d) < abs(best["delta"]):
+                best = cand
+            if abs(d) <= self.guard_tol:
+                break
+        if not best or abs(best["delta"]) >= abs(d0):
+            return {"triggered": True, "accepted": False, "deflection_delta_pct": d0}
+        self.result, self.decisions = best["er"], best["dec"]
+        m2 = dict(mesh)
+        m2["defeatured"] = best["mesh_stats"]
+        if m2["original"].get("tets"):
+            m2["tet_reduction_pct"] = 100 * (m2["original"]["tets"] - m2["defeatured"]["tets"]) / m2["original"]["tets"]
+        m2["fea"] = dict(mesh["fea"], defeatured=best["fea"], delta=best["delta_all"])
+        return {"triggered": True, "accepted": True, "restored": best["k"], "before_pct": d0,
+                "after_pct": best["delta"], "within_tol": abs(best["delta"]) <= self.guard_tol, "mesh": m2}
 
     def run_async(self, with_mesh=True):
         t = threading.Thread(target=self._safe_run, args=(with_mesh,), daemon=True)

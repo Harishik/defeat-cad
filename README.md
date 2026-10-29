@@ -45,6 +45,17 @@ It decides what matters for your analysis and removes the rest. Then it **proves
 - a standalone **Python** script and **C++** program that reproduce the result from the original file. The Python one is round-trip verified.
 - an optional CFD **fluid domain**
 
+## Videos
+
+- **Intro** (95 s): `docs/videos/defeat-intro.mp4`
+- **Walkthrough** (160 s): `docs/videos/defeat-walkthrough.mp4`
+
+Both are motion graphics built in code with [Remotion](https://www.remotion.dev) (`video/`), over an original 96 BPM score synthesised in Python (`video/music.py`). At 96 BPM a bar is exactly 2.5 s, so every cut lands on the beat. To rebuild them:
+```bash
+python video/music.py && python video/capture.py   # score + app captures (app running)
+cd video && npm install && npm run render:intro && npm run render:guide
+```
+
 ## How it works
 
 ```mermaid
@@ -69,7 +80,7 @@ flowchart LR
 | GNN | `gnn.py`, `datagen.py` | GINE network on pose-invariant face/edge features, trained on generated mold parts plus real labelled CAD (MFCAD, Fusion 360 Gallery). It vetoes or adds fillets/chamfers on top of the rules, with thresholds tuned on validation parts |
 | Decide | `decide.py` | Presets for static, modal, thermal and CFD. Thresholds are multiples of the target mesh size *h*, because a feature only hurts the mesh when it's small relative to the elements |
 | Execute | `execute.py` | `BRepAlgoAPI_Defeaturing` runs in a killable worker process, so hangs and native crashes are contained. It tries a single pass first, then falls back to feature-by-feature |
-| Validate | `validate.py`, `fea.py` | Surface deviation, deterministic gmsh meshing of both models at the same *h*, and a linear static solve on both meshes (scikit-fem) |
+| Validate | `validate.py`, `fea.py` | Surface deviation, deterministic gmsh meshing of both models at the same *h*, a linear static solve on both meshes (scikit-fem), and a **stress guard** that restores features when deflection moves more than 5% |
 | Export | `codegen.py` | Python (OCP) and C++ (OCCT) programs that locate faces by geometric signature |
 | Assistant | `agent.py`, `server.py` | Ollama tool calling (`qwen3.5:4b`) with an offline keyword fallback, plus sandboxed text-to-CAD (CadQuery) |
 
@@ -111,13 +122,15 @@ Every number below is measured on **held-out test data that was never used for t
 |---|---|
 | Parts completed | **499 / 500**, one meshing timeout |
 | Output is a valid solid | **100%** |
-| Targeted features actually removed | **93.2%** (the rest are kept and reported, never broken) |
-| Time per part | median 0.5 s, 90th percentile 4.5 s |
-| Faces removed / volume change | median 26% / 1.5% |
-| Mesh elements removed (22 parts meshed) | median 18%, up to 96% |
-| Stress check (19 parts) | median deflection change 3.8%; 58% of parts stay within 5% |
+| Targeted features actually removed | **89.6%** (the rest are kept and reported, never broken) |
+| Time per part | median 0.7 s, 90th percentile 5.7 s |
+| Faces removed / volume change | median 25% / 1.3% |
+| Parts within 5% deflection change (stress check) | **90.9% with the stress guard** (59.1% without it) |
+| Median deflection change | 0.50% (90th percentile 3.8%) |
 
-On arbitrary parts, the default static preset sometimes removes geometry that matters for stiffness. That's why every run shows the stress change and flags anything above 5% for review.
+**Stress guard:**
+- **What it does:** when a run moves tip deflection by more than 5%, DeFeat automatically restores the largest removed features in batches and re-checks, until the change is back within tolerance.
+- **Measured:** on the 500-part run it triggered 9 times and fixed all 9, restoring a median of 2 features each time.
 
 | Assistant | Local LLM (`qwen3.5:4b`, offline) | Keyword fallback |
 |---|---|---|
@@ -179,8 +192,8 @@ python docs/capture.py              # regenerate the screenshots (app must be ru
 ```
 
 ## Limits
-- **Steps and shoulders** (open features at a part's edge) are the weakest rule class.
+- **Steps and shoulders** (open features at a part's edge) are the weakest rule class. Many misses on MFCAD are definitional: for example, its "triangular blind step" is geometrically a closed pocket.
 - **Fillet precision** is limited by rounded corners drawn into a sketch. Those are geometrically identical to fillets but labelled as extrusions in the dataset.
-- The default presets can be too aggressive on some parts. Review anything the stress check flags.
+- The default presets can still be too aggressive on some parts. The stress guard restores features automatically, but review anything it flags.
 - NX files aren't supported (no open-source reader), so export to STEP first.
 - The stress check uses linear tetrahedra and an automatic cantilever load case. It's a comparison tool, not a replacement for the real CAE run.

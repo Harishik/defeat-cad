@@ -18,56 +18,48 @@ BASE = os.path.join(DATA, "fusion_ext", "s2.0.1_extended_step")
 
 
 def run_one(args):
+    """Full shipped pipeline via Session (rules + GNN, static preset, stress guard when meshing)."""
     name, with_mesh = args
-    import time
+    import shutil
     from defeat import occ
-    from defeat.decide import Policy, decide, default_h
-    from defeat.execute import defeature, worker
-    from defeat.graph import build_graph
-    from defeat.recognize import recognize
-    from defeat.validate import geometry_report, mesh_compare
+    from defeat.session import Session
     out = {"stage": "read"}
-    t = time.time()
-    shape = occ.read_cad(os.path.join(BASE, "breps", "step", name + ".stp"))
-    shape = occ.heal(shape)
-    out["input_valid"] = occ.is_valid(shape)
-    out["solids"] = len(occ.solids_of(shape))
-    if out["solids"] == 0:
-        return {"ok": False, "error": "no solid in file", **out}
-    out["stage"] = "recognize"
-    g = build_graph(shape)
-    _, feats = recognize(shape, g)   # shipped pipeline: rules + GNN refinement
-    out["faces"] = len(g.nodes)
-    out["features"] = len(feats)
-    out["t_recognize"] = time.time() - t
-    pol = Policy("static", default_h(g.char_len))
-    d = decide(feats, pol)
-    n_rm = sum(1 for v in d.values() if v.action == "remove")
-    out["to_remove"] = n_rm
-    out["stage"] = "defeature"
-    t2 = time.time()
-    r = defeature(shape, feats, d, timeout=30)
-    out["t_defeature"] = time.time() - t2
-    out["removed"] = len(r.removed)
-    out["kept_by_kernel"] = len(r.failed)
-    out["strategy"] = r.strategy
-    out["output_valid"] = occ.is_valid(r.shape)
-    if n_rm:
-        geo = geometry_report(shape, r.shape)
-        out["faces_after"] = geo["faces"][1]
-        out["volume_delta_pct"] = geo["volume_delta_pct"]
-        out["max_dev_rel"] = geo["deviation"]["max"] / g.char_len
-    if with_mesh and r.removed:
-        out["stage"] = "mesh"
-        m = mesh_compare(shape, r.shape, pol.h, timeout=120)
+    s = Session(os.path.join(BASE, "breps", "step", name + ".stp"))
+    try:
+        out["input_valid"] = occ.is_valid(s.shape)
+        out["solids"] = len(occ.solids_of(s.shape))
+        if out["solids"] == 0:
+            return {"ok": False, "error": "no solid in file", **out}
+        out["faces"] = len(s.graph.nodes)
+        out["features"] = len(s.features)
+        n_rm = sum(1 for d in s.decisions.values() if d.action == "remove")
+        out["to_remove"] = n_rm
+        out["stage"] = "defeature"
+        s.run(with_mesh=bool(with_mesh and n_rm))
+        r = s.result
+        out["removed"] = len(r.removed)
+        out["kept_by_kernel"] = len(r.failed)
+        out["output_valid"] = occ.is_valid(r.shape)
+        g = s.metrics["geometry"]
+        if n_rm:
+            out["faces_after"] = g["faces"][1]
+            out["volume_delta_pct"] = g["volume_delta_pct"]
+        m = s.metrics.get("mesh") or {}
         if m.get("tet_reduction_pct") is not None:
             out["tet_reduction_pct"] = m["tet_reduction_pct"]
         fd = (m.get("fea") or {}).get("delta") or {}
         if fd.get("tip_disp_delta_pct") is not None:
             out["tip_disp_delta_pct"] = fd["tip_disp_delta_pct"]
             out["stress_p99_delta_pct"] = fd["vm_p99_delta_pct"]
-    out["stage"] = "done"
-    return out
+        gd = s.metrics.get("guard") or {}
+        if gd.get("triggered"):
+            out["guard_before_pct"] = gd.get("deflection_delta_pct", gd.get("before_pct"))
+            out["guard_accepted"] = bool(gd.get("accepted"))
+            out["guard_restored"] = gd.get("restored", 0)
+        out["stage"] = "done"
+        return out
+    finally:
+        shutil.rmtree(s.dir, ignore_errors=True)
 
 
 def pct(xs, q):
@@ -101,7 +93,8 @@ def main():
         "parts": len(items), "completed": len(ok), "completion_rate": round(len(ok) / len(items), 4),
         "failure_reasons": fail,
         "failed_items": [(r.get("item"), r.get("error")) for r in res if not r.get("ok")][:40],
-        "output_valid_rate": round(sum(1 for r in ok if r.get("output_valid")) / max(len(ok), 1), 4),
+        "output_valid_rate": round(sum(1 for r in ok if r.get("output_valid") and r.get("input_valid")) / max(sum(1 for r in ok if r.get("input_valid")), 1), 4),
+        "invalid_inputs": sum(1 for r in ok if not r.get("input_valid")),
         "parts_with_features_to_remove": len(with_rm),
         "feature_removal_success_rate": round(sum(r["removed"] for r in with_rm) / max(sum(r["to_remove"] for r in with_rm), 1), 4),
         "median_faces": st.median([r["faces"] for r in ok]) if ok else None,
@@ -110,12 +103,17 @@ def main():
         "seconds_per_part": {"median": st.median(secs) if secs else None, "p90": pct(secs, 0.9)},
         "mesh_subset": {"n": len(tets), "median_tet_reduction_pct": st.median(tets) if tets else None,
                         "p10_tet_reduction_pct": pct(tets, 0.1), "p90_tet_reduction_pct": pct(tets, 0.9)},
+        "stress_guard": {"triggered": sum(1 for r in ok if "guard_accepted" in r),
+                         "accepted": sum(1 for r in ok if r.get("guard_accepted")),
+                         "share_within_5pct_before_guard": round(sum(1 for r in ok if "tip_disp_delta_pct" in r and abs(r.get("guard_before_pct", r["tip_disp_delta_pct"])) <= 5) / max(len(dd), 1), 4) if dd else None,
+                         "median_features_restored": st.median([r["guard_restored"] for r in ok if r.get("guard_accepted")]) if any(r.get("guard_accepted") for r in ok) else None},
         "stress_subset": {"n": len(dd), "median_abs_deflection_change_pct": st.median(dd) if dd else None,
                           "p90_abs_deflection_change_pct": pct(dd, 0.9),
                           "median_abs_peak_stress_change_pct": st.median(ds) if ds else None,
                           "p90_abs_peak_stress_change_pct": pct(ds, 0.9),
                           "share_within_5pct_deflection": round(sum(1 for x in dd if x <= 5) / len(dd), 4) if dd else None},
     }
+    save("robustness_rows", res)
     print(save("robustness", rep))
     print(json.dumps(rep, indent=1))
 

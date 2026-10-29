@@ -245,6 +245,15 @@ class Recognizer:
             bb = _faces_bbox(g, faces)
             dims = sorted([bb[3] - bb[0], bb[4] - bb[1], bb[5] - bb[2]])
             params.update(min_width=round(dims[1], 3))
+            # a pocket is closed on all sides; a step opens onto a side face of the part
+            region = set(faces)
+            exits = {m for f in faces for m, eids in g.nodes[f].neighbors.items()
+                     if m not in region and m != host
+                     and not any(self._edge_in_inner_loop_of(m, e) for e in eids)}
+            if exits:
+                self._add("step", faces, params=dict(params, open=True), size=dims[1], host=host,
+                          note=f"step / shoulder, depth {height:.2f}", confidence=0.75)
+                return
             self._add("pocket", faces, params=params, size=min(dims[1], height if height > 0 else dims[1]),
                       host=host, note=f"pocket / cut-out, depth {height:.2f}")
             return
@@ -399,7 +408,9 @@ class Recognizer:
                     a, b = planes[i], planes[j]
                     if occ.dot(a.info.normal, b.info.normal) < -0.999:
                         d = occ.dot(occ.sub(b.centroid, a.centroid), a.info.normal)
-                        if d > 0:  # normals point at each other -> walls of a channel
+                        # walls of a channel face each other across the same floor
+                        floor = (set(a.neighbors) & set(b.neighbors) & set(faces)) - {a.id, b.id}
+                        if d > 0 and floor:
                             facing.append(d)
             bb = _faces_bbox(g, faces)
             dims = sorted([bb[3] - bb[0], bb[4] - bb[1], bb[5] - bb[2]])
