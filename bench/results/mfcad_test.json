@@ -1,135 +1,137 @@
 {
  "dataset": "MFCAD (15,488 machining parts, 16 face classes)",
  "split": "test",
- "parts_attempted": 400,
- "parts_ok": 400,
+ "parts_attempted": 2000,
+ "parts_ok": 2000,
  "failures": [],
- "seconds_per_part": 1.042,
+ "seconds_per_part": 1.412,
  "rule": {
   "feature_vs_stock": {
-   "precision": 0.984,
-   "recall": 0.9107,
-   "f1": 0.946,
-   "support": 6563,
-   "accuracy": 0.926
+   "precision": 0.9826,
+   "recall": 0.9103,
+   "f1": 0.9451,
+   "support": 32091,
+   "accuracy": 0.9252
   },
   "per_class": {
-   "faces": 9224,
-   "accuracy": 0.7446,
-   "macro_f1": 0.5214,
-   "miou": 0.4325,
+   "faces": 45348,
+   "accuracy": 0.747,
+   "macro_f1": 0.5236,
+   "miou": 0.4346,
    "per_class": {
     "base": {
-     "precision": 0.814,
-     "recall": 0.9635,
+     "precision": 0.8157,
+     "recall": 0.9611,
      "f1": 0.8825,
-     "support": 2661,
-     "iou": 0.7897
+     "support": 13257,
+     "iou": 0.7896
     },
     "cut": {
-     "precision": 0.843,
-     "recall": 0.8217,
-     "f1": 0.8322,
-     "support": 4543,
-     "iou": 0.7127
+     "precision": 0.8487,
+     "recall": 0.8209,
+     "f1": 0.8346,
+     "support": 22261,
+     "iou": 0.7161
     },
     "step": {
-     "precision": 0.4055,
-     "recall": 0.3415,
-     "f1": 0.3708,
-     "support": 1672,
-     "iou": 0.2276
+     "precision": 0.4139,
+     "recall": 0.3468,
+     "f1": 0.3774,
+     "support": 8243,
+     "iou": 0.2326
     },
     "chamfer": {
      "precision": 0.0,
      "recall": 0.0,
      "f1": 0.0,
-     "support": 348,
+     "support": 1587,
      "iou": 0.0
     }
    },
    "confusion": {
     "base": {
-     "base": 2564,
-     "protrusion": 97
+     "base": 12741,
+     "protrusion": 516
     },
     "cut": {
-     "cut": 3733,
-     "base": 228,
-     "step": 541,
-     "protrusion": 41
+     "step": 2629,
+     "base": 1119,
+     "cut": 18274,
+     "protrusion": 239
     },
     "step": {
-     "cut": 695,
-     "step": 571,
-     "base": 336,
-     "protrusion": 70
+     "base": 1701,
+     "cut": 3258,
+     "protrusion": 425,
+     "step": 2859
     },
     "chamfer": {
-     "step": 296,
-     "protrusion": 30,
-     "base": 22
+     "step": 1419,
+     "protrusion": 110,
+     "base": 58
     }
    }
   },
-  "step_faces_flagged_as_feature": 0.799
+  "step_faces_flagged_as_feature": 0.7936
  },
  "gnn": {
   "feature_vs_stock": {
    "precision": 1.0,
    "recall": 1.0,
    "f1": 1.0,
-   "support": 6563,
+   "support": 32091,
    "accuracy": 1.0
   },
   "per_class": {
-   "faces": 9224,
-   "accuracy": 0.9623,
-   "macro_f1": 0.7282,
-   "miou": 0.7095,
+   "faces": 45348,
+   "accuracy": 0.9649,
+   "macro_f1": 0.7296,
+   "miou": 0.7119,
    "per_class": {
     "base": {
-     "precision": 1.0,
+     "precision": 0.9999,
      "recall": 1.0,
      "f1": 1.0,
-     "support": 2661,
-     "iou": 1.0
+     "support": 13257,
+     "iou": 0.9999
     },
     "cut": {
-     "precision": 0.9891,
-     "recall": 1.0,
-     "f1": 0.9945,
-     "support": 4543,
-     "iou": 0.9891
+     "precision": 0.9903,
+     "recall": 0.9999,
+     "f1": 0.995,
+     "support": 22261,
+     "iou": 0.9901
     },
     "step": {
-     "precision": 0.8487,
+     "precision": 0.8577,
      "recall": 1.0,
-     "f1": 0.9182,
-     "support": 1672,
-     "iou": 0.8487
+     "f1": 0.9234,
+     "support": 8243,
+     "iou": 0.8577
     },
     "chamfer": {
      "precision": 0.0,
      "recall": 0.0,
      "f1": 0.0,
-     "support": 348,
+     "support": 1587,
      "iou": 0.0
     }
    },
    "confusion": {
     "base": {
-     "base": 2661
+     "base": 13257
     },
     "cut": {
-     "cut": 4543
+     "cut": 22258,
+     "base": 1,
+     "chamfer": 2
     },
     "step": {
-     "step": 1672
+     "step": 8243
     },
     "chamfer": {
-     "step": 298,
-     "cut": 50
+     "step": 1368,
+     "cut": 219
     }
    }
   },
@@ -137,71 +139,72 @@
  },
  "fused": {
   "feature_vs_stock": {
-   "precision": 0.984,
-   "recall": 0.9107,
-   "f1": 0.946,
-   "support": 6563,
-   "accuracy": 0.926
+   "precision": 0.9826,
+   "recall": 0.9104,
+   "f1": 0.9451,
+   "support": 32091,
+   "accuracy": 0.9252
   },
   "per_class": {
-   "faces": 9224,
-   "accuracy": 0.7446,
-   "macro_f1": 0.5214,
-   "miou": 0.4325,
+   "faces": 45348,
+   "accuracy": 0.747,
+   "macro_f1": 0.5236,
+   "miou": 0.4346,
    "per_class": {
     "base": {
-     "precision": 0.814,
-     "recall": 0.9635,
+     "precision": 0.8158,
+     "recall": 0.9611,
      "f1": 0.8825,
-     "support": 2661,
+     "support": 13257,
      "iou": 0.7897
     },
     "cut": {
-     "precision": 0.843,
-     "recall": 0.8217,
-     "f1": 0.8322,
-     "support": 4543,
-     "iou": 0.7127
+     "precision": 0.8487,
+     "recall": 0.8209,
+     "f1": 0.8346,
+     "support": 22261,
+     "iou": 0.7161
     },
     "step": {
-     "precision": 0.4055,
-     "recall": 0.3415,
-     "f1": 0.3708,
-     "support": 1672,
-     "iou": 0.2276
+     "precision": 0.4139,
+     "recall": 0.3468,
+     "f1": 0.3774,
+     "support": 8243,
+     "iou": 0.2326
     },
     "chamfer": {
      "precision": 0.0,
      "recall": 0.0,
      "f1": 0.0,
-     "support": 348,
+     "support": 1587,
      "iou": 0.0
     }
    },
    "confusion": {
     "base": {
-     "base": 2564,
-     "protrusion": 97
+     "base": 12741,
+     "protrusion": 516
     },
     "cut": {
-     "cut": 3733,
-     "base": 228,
-     "step": 541,
-     "protrusion": 41
+     "step": 2629,
+     "base": 1117,
+     "cut": 18274,
+     "protrusion": 239,
+     "chamfer": 2
     },
     "step": {
-     "cut": 695,
-     "step": 571,
-     "base": 336,
-     "protrusion": 70
+     "base": 1701,
+     "cut": 3258,
+     "protrusion": 425,
+     "step": 2859
     },
     "chamfer": {
-     "step": 296,
-     "protrusion": 30,
-     "base": 22
+     "step": 1419,
+     "protrusion": 110,
+     "base": 58
     }
    }
   },
-  "step_faces_flagged_as_feature": 0.799
+  "step_faces_flagged_as_feature": 0.7936
  }
 }

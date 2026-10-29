@@ -99,7 +99,7 @@ Every number below is measured on **held-out test data that was never used for t
 
 | Fusion 360 Gallery: 1,500 real designer parts | Rules only (P / R / F1) | GNN only | **Shipped: rules + GNN** |
 |---|---|---|---|
-| Fillets | 0.53 / 0.89 / 0.67 | 0.80 / 0.90 / 0.85 | **0.81 / 0.87 / 0.84** |
+| Fillets | 0.55 / 0.88 / 0.67 | 0.80 / 0.90 / 0.85 | **0.81 / 0.87 / 0.84** |
 | Chamfers | 0.66 / 0.48 / 0.56 | 0.74 / 0.72 / 0.73 | **0.83 / 0.62 / 0.71** |
 
 <picture>
@@ -129,8 +129,8 @@ Every number below is measured on **held-out test data that was never used for t
 | Targeted features actually removed | **91.1%** (the rest are kept and reported, never broken) |
 | Time per part | median 0.5 s, 90th percentile 4.0 s |
 | Faces removed / volume change | median 25% / 1.5% |
-| Parts within 5% deflection change (stress check) | **90.9% with the stress guard** (59.1% without it) |
-| Median deflection change | 0.50% (90th percentile 3.8%) |
+| Parts within 5% deflection change (stress check, 22 parts meshed and solved) | **90.9% with the stress guard** (59.1% without it) |
+| Median deflection change (same 22 parts) | 0.50% (90th percentile 3.8%) |
 
 **Stress guard:**
 - **What it does:** when a run moves tip deflection by more than 5%, DeFeat automatically restores the largest removed features in batches and re-checks, until the change is back within tolerance.

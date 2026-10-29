@@ -132,13 +132,23 @@ class Recognizer:
         n = self.g.nodes[fid]
         if n.kind == "plane":
             return False
-        if n.kind in ("cylinder", "cone") and n.concave_axis is True:
-            # concave cylinders can be fillets (smooth both sides) or holes (sharp rims)
-            pass
         smooth_nbrs = {m for m, eids in n.neighbors.items()
-                       if any(self.g.edges[e].convexity == SMOOTH for e in eids)
+                       if any(self._blend_edge(n, self.g.edges[e]) for e in eids)
                        and not self._same_surface(fid, m)}
         return len(smooth_nbrs) >= 2
+
+    def _blend_edge(self, n, e):
+        """A smooth edge along which face n could be blending two faces.
+
+        A cylindrical fillet meets its two parent faces along lines parallel to its axis. A cylinder that
+        meets its neighbours smoothly around its circumference (e.g. a flange wall with both rims rounded)
+        is a wall bounded by blends, not a blend itself.
+        """
+        if e.convexity != SMOOTH:
+            return False
+        if n.kind == "cylinder" and n.info.axis is not None and e.tangent is not None:
+            return abs(occ.dot(occ.unit(n.info.axis), e.tangent)) > 0.7
+        return True
 
     def _same_surface(self, a, b):
         na, nb = self.g.nodes[a], self.g.nodes[b]

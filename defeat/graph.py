@@ -45,6 +45,7 @@ class EdgeLink:
     convexity: int
     angle: float      # angle between face normals (rad)
     length: float
+    tangent: tuple | None = None  # unit direction at the edge midpoint
 
 
 @dataclass
@@ -153,7 +154,11 @@ def build_graph(shape, curvature=True) -> FaceGraph:
             continue
         a, b = fs
         cvx, ang = classify_edge(faces[a], faces[b], e)
-        link = EdgeLink(len(edges), a, b, cvx, ang, occ.edge_length(e))
+        try:
+            tan = occ.unit(occ.edge_mid(e)[2])
+        except Exception:
+            tan = None
+        link = EdgeLink(len(edges), a, b, cvx, ang, occ.edge_length(e), tan)
         edge_index[k] = link.id
         edges.append(link)
         nodes[a].neighbors.setdefault(b, []).append(link.id)

@@ -30,6 +30,19 @@ def test_recognizes_l_bracket(bracket):
     assert any(f.kind == "hole" and abs(f.size - 28) < 1e-6 for f in feats)
 
 
+def test_wall_between_two_rounds_is_not_a_fillet():
+    """A flange wall whose top and bottom rims are both rounded touches two blends smoothly,
+    but only the rounds are fillets; the wall itself is body and must never be removed."""
+    import cadquery as cq
+    from defeat.recognize import recognize
+    p = cq.Workplane("XY").circle(55).extrude(12).faces(">Z").workplane().circle(26).extrude(40)
+    p = p.newObject([e for e in p.edges("%CIRCLE").vals() if abs(e.radius() - 55) < 1e-6]).fillet(2)
+    g, feats = recognize(p.val().wrapped, use_gnn=False)
+    fillets = [f for f in feats if f.kind == "fillet"]
+    assert len(fillets) == 2
+    assert all(g.nodes[x].kind == "torus" for f in fillets for x in f.faces)
+
+
 def test_decisions_keep_functional_features(bracket):
     from defeat.decide import Policy, decide
     _, g, feats = bracket
