@@ -40,13 +40,13 @@ export function decodeMesh(m) {
 }
 
 export const CLASS_META = {
-  hole: { label: 'Holes', color: '#0A84FF' },
+  hole: { label: 'Holes', color: '#3a3fd4' },
   slot: { label: 'Slots', color: '#5E5CE6' },
   pocket: { label: 'Pockets & cut-outs', color: '#BF5AF2' },
   step: { label: 'Steps & shoulders', color: '#AC8E68' },
-  boss: { label: 'Bosses', color: '#FF9F0A' },
+  boss: { label: 'Bosses', color: '#f2a541' },
   rib: { label: 'Ribs & gussets', color: '#30D158' },
-  emboss: { label: 'Text & logos', color: '#FF375F' },
+  emboss: { label: 'Text & logos', color: '#fb5607' },
   fillet: { label: 'Fillets & rounds', color: '#40C8E0' },
   chamfer: { label: 'Chamfers', color: '#FFD60A' },
   protrusion: { label: 'Other protrusions', color: '#98989D' },

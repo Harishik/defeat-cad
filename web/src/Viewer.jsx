@@ -4,8 +4,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { decodeMesh, CLASS_META } from './api'
 
-const BASE = new THREE.Color('#d9dde3')
-const BASE_DARK = new THREE.Color('#8e939b')
+const BASE = new THREE.Color('#dfe3e8')
+const BASE_DARK = new THREE.Color('#7e8594')
 
 function buildGeometry(mesh) {
   const { positions, indices, faceIds } = decodeMesh(mesh)

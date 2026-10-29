@@ -17,10 +17,10 @@ RES = os.path.join(ROOT, "bench", "results")
 OUT = os.path.join(ROOT, "docs", "images")
 
 THEMES = {
-    "light": {"bg": "#ffffff", "fg": "#1d1d1f", "muted": "#6e6e73", "grid": "#e8e8ed",
-              "c": ["#c7c7cc", "#7d5cf5", "#0071e3"]},
-    "dark": {"bg": "#0d1117", "fg": "#f5f5f7", "muted": "#98989d", "grid": "#2a2f37",
-             "c": ["#48484a", "#9d85ff", "#2997ff"]},
+    "light": {"bg": "#ffffff", "fg": "#212529", "muted": "#6c757d", "grid": "#e9ecef",
+              "c": ["#c5cad1", "#3a3fd4", "#fb5607"]},
+    "dark": {"bg": "#0d1117", "fg": "#e9ecef", "muted": "#9aa1a9", "grid": "#262b33",
+             "c": ["#3a4048", "#6c72ff", "#fb5607"]},
 }
 
 
@@ -91,7 +91,7 @@ def main():
         pr, pg = mf["rule"], mf["gnn"]
         vals = [[pr["feature_vs_stock"]["f1"], pr["per_class"]["per_class"]["cut"]["f1"], pr["per_class"]["per_class"]["step"]["f1"]],
                 [pg["feature_vs_stock"]["f1"], pg["per_class"]["per_class"]["cut"]["f1"], pg["per_class"]["per_class"]["step"]["f1"]]]
-        t2 = dict(t, c=[t["c"][0], t["c"][2]])
+        t2 = dict(t, c=[t["c"][0], t["c"][1]])
         grouped(ax, t2, ["Feature vs. body", "Cut-outs", "Steps"], series, vals)
         title(f, t, "Machining-feature recognition (F1)",
               f"MFCAD held-out split — {mf['parts_ok']:,} parts, {mf['rule']['per_class']['faces']:,} faces")

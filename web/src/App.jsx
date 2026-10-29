@@ -67,7 +67,7 @@ function SampleCard({ s, i, onOpen, busy, dark }) {
       transition={{ ...spring, delay: i * 0.06 }} whileTap={{ scale: 0.985 }}>
       <div className="card-media">
         {data && <DotPart data={data} count={9000} size={1.35} interactive={false} distance={1.05}
-          accent={dark ? '#d4ff3f' : '#ff5a1f'} base={dark ? '#d9d9de' : '#2b2b30'} />}
+          accent="#fb5607" base={dark ? '#cdd3e8' : '#212529'} />}
         <span className="badge">{data ? `${data.remove} of ${data.features} features removable` : 'Loading…'}</span>
       </div>
       <div className="card-foot">
@@ -99,6 +99,7 @@ function Welcome({ onOpen, onUpload, onCreate, busy, llm, dark }) {
     <motion.div className="welcome" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.985 }} transition={spring}
       onDragOver={(e) => { e.preventDefault(); setDrag(true) }} onDragLeave={() => setDrag(false)}
       onDrop={(e) => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files[0]; f && onUpload(f) }}>
+      <div className="aura" aria-hidden />
       <div className="grid-bg" aria-hidden />
       <nav className="wnav">
         <div className="brand"><DotMark /><span>DeFeat</span></div>
@@ -135,7 +136,7 @@ function Welcome({ onOpen, onUpload, onCreate, busy, llm, dark }) {
         </div>
 
         <motion.div className="whero-art" initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ ...spring, duration: 1, delay: 0.15 }}>
-          {hero && <DotPart data={hero} count={16000} size={1.6} accent={dark ? '#d4ff3f' : '#ff5a1f'} base={dark ? '#e6e6ea' : '#26262b'} />}
+          {hero && <DotPart data={hero} count={16000} size={1.6} accent="#fb5607" base={dark ? '#d6dbee' : '#212529'} />}
           <div className="art-legend mono">
             <span><i className="lg acc" />removed for simulation</span>
             <span><i className="lg base" />kept</span>
@@ -557,6 +558,7 @@ function Workspace({ initial, onExit, dark, llm }) {
   const viewFeatures = isolate ? sum.features.filter((f) => f.kind === isolate) : sum.features
   return (
     <motion.div className="workspace" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+      <div className="aura" aria-hidden />
       <div className="ws-grid" aria-hidden />
       <Viewer original={orig} result={resMesh} features={viewFeatures} mode={mode} wipe={wipe} dark={dark}
         selected={selected} hovered={hovered} onPick={(id) => { setSelected(id); if (id != null) setTab('features') }} onHover={setHovered} />

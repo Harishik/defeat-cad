@@ -15,13 +15,13 @@ OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images")
 def shot(page, name):
     os.makedirs(OUT, exist_ok=True)
     path = os.path.join(OUT, name)
-    page.screenshot(path=path)
+    page.screenshot(path=path, timeout=180_000)
     print("saved", path)
 
 
 def open_sample(page, url, title):
     page.goto(url)
-    page.get_by_text(title, exact=True).click()
+    page.get_by_text(title, exact=True).click(timeout=180_000)
     page.wait_for_selector(".part-name", timeout=120_000)
     page.wait_for_timeout(3500)          # camera ease-in + fade
 
@@ -32,6 +32,7 @@ def main():
     ap.add_argument("--skip-chat", action="store_true")
     a = ap.parse_args()
     with sync_playwright() as p:
+        p.selectors.set_test_id_attribute("data-testid")
         browser = p.chromium.launch(args=["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"])
         for scheme in ("light", "dark"):
             ctx = browser.new_context(viewport={"width": 1440, "height": 900}, device_scale_factor=2, color_scheme=scheme)
@@ -43,11 +44,11 @@ def main():
             open_sample(page, a.url, "L Bracket")
             shot(page, f"features-{scheme}.png")
 
-            page.locator("button.run").click()
+            page.locator("button.run").click(timeout=120_000)
             page.wait_for_selector(".results", timeout=300_000)
             page.wait_for_timeout(1500)
             shot(page, f"results-{scheme}.png")
-            page.locator(".results .icon-btn").click()
+            page.locator(".results .icon-btn").click(timeout=120_000)
             page.wait_for_timeout(900)
             page.mouse.move(10, 450)
             shot(page, f"compare-{scheme}.png")
