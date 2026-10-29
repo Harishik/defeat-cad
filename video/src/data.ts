@@ -18,6 +18,6 @@ export const useBoxes = () => useJson<Record<string, Box>>('boxes.json') || {}
 // headline numbers (from bench/results, held-out data)
 export const NUM = {
   filletF1: 0.84, chamferF1: 0.71, mfcadF1: 0.95,
-  parts: 500, completed: 99.8, valid: 100, removed: 93.2,
+  parts: 500, completed: 99.8, valid: 100, removed: 91.1,
   tets: 55, defl: -3.0, faces: [84, 31] as [number, number],
 }

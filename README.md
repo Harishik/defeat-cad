@@ -48,12 +48,14 @@ It decides what matters for your analysis and removes the rest. Then it **proves
 ## Videos
 
 - **Intro** (95 s): `docs/videos/defeat-intro.mp4`
-- **Walkthrough** (160 s): `docs/videos/defeat-walkthrough.mp4`
+- **Walkthrough** (175 s): `docs/videos/defeat-walkthrough.mp4`
 
-Both are motion graphics built in code with [Remotion](https://www.remotion.dev) (`video/`), over an original 96 BPM score synthesised in Python (`video/music.py`). At 96 BPM a bar is exactly 2.5 s, so every cut lands on the beat. To rebuild them:
+Both are built entirely from code and open models. The narration is [Kokoro](https://github.com/thewh1teagle/kokoro-onnx) (open weights, runs offline). The picture is [Remotion](https://www.remotion.dev). The original 96 BPM score and every sound effect are synthesised in Python. The script and its timing live in `video/plan.json`. `video/score.py` places each line on the bar grid, ducks the music under the voice, adds sound effects and writes the timing to `video/src/cues.ts`, so the voice, cuts and captions land on the same frame. To rebuild them:
 ```bash
-python video/music.py && python video/capture.py   # score + app captures (app running)
-cd video && npm install && npm run render:intro && npm run render:guide
+cd video
+python3.11 -m venv .tts && .tts/bin/pip install kokoro-onnx soundfile   # plus the two model files in video/tts_models/
+.tts/bin/python voice.py && python score.py && python capture.py      # narration, score + mix, app captures (app running)
+npm install && npm run render:intro && npm run render:guide
 ```
 
 ## How it works

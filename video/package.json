@@ -3,8 +3,8 @@
   "private": true,
   "scripts": {
     "studio": "remotion studio src/index.ts",
-    "render:intro": "remotion render src/index.ts Intro out/defeat-intro.mp4 --codec h264 --crf 18",
-    "render:guide": "remotion render src/index.ts Guide out/defeat-walkthrough.mp4 --codec h264 --crf 18"
+    "render:intro": "remotion render src/index.ts Intro out/defeat-intro.mp4 --codec h264 --crf 18 --concurrency 6",
+    "render:guide": "remotion render src/index.ts Guide out/defeat-walkthrough.mp4 --codec h264 --crf 18 --concurrency 6"
   },
   "dependencies": {
     "@remotion/cli": "4.0.534",

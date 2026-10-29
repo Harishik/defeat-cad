@@ -20,3 +20,7 @@ video/out/
 video/capture.log
 video/public/*.wav
 video/public/shots/
+video/.tts/
+video/tts_models/
+video/tts_setup.log
+video/public/vo/
