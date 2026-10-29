@@ -5,269 +5,220 @@ export const CUES: Record<'intro' | 'guide', { frames: number; lines: Record<str
  "intro": {
   "frames": 2850,
   "lines": {
-   "made": {
-    "s": 90,
-    "e": 151,
-    "text": "Every part is designed to be made.",
+   "detail": {
+    "s": 120,
+    "e": 182,
+    "text": "Every great part is full of detail.",
     "subs": [
      {
-      "text": "Every part is designed to be made.",
-      "s": 90,
-      "e": 151
+      "text": "Every great part is full of detail.",
+      "s": 120,
+      "e": 182
      }
     ],
     "chapter": null
    },
-   "sim": {
-    "s": 240,
-    "e": 323,
-    "text": "But not every detail is meant to be simulated.",
-    "subs": [
-     {
-      "text": "But not every detail is meant to be simulated.",
-      "s": 240,
-      "e": 323
-     }
-    ],
-    "chapter": null
-   },
-   "list": {
-    "s": 405,
-    "e": 474,
-    "text": "Fillets. Chamfers. Holes. A logo.",
+   "w1": {
+    "s": 345,
+    "e": 368,
+    "text": "Fillets.",
     "subs": [
      {
       "text": "Fillets.",
-      "s": 405,
-      "e": 423
-     },
+      "s": 345,
+      "e": 368
+     }
+    ],
+    "chapter": null
+   },
+   "w2": {
+    "s": 382,
+    "e": 408,
+    "text": "Chamfers.",
+    "subs": [
      {
       "text": "Chamfers.",
-      "s": 423,
-      "e": 444
-     },
+      "s": 382,
+      "e": 408
+     }
+    ],
+    "chapter": null
+   },
+   "w3": {
+    "s": 420,
+    "e": 441,
+    "text": "Holes.",
+    "subs": [
      {
       "text": "Holes.",
-      "s": 444,
-      "e": 458
-     },
+      "s": 420,
+      "e": 441
+     }
+    ],
+    "chapter": null
+   },
+   "real": {
+    "s": 472,
+    "e": 519,
+    "text": "The things that make it real.",
+    "subs": [
      {
-      "text": "A logo.",
-      "s": 458,
-      "e": 474
+      "text": "The things that make it real.",
+      "s": 472,
+      "e": 519
      }
     ],
     "chapter": null
    },
    "noise": {
-    "s": 570,
-    "e": 763,
-    "text": "To a solver, each one is noise. Thousands of extra elements. Hours of compute you'll never get back.",
+    "s": 660,
+    "e": 749,
+    "text": "But to a simulation, every one of them is noise.",
     "subs": [
      {
-      "text": "To a solver, each one is noise.",
-      "s": 570,
-      "e": 631
-     },
-     {
-      "text": "Thousands of extra elements.",
-      "s": 631,
-      "e": 686
-     },
-     {
-      "text": "Hours of compute you'll never get back.",
-      "s": 686,
-      "e": 763
+      "text": "But to a simulation, every one of them is noise.",
+      "s": 660,
+      "e": 749
      }
     ],
     "chapter": null
    },
-   "knows": {
-    "s": 855,
-    "e": 920,
-    "text": "So we built something that knows the difference.",
+   "meet": {
+    "s": 998,
+    "e": 1028,
+    "text": "Meet DeFeat.",
     "subs": [
      {
-      "text": "So we built something that knows the difference.",
-      "s": 855,
-      "e": 920
+      "text": "Meet DeFeat.",
+      "s": 998,
+      "e": 1028
      }
     ],
     "chapter": null
    },
-   "this": {
-    "s": 1005,
-    "e": 1039,
-    "text": "This is DeFeat.",
+   "s1": {
+    "s": 1245,
+    "e": 1287,
+    "text": "It sees every feature.",
     "subs": [
      {
-      "text": "This is DeFeat.",
-      "s": 1005,
-      "e": 1039
-     }
-    ],
-    "chapter": null
-   },
-   "reads": {
-    "s": 1140,
-    "e": 1399,
-    "text": "It reads the exact geometry of your part, and recognizes every feature. Rules and a neural network, trained on real-world cad.",
-    "subs": [
-     {
-      "text": "It reads the exact geometry of your part, and recognizes every feature.",
-      "s": 1140,
+      "text": "It sees every feature.",
+      "s": 1245,
       "e": 1287
-     },
-     {
-      "text": "Rules and a neural network, trained on real-world cad.",
-      "s": 1287,
-      "e": 1399
      }
     ],
     "chapter": null
    },
-   "analysis": {
-    "s": 1470,
-    "e": 1632,
-    "text": "Tell it the analysis. Static, modal, thermal, or flow. It decides what matters.",
+   "s2": {
+    "s": 1350,
+    "e": 1383,
+    "text": "Keeps what matters.",
     "subs": [
      {
-      "text": "Tell it the analysis.",
-      "s": 1470,
-      "e": 1514
-     },
-     {
-      "text": "Static, modal, thermal, or flow.",
-      "s": 1514,
-      "e": 1582
-     },
-     {
-      "text": "It decides what matters.",
-      "s": 1582,
-      "e": 1632
+      "text": "Keeps what matters.",
+      "s": 1350,
+      "e": 1383
      }
     ],
     "chapter": null
    },
-   "removes": {
-    "s": 1695,
-    "e": 1815,
-    "text": "Then it removes the rest. Cleanly. Without ever breaking the solid.",
+   "s3": {
+    "s": 1455,
+    "e": 1493,
+    "text": "And removes the rest.",
     "subs": [
      {
-      "text": "Then it removes the rest.",
-      "s": 1695,
-      "e": 1741
-     },
-     {
-      "text": "Cleanly.",
-      "s": 1741,
-      "e": 1756
-     },
-     {
-      "text": "Without ever breaking the solid.",
-      "s": 1756,
-      "e": 1815
+      "text": "And removes the rest.",
+      "s": 1455,
+      "e": 1493
      }
     ],
     "chapter": null
    },
-   "trust": {
-    "s": 1905,
-    "e": 1980,
-    "text": "And it doesn't ask for your trust. It earns it.",
+   "fast": {
+    "s": 1665,
+    "e": 1699,
+    "text": "In under a second.",
     "subs": [
      {
-      "text": "And it doesn't ask for your trust.",
-      "s": 1905,
-      "e": 1960
-     },
-     {
-      "text": "It earns it.",
-      "s": 1960,
-      "e": 1980
+      "text": "In under a second.",
+      "s": 1665,
+      "e": 1699
      }
     ],
     "chapter": null
    },
    "proof": {
-    "s": 2040,
-    "e": 2276,
-    "text": "Both models are meshed and solved, side by side. If the stress shifts too far, the right features come back. Automatically.",
+    "s": 1890,
+    "e": 1987,
+    "text": "Then it proves it, with a real stress solve. Every time.",
     "subs": [
      {
-      "text": "Both models are meshed and solved, side by side.",
-      "s": 2040,
-      "e": 2134
+      "text": "Then it proves it, with a real stress solve.",
+      "s": 1890,
+      "e": 1967
      },
      {
-      "text": "If the stress shifts too far, the right features come back.",
-      "s": 2134,
-      "e": 2248
-     },
-     {
-      "text": "Automatically.",
-      "s": 2248,
-      "e": 2276
+      "text": "Every time.",
+      "s": 1967,
+      "e": 1987
      }
     ],
     "chapter": null
    },
-   "numbers": {
-    "s": 2340,
-    "e": 2477,
-    "text": "Fifty-five percent fewer elements. Under three percent change in deflection.",
-    "subs": [
-     {
-      "text": "Fifty-five percent fewer elements.",
-      "s": 2340,
-      "e": 2402
-     },
-     {
-      "text": "Under three percent change in deflection.",
-      "s": 2402,
-      "e": 2477
-     }
-    ],
-    "chapter": null
-   },
-   "open": {
-    "s": 2520,
-    "e": 2658,
-    "text": "Open source. Private by design. It runs entirely on your machine.",
+   "o1": {
+    "s": 2265,
+    "e": 2295,
+    "text": "Open source.",
     "subs": [
      {
       "text": "Open source.",
-      "s": 2520,
-      "e": 2546
-     },
+      "s": 2265,
+      "e": 2295
+     }
+    ],
+    "chapter": null
+   },
+   "o2": {
+    "s": 2318,
+    "e": 2339,
+    "text": "Private.",
+    "subs": [
      {
-      "text": "Private by design.",
-      "s": 2546,
-      "e": 2586
-     },
+      "text": "Private.",
+      "s": 2318,
+      "e": 2339
+     }
+    ],
+    "chapter": null
+   },
+   "o3": {
+    "s": 2370,
+    "e": 2392,
+    "text": "And free.",
+    "subs": [
      {
-      "text": "It runs entirely on your machine.",
-      "s": 2586,
-      "e": 2658
+      "text": "And free.",
+      "s": 2370,
+      "e": 2392
      }
     ],
     "chapter": null
    },
    "end": {
-    "s": 2685,
-    "e": 2762,
-    "text": "DeFeat. Simulation-ready, by design.",
+    "s": 2595,
+    "e": 2656,
+    "text": "DeFeat. Simulate what matters.",
     "subs": [
      {
       "text": "DeFeat.",
-      "s": 2685,
-      "e": 2700
+      "s": 2595,
+      "e": 2610
      },
      {
-      "text": "Simulation-ready, by design.",
-      "s": 2700,
-      "e": 2762
+      "text": "Simulate what matters.",
+      "s": 2610,
+      "e": 2656
      }
     ],
     "chapter": null

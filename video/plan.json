@@ -1,46 +1,212 @@
 {
-  "voice": "af_heart",
-  "speed": 0.94,
-  "intro": {
-    "bars": 38,
-    "lines": [
-      {"id": "made",      "bar": 1.2,  "text": "Every part is designed to be made."},
-      {"id": "sim",       "bar": 3.2,  "text": "But not every detail is meant to be simulated."},
-      {"id": "list",      "bar": 5.4,  "text": "Fillets. Chamfers. Holes. A logo."},
-      {"id": "noise",     "bar": 7.6,  "text": "To a solver, each one is noise. Thousands of extra elements. Hours of compute you'll never get back."},
-      {"id": "knows",     "bar": 11.4, "text": "So we built something that knows the difference."},
-      {"id": "this",      "bar": 13.4, "text": "This is DeFeat."},
-      {"id": "reads",     "bar": 15.2, "text": "It reads the exact geometry of your part, and recognizes every feature. Rules and a neural network, trained on real-world cad."},
-      {"id": "analysis",  "bar": 19.6, "text": "Tell it the analysis. Static, modal, thermal, or flow. It decides what matters."},
-      {"id": "removes",   "bar": 22.6, "text": "Then it removes the rest. Cleanly. Without ever breaking the solid."},
-      {"id": "trust",     "bar": 25.4, "text": "And it doesn't ask for your trust. It earns it."},
-      {"id": "proof",     "bar": 27.2, "text": "Both models are meshed and solved, side by side. If the stress shifts too far, the right features come back. Automatically."},
-      {"id": "numbers",   "bar": 31.2, "text": "Fifty-five percent fewer elements. Under three percent change in deflection."},
-      {"id": "open",      "bar": 33.6, "text": "Open source. Private by design. It runs entirely on your machine."},
-      {"id": "end",       "bar": 35.8, "text": "DeFeat. Simulation-ready, by design."}
-    ]
-  },
-  "guide": {
-    "lines": [
-      {"id": "hello",     "bar": 1.0,  "text": "This is DeFeat, from a raw cad file to a model that's ready to simulate. Eight short steps. Let's begin."},
-      {"id": "install",   "bar": 5.2,  "chapter": 0, "text": "First, install it. Clone the repository and run the setup script. It brings everything with it: the geometry kernel, the mesher, the solver, and the neural network."},
-      {"id": "run",       "bar": 9.6,  "text": "On Windows, use the PowerShell script instead. Then start the app, and open your browser."},
-      {"id": "open",      "bar": 12.4, "chapter": 1, "text": "Drop in a step file, or simply describe a part in plain English."},
-      {"id": "samples",   "bar": 15.0, "text": "Or start from a sample. Every card previews what's about to change."},
-      {"id": "map",       "bar": 17.6, "chapter": 2, "text": "DeFeat reads the boundary representation and finds every feature. Each one comes with a plain-English reason, and a second opinion from the neural network."},
-      {"id": "isolate",   "bar": 22.2, "text": "Click a chip to isolate a class. Bright faces will be removed. Faded ones stay."},
-      {"id": "choose",    "bar": 25.4, "chapter": 3, "text": "Now choose your analysis. Static, modal, thermal, or flow."},
-      {"id": "h",         "bar": 27.8, "text": "Set the mesh size. Anything smaller than the threshold is marked for removal, while ribs and load paths are kept."},
-      {"id": "simplify",  "bar": 31.4, "chapter": 4, "text": "Press Simplify. Removal runs in a guarded worker, so a difficult face can never take the app down."},
-      {"id": "verify",    "bar": 35.0, "text": "Then both models are meshed and solved. You see the element count, the change in volume, and the shift in deflection."},
-      {"id": "guard",     "bar": 39.0, "text": "If simplifying moves the result by more than five percent, the stress guard restores the features that matter. On its own."},
-      {"id": "compare",   "bar": 43.0, "chapter": 5, "text": "Drag across to compare before and after."},
-      {"id": "export",    "bar": 45.4, "text": "When you're happy, export the simplified step file, a full report, and Python or C plus plus code that reproduces every step."},
-      {"id": "ask",       "bar": 50.0, "chapter": 6, "text": "Prefer to just ask? The assistant runs locally, and turns your words into exact actions you can see."},
-      {"id": "cmdk",      "bar": 54.0, "text": "Or press Command K, and do anything from the keyboard."},
-      {"id": "batch",     "bar": 57.0, "chapter": 7, "text": "For a whole folder of parts, run it from the command line. And if you live in FreeCAD, there's a macro for that too."},
-      {"id": "bench",     "bar": 61.4, "text": "Every number is measured on held-out, real-world cad. Fillets found with an F1 of zero point eight four. And a valid solid, every single time."},
-      {"id": "end",       "bar": 66.4, "text": "DeFeat. Step in. Simulation-ready step out. Proven."}
-    ]
-  }
+ "voice": "af_heart",
+ "speed": 0.94,
+ "intro": {
+  "bars": 38,
+  "lines": [
+   {
+    "id": "detail",
+    "bar": 1.6,
+    "text": "Every great part is full of detail.",
+    "speed": 0.9
+   },
+   {
+    "id": "w1",
+    "bar": 4.6,
+    "text": "Fillets.",
+    "speed": 0.9
+   },
+   {
+    "id": "w2",
+    "bar": 5.1,
+    "text": "Chamfers.",
+    "speed": 0.9
+   },
+   {
+    "id": "w3",
+    "bar": 5.6,
+    "text": "Holes.",
+    "speed": 0.9
+   },
+   {
+    "id": "real",
+    "bar": 6.3,
+    "text": "The things that make it real.",
+    "speed": 0.9
+   },
+   {
+    "id": "noise",
+    "bar": 8.8,
+    "text": "But to a simulation, every one of them is noise.",
+    "speed": 0.9
+   },
+   {
+    "id": "meet",
+    "bar": 13.3,
+    "text": "Meet DeFeat.",
+    "speed": 0.9
+   },
+   {
+    "id": "s1",
+    "bar": 16.6,
+    "text": "It sees every feature.",
+    "speed": 0.9
+   },
+   {
+    "id": "s2",
+    "bar": 18.0,
+    "text": "Keeps what matters.",
+    "speed": 0.9
+   },
+   {
+    "id": "s3",
+    "bar": 19.4,
+    "text": "And removes the rest.",
+    "speed": 0.9
+   },
+   {
+    "id": "fast",
+    "bar": 22.2,
+    "text": "In under a second.",
+    "speed": 0.9
+   },
+   {
+    "id": "proof",
+    "bar": 25.2,
+    "text": "Then it proves it, with a real stress solve. Every time.",
+    "speed": 0.9
+   },
+   {
+    "id": "o1",
+    "bar": 30.2,
+    "text": "Open source.",
+    "speed": 0.9
+   },
+   {
+    "id": "o2",
+    "bar": 30.9,
+    "text": "Private.",
+    "speed": 0.9
+   },
+   {
+    "id": "o3",
+    "bar": 31.6,
+    "text": "And free.",
+    "speed": 0.9
+   },
+   {
+    "id": "end",
+    "bar": 34.6,
+    "text": "DeFeat. Simulate what matters.",
+    "speed": 0.9
+   }
+  ]
+ },
+ "guide": {
+  "lines": [
+   {
+    "id": "hello",
+    "bar": 1.0,
+    "text": "This is DeFeat, from a raw cad file to a model that's ready to simulate. Eight short steps. Let's begin."
+   },
+   {
+    "id": "install",
+    "bar": 5.2,
+    "chapter": 0,
+    "text": "First, install it. Clone the repository and run the setup script. It brings everything with it: the geometry kernel, the mesher, the solver, and the neural network."
+   },
+   {
+    "id": "run",
+    "bar": 9.6,
+    "text": "On Windows, use the PowerShell script instead. Then start the app, and open your browser."
+   },
+   {
+    "id": "open",
+    "bar": 12.4,
+    "chapter": 1,
+    "text": "Drop in a step file, or simply describe a part in plain English."
+   },
+   {
+    "id": "samples",
+    "bar": 15.0,
+    "text": "Or start from a sample. Every card previews what's about to change."
+   },
+   {
+    "id": "map",
+    "bar": 17.6,
+    "chapter": 2,
+    "text": "DeFeat reads the boundary representation and finds every feature. Each one comes with a plain-English reason, and a second opinion from the neural network."
+   },
+   {
+    "id": "isolate",
+    "bar": 22.2,
+    "text": "Click a chip to isolate a class. Bright faces will be removed. Faded ones stay."
+   },
+   {
+    "id": "choose",
+    "bar": 25.4,
+    "chapter": 3,
+    "text": "Now choose your analysis. Static, modal, thermal, or flow."
+   },
+   {
+    "id": "h",
+    "bar": 27.8,
+    "text": "Set the mesh size. Anything smaller than the threshold is marked for removal, while ribs and load paths are kept."
+   },
+   {
+    "id": "simplify",
+    "bar": 31.4,
+    "chapter": 4,
+    "text": "Press Simplify. Removal runs in a guarded worker, so a difficult face can never take the app down."
+   },
+   {
+    "id": "verify",
+    "bar": 35.0,
+    "text": "Then both models are meshed and solved. You see the element count, the change in volume, and the shift in deflection."
+   },
+   {
+    "id": "guard",
+    "bar": 39.0,
+    "text": "If simplifying moves the result by more than five percent, the stress guard restores the features that matter. On its own."
+   },
+   {
+    "id": "compare",
+    "bar": 43.0,
+    "chapter": 5,
+    "text": "Drag across to compare before and after."
+   },
+   {
+    "id": "export",
+    "bar": 45.4,
+    "text": "When you're happy, export the simplified step file, a full report, and Python or C plus plus code that reproduces every step."
+   },
+   {
+    "id": "ask",
+    "bar": 50.0,
+    "chapter": 6,
+    "text": "Prefer to just ask? The assistant runs locally, and turns your words into exact actions you can see."
+   },
+   {
+    "id": "cmdk",
+    "bar": 54.0,
+    "text": "Or press Command K, and do anything from the keyboard."
+   },
+   {
+    "id": "batch",
+    "bar": 57.0,
+    "chapter": 7,
+    "text": "For a whole folder of parts, run it from the command line. And if you live in FreeCAD, there's a macro for that too."
+   },
+   {
+    "id": "bench",
+    "bar": 61.4,
+    "text": "Every number is measured on held-out, real-world cad. Fillets found with an F1 of zero point eight four. And a valid solid, every single time."
+   },
+   {
+    "id": "end",
+    "bar": 66.4,
+    "text": "DeFeat. Step in. Simulation-ready step out. Proven."
+   }
+  ]
+ }
 }

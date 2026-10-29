@@ -15,7 +15,7 @@ import subprocess
 
 import numpy as np
 from scipy.io import wavfile
-from scipy.signal import butter, fftconvolve, lfilter, resample_poly
+from scipy.signal import butter, fftconvolve, filtfilt, lfilter, resample_poly
 
 SR = 44100
 BPM = 96
@@ -315,6 +315,8 @@ def compress(x, thr=0.12, ratio=3.0):
 
 
 def voice(path):
+    """Clean, dry narration: rumble filter and gentle levelling only. No reverb and no parallel EQ copies,
+    which smear the phase and make a voice sound hollow, as if it were in a bowl."""
     sr, x = wavfile.read(path)
     x = x.astype(np.float64)
     if x.dtype.kind == "i" or np.abs(x).max() > 2:
@@ -322,10 +324,10 @@ def voice(path):
     if x.ndim > 1:
         x = x.mean(1)
     x = resample_poly(x, SR, sr) if sr != SR else x
-    x = highpass(x, 85, 2)
-    x = x + bandpass(x, 2800, 6000) * 0.35 + lowpass(x, 220) * 0.15   # presence + a little warmth
+    b, a = butter(2, 70 / (SR / 2), "high")
+    x = filtfilt(b, a, x)
     st = pan(x, 0)
-    st = compress(st, 0.08, 3.0)
+    st = compress(st, 0.14, 2.0)
     return st / (np.abs(st).max() + 1e-9) * 0.8
 
 
@@ -348,12 +350,11 @@ def master(m, total, name, duck=0.6):
     wet = reverb(m.bus["pad"] * 0.5 + m.bus["keys"] * 0.7 + m.bus["fx"] * 0.6, 3.4, 2.2)
     music = music + wet
     music = np.tanh(music * 1.1) / np.tanh(1.1)
-    vo_wet = reverb(m.bus["vo"], 1.2, 6.0, 0.012, 4000) * 0.35
     # set the music level so the narration sits ~11 dB above it while it speaks
     act = e > 0.3
     r = lambda a: np.sqrt((a[act] ** 2).mean()) + 1e-9
     g = r(m.bus["vo"]) / r(music) / 10 ** (11 / 20)
-    out = music * g + m.bus["vo"] + vo_wet
+    out = music * g + m.bus["vo"]
     print(f"  music gain {g:.2f}; voice over music: {20 * np.log10(r(m.bus['vo']) / r(music * g)):+.1f} dB")
     out = out[: int(total * SR) + int(0.5 * SR)]
     fade = int(BAR * 0.8 * SR)
@@ -436,7 +437,7 @@ def sfx_events(m, events, cue):
     def when(x):
         if isinstance(x, (int, float)):
             return float(x)
-        mm = re.match(r"([a-z_]+)([+-][0-9.]+)?(\$)?", x)
+        mm = re.match(r"([a-z0-9_]+)([+-][0-9.]+)?(\$)?", x)
         c = cue[mm.group(1)]
         base = c["start"] + (c["dur"] if mm.group(3) else 0)
         return base + float(mm.group(2) or 0)
@@ -472,48 +473,47 @@ def sfx_events(m, events, cue):
 
 # ---------------------------------------------------------------- arrangements
 def intro_arr(b):
-    # 38 bars = 95.0 s. cold open -> problem -> title -> build -> breakdown -> proof -> resolve
-    if b < 5:   return {"pad": 0.18, "piano": "sparse", **({"sub": 1} if b >= 3 else {})}
-    if b < 11:  return {"pad": 0.35, "piano": "sparse", "sub": 1, "pulse": 0.5 if b >= 7 else 0.0, **({"shaker": 1} if b >= 7 else {}),
-                        **({"rim": 1} if b >= 9 else {})}
-    if b < 13:  return {"pad": 0.22, "piano": "melody", "chord": ["Fmaj7", "G6"][b - 11]}
-    if b < 15:  return {"pad": 0.5, "sub": 1, "strings": 0.6 if b == 13 else 0, "chord": ["Am9", "Fmaj7"][b - 13]}
-    if b < 19:  return {"pad": 0.55, "arp": 0.8, "sub": 1, "kick": "broken", "shaker": 1}
-    if b < 25:  return {"pad": 0.7, "arp": 1, "sub": 1, "pulse": 0.8, "kick": "four", "clap": 1, "shaker": 1,
-                        **({"strings": 0.8} if b in (19, 23) else {})}
-    if b < 27:  return {"pad": 0.3, "piano": "melody", "chord": LIFT[b - 25]}
-    if b < 31:  return {"pad": 0.75, "arp": 1, "sub": 1, "pulse": 1, "kick": "four", "clap": 1, "shaker": 1,
-                        **({"strings": 1} if b in (27, 29) else {})}
-    if b < 34:  return {"pad": 0.5, "arp": 0.7, "sub": 1, "kick": "broken", "shaker": 1}
-    if b < 36:  return {"pad": 0.45, "piano": "melody", "sub": 1}
-    if b < 38:  return {"pad": 0.35, "piano": "sparse", "chord": "Am9"}
+    # 38 bars = 95.0 s, cut like an ad: dark open -> rhythmic details -> tension -> stop -> hit -> build -> drive -> breath -> finale
+    if b < 4:   return {"pad": 0.16, "piano": "sparse", **({"sub": 1} if b >= 2 else {})}
+    if b < 8:   return {"pad": 0.3, "sub": 1, "pulse": 0.6, "rim": 1, "shaker": 1, "piano": "sparse"}
+    if b < 12:  return {"pad": 0.45, "sub": 1, "pulse": 1.0, "kick": "broken", "shaker": 1, "strings": 0.7 if b in (8, 10) else 0,
+                        "chord": ["Am9", "Fmaj7", "Dm9", "Esus"][b - 8]}
+    if b == 12: return {"pad": 0.2, "chord": "Esus"}                       # the drop-out before the reveal
+    if b < 17:  return {"pad": 0.6, "sub": 1, "strings": 0.9 if b in (13, 15) else 0, "piano": "melody"}
+    if b < 21:  return {"pad": 0.6, "sub": 1, "arp": 0.8, "kick": "broken", "rim": 1, "shaker": 1}
+    if b < 29:  return {"pad": 0.75, "sub": 1, "pulse": 1.0, "arp": 1, "kick": "four", "clap": 1, "shaker": 1,
+                        **({"strings": 1} if b in (21, 25) else {})}
+    if b < 33:  return {"pad": 0.35, "piano": "melody", "chord": LIFT[b - 29]}
+    if b < 35:  return {"pad": 0.7, "sub": 1, "arp": 0.9, "kick": "four", "clap": 1, "shaker": 1, "strings": 1 if b == 33 else 0}
+    if b < 38:  return {"pad": 0.4, "piano": "sparse", "chord": "Am9", **({"sub": 1} if b == 35 else {})}
     return {}
 
 
 def intro_sfx(c):
-    return [
-        (0.2, "shimmer", {"seconds": 5, "level": 1.2}),
-        (0.6, "whoosh", {"seconds": 2.4, "lo": 150, "hi": 1600, "level": 0.6}),
-        ("list", "glitch", {"seconds": 0.3, "level": 0.6}), ("list+0.55", "click", {}), ("list+1.1", "click", {}),
-        ("list+1.65", "click", {}), ("list+2.1", "click", {}),
-        ("noise+0.4", "glitch", {"seconds": 0.6}), ("noise+0.6", "ticks", {"n": 28, "seconds": 4.2}),
-        ("noise+3.2", "glitch", {"seconds": 0.5}),
-        ("knows-0.1", "whoosh", {"seconds": 1.6, "lo": 200, "hi": 2400, "direction": -1, "level": 0.8}),
-        (13 * BAR, "swell", {"seconds": 3.0, "level": 1.2}), (13 * BAR, "braam", {"level": 1.1}), (13 * BAR, "boom", {"level": 1.0}),
-        (13 * BAR, "shimmer", {"seconds": 4, "root": 76}),
-        (15 * BAR, "whoosh", {"seconds": 1.2, "level": 0.9}), ("reads+4.6", "click", {}),
-        (19 * BAR + 1.2, "whoosh", {"seconds": 1.0, "direction": -1}), ("analysis+1.25", "tick", {"level": 2}),
-        ("analysis+1.85", "tick", {"level": 2}), ("analysis+2.45", "tick", {"level": 2}), ("analysis+3.0", "tick", {"level": 2}),
-        (22.6 * BAR - 0.2, "whoosh", {"seconds": 1.3}),
-        (25 * BAR, "swell", {"seconds": 2.0, "level": 0.7}), (25 * BAR, "boom", {"level": 0.6}),
-        ("trust$+0.0", "chime", {"note": 88}),
-        (27 * BAR, "boom", {"level": 0.8}), (27 * BAR, "whoosh", {"seconds": 1.4, "level": 0.9}),
-        ("proof+5.2", "chime", {"note": 84, "level": 0.8}),
-        (31 * BAR, "whoosh", {"seconds": 1.0, "direction": -1}), ("numbers+0.2", "ticks", {"n": 22, "seconds": 1.6}),
-        ("numbers+2.4", "ticks", {"n": 18, "seconds": 1.4}),
-        (33.6 * BAR - 0.3, "whoosh", {"seconds": 1.2, "lo": 180, "hi": 2000}),
-        ("end-2.4", "swell", {"seconds": 2.4, "level": 0.8}), ("end", "boom", {"level": 0.75}), ("end", "shimmer", {"seconds": 5, "root": 81}),
+    ev = [
+        (0.2, "shimmer", {"seconds": 6, "level": 1.1}),
+        (0.4, "whoosh", {"seconds": 3.0, "lo": 120, "hi": 1200, "level": 0.5}),
+        (4.2 * BAR, "whoosh", {"seconds": 1.0, "level": 0.8}),
+        ("w1", "boom", {"level": 0.35}), ("w2", "boom", {"level": 0.35}), ("w3", "boom", {"level": 0.4}),
+        ("w1", "click", {}), ("w2", "click", {}), ("w3", "click", {}),
+        (8.2 * BAR, "whoosh", {"seconds": 1.2, "direction": -1}),
+        ("noise+0.2", "glitch", {"seconds": 0.5}), ("noise+1.4", "glitch", {"seconds": 0.4}), ("noise+2.6", "glitch", {"seconds": 0.7}),
+        (9.5 * BAR, "ticks", {"n": 30, "seconds": 5.0}),
+        (13 * BAR, "swell", {"seconds": 4.5, "level": 1.3}),
+        (13 * BAR, "braam", {"level": 1.2}), (13 * BAR, "boom", {"level": 1.1}), (13 * BAR, "shimmer", {"seconds": 5, "root": 76}),
+        (14.4 * BAR, "whoosh", {"seconds": 1.6, "lo": 200, "hi": 2600, "level": 0.6}),
+        (16.5 * BAR, "whoosh", {"seconds": 1.0}), ("s2-0.3", "whoosh", {"seconds": 0.9, "direction": -1}), ("s3-0.3", "whoosh", {"seconds": 0.9}),
+        ("s3+0.6", "shimmer", {"seconds": 2.5, "root": 88, "level": 0.8}),
+        (21 * BAR, "swell", {"seconds": 2.0, "level": 0.8}), (21 * BAR, "boom", {"level": 0.8}),
+        ("fast+0.1", "ticks", {"n": 14, "seconds": 0.9}),
+        (29 * BAR, "swell", {"seconds": 2.2, "level": 0.7}), (29 * BAR, "boom", {"level": 0.6}),
+        ("o1", "chime", {"note": 84, "level": 0.6}), ("o2", "chime", {"note": 88, "level": 0.6}), ("o3", "chime", {"note": 91, "level": 0.6}),
+        (33 * BAR, "boom", {"level": 0.7}),
+        ("end-2.6", "swell", {"seconds": 2.6, "level": 0.9}), ("end", "boom", {"level": 0.9}), ("end", "shimmer", {"seconds": 6, "root": 81}),
     ]
+    for k in range(22, 29):          # a whoosh on every cut of the montage
+        ev.append((k * BAR, "whoosh", {"seconds": 0.8, "level": 0.55, "direction": 1 if k % 2 else -1}))
+    return ev
 
 
 def guide_arr(b, bars, chapters):

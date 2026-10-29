@@ -50,11 +50,13 @@ It decides what matters for your analysis and removes the rest. Then it **proves
 - **Intro** (95 s): `docs/videos/defeat-intro.mp4`
 - **Walkthrough** (175 s): `docs/videos/defeat-walkthrough.mp4`
 
-Both are built entirely from code and open models. The narration is [Kokoro](https://github.com/thewh1teagle/kokoro-onnx) (open weights, runs offline). The picture is [Remotion](https://www.remotion.dev). The original 96 BPM score and every sound effect are synthesised in Python. The script and its timing live in `video/plan.json`. `video/score.py` places each line on the bar grid, ducks the music under the voice, adds sound effects and writes the timing to `video/src/cues.ts`, so the voice, cuts and captions land on the same frame. To rebuild them:
+Both are built entirely from code and open models. The narration is [Kokoro](https://github.com/thewh1teagle/kokoro-onnx) (open weights, runs offline). The picture is [Remotion](https://www.remotion.dev), with real 3D parts rendered in three.js. The original 96 BPM score and every sound effect are synthesised in Python. The intro's showcase parts are modelled for the film in `video/parts.py`: a mold cavity plate, gearbox cover, flanged hub, heat sink and robot-arm link, alongside the two samples. `video/export_mesh.py` runs DeFeat on each and exports the original and simplified meshes, so every orange face that lifts away on screen is one DeFeat actually removes. The script and its timing live in `video/plan.json`. `video/score.py` places each line on the bar grid, ducks the music under the voice and writes the timing to `video/src/cues.ts`, so the voice, cuts and captions land on the same frame. To rebuild them:
 ```bash
 cd video
 python3.11 -m venv .tts && .tts/bin/pip install kokoro-onnx soundfile   # plus the two model files in video/tts_models/
-.tts/bin/python voice.py && python score.py && python capture.py      # narration, score + mix, app captures (app running)
+../.venv/bin/python parts.py && ../.venv/bin/python export_mesh.py       # showcase parts + meshes
+.tts/bin/python voice.py && ../.venv/bin/python score.py                 # narration, then score + mix
+../.venv/bin/python capture.py                                           # app captures (app running)
 npm install && npm run render:intro && npm run render:guide
 ```
 
