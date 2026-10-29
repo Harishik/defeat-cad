@@ -79,7 +79,7 @@ flowchart LR
 | Rules | `recognize.py` | Inner-loop flood fill finds holes, slots, pockets, bosses and embosses. Concave-edge regions find steps and open channels. Also detects thin-wall ribs and gussets, blend chains and chamfers |
 | GNN | `gnn.py`, `datagen.py` | GINE network on pose-invariant face/edge features, trained on generated mold parts plus real labelled CAD (MFCAD, Fusion 360 Gallery). It vetoes or adds fillets/chamfers on top of the rules, with thresholds tuned on validation parts |
 | Decide | `decide.py` | Presets for static, modal, thermal and CFD. Thresholds are multiples of the target mesh size *h*, because a feature only hurts the mesh when it's small relative to the elements |
-| Execute | `execute.py` | `BRepAlgoAPI_Defeaturing` runs in a killable worker process, so hangs and native crashes are contained. It tries a single pass first, then falls back to feature-by-feature |
+| Execute | `execute.py` | `BRepAlgoAPI_Defeaturing` runs in a killable worker process, so hangs and native crashes are contained. It tries a single pass first, then goes feature by feature. Features are tracked exactly through each removal using the kernel's own history. A refused blend is retried together with its tangent neighbours, then with a fuzzy tolerance |
 | Validate | `validate.py`, `fea.py` | Surface deviation, deterministic gmsh meshing of both models at the same *h*, a linear static solve on both meshes (scikit-fem), and a **stress guard** that restores features when deflection moves more than 5% |
 | Export | `codegen.py` | Python (OCP) and C++ (OCCT) programs that locate faces by geometric signature |
 | Assistant | `agent.py`, `server.py` | Ollama tool calling (`qwen3.5:4b`) with an offline keyword fallback, plus sandboxed text-to-CAD (CadQuery) |
@@ -122,9 +122,9 @@ Every number below is measured on **held-out test data that was never used for t
 |---|---|
 | Parts completed | **499 / 500**, one meshing timeout |
 | Output is a valid solid | **100%** |
-| Targeted features actually removed | **89.6%** (the rest are kept and reported, never broken) |
-| Time per part | median 0.7 s, 90th percentile 5.7 s |
-| Faces removed / volume change | median 25% / 1.3% |
+| Targeted features actually removed | **91.1%** (the rest are kept and reported, never broken) |
+| Time per part | median 0.5 s, 90th percentile 4.0 s |
+| Faces removed / volume change | median 25% / 1.5% |
 | Parts within 5% deflection change (stress check) | **90.9% with the stress guard** (59.1% without it) |
 | Median deflection change | 0.50% (90th percentile 3.8%) |
 
@@ -175,6 +175,8 @@ The app opens at **http://localhost:8000**. For the assistant, install [Ollama](
 ```bash
 python -m defeat.cli parts/*.step --preset static --h 3 --out out/
 ```
+
+**FreeCAD:** run DeFeat from inside FreeCAD with the macro in [`freecad/`](freecad/). Select a part, pick the analysis, and the simplified copy appears next to the original.
 
 **Tests:** `python -m pytest -q tests`. CI runs them on Windows, Linux and macOS.
 

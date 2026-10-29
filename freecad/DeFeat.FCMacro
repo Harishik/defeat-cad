@@ -1,0 +1,148 @@
+# -*- coding: utf-8 -*-
+# DeFeat for FreeCAD: simplify the selected part for simulation.
+#
+# Needs the DeFeat app running locally (./run.sh or run.bat -> http://127.0.0.1:8000).
+# Install: copy this file into FreeCAD's macro folder (Macro > Macros... shows the path),
+# then run it from Macro > Macros..., or add it to a toolbar.
+#
+# What it does: exports the selected solid to STEP, sends it to DeFeat with the analysis preset
+# you pick, waits for the result, and adds "<name>_defeatured" to the document. The original
+# object is hidden, never modified. A summary (features removed, mesh and stress change) is
+# printed to the Report view.
+from __future__ import annotations
+
+import json
+import os
+import tempfile
+import time
+import urllib.error
+import urllib.request
+import uuid
+
+DEFEAT_URL = os.environ.get("DEFEAT_URL", "http://127.0.0.1:8000")
+PRESETS = ["static", "modal", "thermal", "cfd"]
+
+
+def _req(method, path, data=None, headers=None, timeout=600):
+    req = urllib.request.Request(DEFEAT_URL + path, data=data, method=method, headers=headers or {})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return r.read()
+
+
+def _json(method, path, body=None):
+    data = json.dumps(body).encode() if body is not None else None
+    return json.loads(_req(method, path, data, {"Content-Type": "application/json"} if data else {}))
+
+
+def _upload(step_path):
+    boundary = uuid.uuid4().hex
+    name = os.path.basename(step_path)
+    with open(step_path, "rb") as fh:
+        payload = fh.read()
+    body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{name}\"\r\n"
+            f"Content-Type: application/octet-stream\r\n\r\n").encode() + payload + f"\r\n--{boundary}--\r\n".encode()
+    return json.loads(_req("POST", "/api/upload", body, {"Content-Type": f"multipart/form-data; boundary={boundary}"}))
+
+
+def defeature_file(step_path, out_path, preset="static", h=None, log=print, poll=0.5):
+    """Plain-Python core (no FreeCAD needed): STEP in -> simplified STEP out, returns the metrics."""
+    s = _upload(step_path)
+    sid = s["id"]
+    log(f"DeFeat: {s['faces']} faces, {len(s['features'])} features recognized")
+    body = {"preset": preset}
+    if h:
+        body["h"] = float(h)
+    s = _json("POST", f"/api/session/{sid}/policy", body)
+    n_rm = sum(1 for f in s["features"] if f["decision"]["action"] == "remove")
+    log(f"DeFeat: preset {preset}, removing {n_rm} features")
+    _json("POST", f"/api/session/{sid}/run")
+    seen = 0
+    while True:
+        time.sleep(poll)
+        st = _json("GET", f"/api/session/{sid}/status")["status"]
+        for step in st.get("steps", [])[seen:]:
+            log("  · " + step["msg"])
+        seen = len(st.get("steps", []))
+        if not st.get("busy"):
+            if st.get("stage") != "done":
+                raise RuntimeError(st.get("error") or "DeFeat run failed")
+            break
+    res = _json("GET", f"/api/session/{sid}/result")
+    with open(out_path, "wb") as fh:
+        fh.write(_req("GET", f"/api/session/{sid}/download/step"))
+    return res["metrics"]
+
+
+def _summary(m):
+    g, mesh, fea = m["geometry"], m.get("mesh") or {}, (m.get("fea") or {}).get("delta") or {}
+    parts = [f"{len(m['removed'])} features removed", f"faces {g['faces'][0]} -> {g['faces'][1]}",
+             f"volume {g['volume_delta_pct']:+.2f}%"]
+    if mesh.get("tet_reduction_pct") is not None:
+        parts.append(f"mesh elements -{mesh['tet_reduction_pct']:.0f}%")
+    if fea.get("tip_disp_delta_pct") is not None:
+        parts.append(f"deflection {fea['tip_disp_delta_pct']:+.2f}%")
+    if (m.get("guard") or {}).get("accepted"):
+        parts.append(f"stress guard kept {m['guard']['restored']} features")
+    return " · ".join(parts)
+
+
+def run_in_freecad():
+    import FreeCAD as App
+    import Import
+    Gui = QtGui = None
+    if getattr(App, "GuiUp", 0):   # full FreeCAD; freecadcmd runs headless
+        import FreeCADGui as Gui
+        from PySide import QtGui
+
+    doc = App.ActiveDocument
+    if doc is None:
+        raise RuntimeError("Open a document with a solid first.")
+    sel = Gui.Selection.getSelection() if Gui else []
+    objs = [o for o in (sel or doc.Objects) if hasattr(o, "Shape") and o.Shape.Solids]
+    if not objs:
+        raise RuntimeError("Select a solid part to simplify.")
+    obj = objs[0]
+
+    preset = "static"
+    if QtGui is not None:
+        item, ok = QtGui.QInputDialog.getItem(None, "DeFeat", "Prepare the part for which analysis?",
+                                              ["static", "modal", "thermal", "cfd"], 0, False)
+        if not ok:
+            return
+        preset = item
+
+    tmp = tempfile.mkdtemp(prefix="defeat_")
+    src = os.path.join(tmp, f"{obj.Name}.step")
+    dst = os.path.join(tmp, f"{obj.Name}_defeatured.step")
+    obj.Shape.exportStep(src)
+    log = lambda msg: App.Console.PrintMessage(msg + "\n")
+    try:
+        metrics = defeature_file(src, dst, preset=preset, log=log)
+    except urllib.error.URLError:
+        raise RuntimeError(f"DeFeat is not running at {DEFEAT_URL}. Start it with ./run.sh (or run.bat) first.")
+
+    before = set(o.Name for o in doc.Objects)
+    Import.insert(dst, doc.Name)
+    new = [o for o in doc.Objects if o.Name not in before]
+    for o in new:
+        o.Label = f"{obj.Label}_defeatured"
+    if Gui and hasattr(obj, "ViewObject") and obj.ViewObject:
+        obj.ViewObject.Visibility = False
+    doc.recompute()
+    msg = "DeFeat: " + _summary(metrics)
+    log(msg)
+    if QtGui is not None:
+        QtGui.QMessageBox.information(None, "DeFeat", msg.replace(" · ", "\n"))
+    return new
+
+
+if __name__ == "__main__":
+    try:
+        import FreeCAD  # noqa: F401
+        run_in_freecad()
+    except ImportError:
+        import sys
+        if len(sys.argv) >= 3:
+            print(_summary(defeature_file(sys.argv[1], sys.argv[2], *(sys.argv[3:4] or ["static"]))))
+        else:
+            print("usage outside FreeCAD: python DeFeat.FCMacro in.step out.step [preset]")

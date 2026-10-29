@@ -17,8 +17,11 @@ ORDER = ["emboss", "chamfer", "fillet", "hole", "slot", "pocket", "step", "boss"
 
 
 # ---------------------------------------------------------------- worker side
-def _remove_faces(brep: bytes, face_ids: list[int]):
+def _remove_faces(brep: bytes, face_ids: list[int], fuzzy: float = 0.0):
+    """Remove faces; also return where every input face went (from the kernel's own history),
+    so later features can be found again exactly even when their neighbours changed."""
     from OCP.BRepAlgoAPI import BRepAlgoAPI_Defeaturing
+    from OCP.TopAbs import TopAbs_FACE
     from OCP.TopTools import TopTools_ListOfShape
     from defeat import occ as _occ
     shape = _occ.from_brep_string(brep)
@@ -30,21 +33,35 @@ def _remove_faces(brep: bytes, face_ids: list[int]):
     d.SetShape(shape)
     d.AddFacesToRemove(lst)
     d.SetRunParallel(False)
-    d.SetToFillHistory(False)
+    d.SetToFillHistory(True)
+    if fuzzy > 0:
+        d.SetFuzzyValue(fuzzy)
     d.Build()
     if not d.IsDone():
         return {"ok": False, "error": "kernel could not rebuild the surrounding faces"}
     res = d.Shape()
+    healed = False
     if not _occ.is_valid(res):
         res2 = _occ.heal(res)
         if not _occ.is_valid(res2):
             return {"ok": False, "error": "result was not a valid solid"}
-        res = res2
+        res, healed = res2, True
     if len(_occ.solids_of(res)) != len(_occ.solids_of(shape)):
         return {"ok": False, "error": "removal split or merged bodies"}
     if len(_occ.faces_of(res)) >= len(faces):
         return {"ok": False, "error": "kernel returned the part unchanged"}
-    return {"ok": True, "brep": _occ.to_brep_string(res)}
+    fmap = None
+    if not healed:
+        out = _occ.indexed(res, TopAbs_FACE)
+        fmap = []
+        for f in faces:
+            if d.IsDeleted(f):
+                fmap.append(-1)
+                continue
+            mods = d.Modified(f)
+            tgt = mods.First() if mods.Size() else f
+            fmap.append(out.FindIndex(tgt) - 1)
+    return {"ok": True, "brep": _occ.to_brep_string(res), "map": fmap}
 
 
 def _dispatch(fn, args):
@@ -172,7 +189,24 @@ class ExecResult:
     log: list = field(default_factory=list)
 
 
-def defeature(shape, features, decisions, progress=None, timeout=30.0) -> ExecResult:
+def _blend_neighbours(ft, graph, todo_by_face, owner_kind):
+    """Faces of adjacent blends (fillet/chamfer features being removed, or unclaimed tangent blend
+    faces such as corner patches) that the kernel may need to remove together with ft."""
+    from .graph import SMOOTH
+    extra = set()
+    for fid in ft.faces:
+        for m, eids in graph.nodes[fid].neighbors.items():
+            if m in ft.faces:
+                continue
+            other = todo_by_face.get(m)
+            if other is not None and other.kind in ("fillet", "chamfer"):
+                extra |= set(other.faces)
+            elif m not in owner_kind and graph.nodes[m].kind != "plane" and any(graph.edges[e].convexity == SMOOTH for e in eids):
+                extra.add(m)
+    return extra
+
+
+def defeature(shape, features, decisions, progress=None, timeout=30.0, graph=None) -> ExecResult:
     t0 = time.time()
     todo = [f for f in features if decisions[f.id].action == "remove"]
     todo.sort(key=lambda f: (ORDER.index(f.kind) if f.kind in ORDER else 99, f.size))
@@ -205,25 +239,69 @@ def defeature(shape, features, decisions, progress=None, timeout=30.0) -> ExecRe
     faces = occ.faces_of(cur)
     sigs = [_signature(f) for f in faces]
     idmap = {i: i for i in range(len(faces))}   # original face id -> current face id
-    tol = 1e-3 * max(1.0, occ.norm(occ.sub(occ.bbox(shape)[3:], occ.bbox(shape)[:3])))
+    diag = max(1.0, occ.norm(occ.sub(occ.bbox(shape)[3:], occ.bbox(shape)[:3])))
+    tol = 1e-3 * diag
+    todo_by_face = {fid: f for f in todo for fid in f.faces}
+    owner_kind = {fid: f.kind for f in features for fid in f.faces}
+    done = set()
+
+    exact_history = True
+
+    def apply(r):
+        nonlocal cur, cur_brep, idmap, exact_history
+        new = occ.from_brep_string(r["brep"])
+        if r.get("map") is not None:   # exact, from the kernel's history
+            m = r["map"]
+            idmap = {oid: m[cid] for oid, cid in idmap.items() if cid < len(m) and m[cid] >= 0}
+        else:                          # healed result: fall back to geometric signatures
+            exact_history = False
+            cur_sigs = {cid: sigs[oid] for oid, cid in idmap.items()}
+            order = sorted(cur_sigs)
+            mapping = remap_faces([cur_sigs[c] for c in order], new, tol)
+            idmap = {oid: mapping[order.index(cid)] for oid, cid in idmap.items() if order.index(cid) in mapping}
+        cur, cur_brep = new, r["brep"]
+
     for n, ft in enumerate(todo, 1):
-        cur_ids = [idmap.get(f) for f in ft.faces]
-        if any(c is None for c in cur_ids):
-            res.failed[ft.id] = "geometry changed by an earlier removal"
+        if ft.id in done:
             continue
         say(f"[{n}/{len(todo)}] {ft.kind} #{ft.id}")
-        r = w.call("_remove_faces", cur_brep, cur_ids, timeout=timeout)
-        if not r["ok"]:
-            res.failed[ft.id] = r["error"]
+        # attempts: the feature alone; then with its tangent blend neighbours; then with a fuzzy tolerance
+        attempts = [(set(ft.faces), 0.0)]
+        if ft.kind in ("fillet", "chamfer") and graph is not None:
+            grp = set(ft.faces) | _blend_neighbours(ft, graph, todo_by_face, owner_kind)
+            if grp != set(ft.faces):
+                attempts.append((grp, 0.0))
+            attempts.append((grp, 1e-4 * diag))
+        else:
+            attempts.append((set(ft.faces), 1e-4 * diag))
+        last = "kernel returned the part unchanged"
+        alive = [f for f in ft.faces if f in idmap]
+        if not alive and exact_history:
+            # every face was deleted by an earlier removal: the feature is already gone
+            done.add(ft.id)
+            res.removed.append(ft.id)
             continue
-        new = occ.from_brep_string(r["brep"])
-        cur_sigs = {cid: sigs[oid] for oid, cid in idmap.items()}
-        order = sorted(cur_sigs)
-        mapping = remap_faces([cur_sigs[c] for c in order], new, tol)
-        idmap = {oid: (order.index(cid) in mapping and mapping[order.index(cid)]) for oid, cid in idmap.items()}
-        idmap = {k: v for k, v in idmap.items() if v is not False and v is not None}
-        cur, cur_brep = new, r["brep"]
-        res.removed.append(ft.id)
+        for grp, fz in attempts:
+            grp = {f for f in grp if f in idmap} if exact_history else grp
+            cur_ids = [idmap.get(f) for f in sorted(grp)]
+            if not cur_ids or any(c is None for c in cur_ids):
+                last = "geometry changed by an earlier removal"
+                continue
+            r = w.call("_remove_faces", cur_brep, cur_ids, fz, timeout=timeout)
+            if r["ok"]:
+                apply(r)
+                done.add(ft.id)
+                res.removed.append(ft.id)
+                # blend features removed as part of the group count as removed too
+                for fid in grp:
+                    other = todo_by_face.get(fid)
+                    if other is not None and other.id not in done and all(x in grp or x not in idmap for x in other.faces):
+                        done.add(other.id)
+                        res.removed.append(other.id)
+                break
+            last = r["error"]
+        else:
+            res.failed[ft.id] = last
     res.shape = cur
     res.seconds = time.time() - t0
     return res

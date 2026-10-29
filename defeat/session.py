@@ -141,7 +141,7 @@ class Session:
             try:
                 n_rm = sum(1 for d in self.decisions.values() if d.action == "remove")
                 self._step(f"Planning removal of {n_rm} features", 0.08)
-                er = defeature(self.shape, self.features, self.decisions,
+                er = defeature(self.shape, self.features, self.decisions, graph=self.graph,
                                progress=lambda m: self._step(m, min(0.55, self.status["progress"] + 0.03)))
                 self.result = er
                 self._step(f"Rebuilt watertight solid ({er.strategy}, {er.seconds:.1f}s)", 0.6)
@@ -193,7 +193,7 @@ class Session:
             keep = {f.id for f in removed[:k]}
             dec = {i: (Decision(i, "keep", "Kept by the stress guard: removing it changed the part's stiffness")
                        if i in keep else d) for i, d in self.decisions.items()}
-            er2 = defeature(self.shape, self.features, dec)
+            er2 = defeature(self.shape, self.features, dec, graph=self.graph)
             r = worker().call("defeat.fea:mesh_and_solve", step_bytes(er2.shape), self.policy.h, bc, timeout=300)
             if not (r.get("ok") and r.get("fea", {}).get("ok")):
                 continue
