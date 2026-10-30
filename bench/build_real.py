@@ -3,7 +3,10 @@
 MFCAD   : full labels  -> base / pocket (slots, passages, pockets) / step / ignore (MFCAD 'chamfer' = bevel cut)
 Fusion  : partial      -> fillet / chamfer exact; every other face is "not a blend" (y = -2)
 
-    python -m bench.build_real --mfcad 3000 --fusion 4000
+    python -m bench.build_real --mfcad 3000 --fusion 36058
+
+Fusion parts come from the shuffled official train split, skipping indices 4000-4399: those are the
+validation parts used to tune thresholds (bench/tune_fusion.py), so the model never sees them.
 """
 from __future__ import annotations
 
@@ -17,6 +20,7 @@ import random
 from bench.common import DATA, ROOT, pmap
 
 NOT_BLEND = -2
+VAL = (4000, 4400)   # validation window of the shuffled Fusion train split (see bench/tune_fusion.py)
 IGNORE = -1
 
 
@@ -57,15 +61,16 @@ def main():
     from bench.fusion import BASE
     ap = argparse.ArgumentParser()
     ap.add_argument("--mfcad", type=int, default=3000)
-    ap.add_argument("--fusion", type=int, default=4000)
+    ap.add_argument("--fusion", type=int, default=36058)
     a = ap.parse_args()
     mf = [f for f in sorted(glob.glob(os.path.join(DIR, "*.step"))) if split_of(f) == "train"]
     random.Random(0).shuffle(mf)
     fu = json.load(open(os.path.join(BASE, "train_test.json")))["train"]
     random.Random(0).shuffle(fu)
+    fu = fu[:VAL[0]] + fu[VAL[1]:]   # never train on the validation parts
     out = []
     for fn, items, lbl in ((mfcad_one, mf[: a.mfcad], "mfcad"), (fusion_one, fu[: a.fusion], "fusion")):
-        res = pmap(fn, items, workers=7, timeout=90, label=lbl)
+        res = pmap(fn, items, workers=8, timeout=90, label=lbl)
         out += [r["sample"] for r in res if r.get("ok") and r.get("sample")]
     path = os.path.join(ROOT, "models", "dataset_real.pkl")
     pickle.dump(out, open(path, "wb"))

@@ -8,6 +8,8 @@ reporting) anything the kernel cannot remove. The output is never an invalid sol
 from __future__ import annotations
 
 import multiprocessing as mp
+import os
+import threading
 import time
 from dataclasses import dataclass, field
 
@@ -77,7 +79,22 @@ def _dispatch(fn, args):
         return {"ok": False, "error": f"{type(e).__name__}: {e}"}
 
 
+def _exit_with_parent():
+    """A worker killed on timeout must not leave its own kernel worker running: every worker exits
+    as soon as the process that started it is gone (works the same on macOS, Linux and Windows)."""
+    parent = mp.parent_process()
+    if parent is None:
+        return
+
+    def watch():
+        from multiprocessing.connection import wait
+        wait([parent.sentinel])
+        os._exit(1)
+    threading.Thread(target=watch, daemon=True).start()
+
+
 def _worker_loop(conn):
+    _exit_with_parent()
     while True:
         msg = conn.recv()
         if msg is None:

@@ -441,9 +441,10 @@ class Recognizer:
         return self.features
 
 
-def refine_with_gnn(g: FaceGraph, feats, P, labels, veto=0.4, add=0.5):
+def refine_with_gnn(g: FaceGraph, feats, P, labels, veto=0.4, add=0.5, override=1.01):
     """Rules + GNN for blends (thresholds tuned on held-out validation parts, see bench/tune_fusion.py):
-    drop a rule fillet/chamfer the GNN finds unlikely, add blends the GNN is confident about."""
+    drop a rule fillet/chamfer the GNN finds unlikely, add blends the GNN is confident about, and let a
+    very confident blend call (> override) take a face back from a non-blend rule feature."""
     fi, ci = labels.index("fillet"), labels.index("chamfer")
     keep = []
     for f in feats:
@@ -452,6 +453,11 @@ def refine_with_gnn(g: FaceGraph, feats, P, labels, veto=0.4, add=0.5):
             if p < veto:
                 continue
             f.confidence = round(float(p), 3)
+        elif override <= 1:
+            mine = [x for x in f.faces if max(P[x][fi], P[x][ci]) <= override]
+            if not mine:
+                continue
+            f.faces = mine
         keep.append(f)
     owned = {x for f in keep for x in f.faces}
     R = Recognizer(g)
@@ -490,6 +496,10 @@ def refine_with_gnn(g: FaceGraph, feats, P, labels, veto=0.4, add=0.5):
     return keep
 
 
+# rules + GNN thresholds, tuned on the validation parts by bench/tune_fusion.py
+FUSION = {"veto": 0.7, "add": 0.8, "override": 0.95}
+
+
 def recognize(shape, g: FaceGraph | None = None, use_gnn=True):
     g = g or build_graph(shape)
     feats = Recognizer(g).run()
@@ -499,7 +509,7 @@ def recognize(shape, g: FaceGraph | None = None, use_gnn=True):
             from .gnn import MODEL_PATH, predict_faces
             import os
             if os.path.exists(MODEL_PATH):
-                feats = refine_with_gnn(g, feats, predict_faces(g), LABELS)
+                feats = refine_with_gnn(g, feats, predict_faces(g), LABELS, **FUSION)
         except Exception:
             pass
     return g, feats

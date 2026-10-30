@@ -38,14 +38,20 @@ def style(ax, t):
     ax.set_axisbelow(True)
 
 
-def grouped(ax, t, groups, series, values, ylim=(0, 1.05), fmt="{:.2f}"):
+def grouped(ax, t, groups, series, values, ylim=(0, 1.05), fmt="{:.2f}", cis=None):
     n = len(series)
     w = 0.8 / n
     for i, s in enumerate(series):
         xs = [g + (i - (n - 1) / 2) * w for g in range(len(groups))]
         bars = ax.bar(xs, values[i], w * 0.92, color=t["c"][i % len(t["c"])], label=s, zorder=3)
-        for b, v in zip(bars, values[i]):
-            ax.text(b.get_x() + b.get_width() / 2, v + 0.015, fmt.format(v), ha="center", va="bottom",
+        tops = values[i]
+        if cis and all(cis[i]):
+            lo = [v - c[0] for v, c in zip(values[i], cis[i])]
+            hi = [c[1] - v for v, c in zip(values[i], cis[i])]
+            ax.errorbar(xs, values[i], yerr=[lo, hi], fmt="none", ecolor=t["fg"], elinewidth=1, capsize=3, zorder=4)
+            tops = [c[1] for c in cis[i]]
+        for b, v, y in zip(bars, values[i], tops):
+            ax.text(b.get_x() + b.get_width() / 2, y + 0.015, fmt.format(v), ha="center", va="bottom",
                     fontsize=10, color=t["fg"], fontweight="bold" if i == n - 1 else "normal")
     ax.set_xticks(range(len(groups)))
     ax.set_xticklabels(groups, color=t["fg"], fontsize=12)
@@ -78,8 +84,9 @@ def main():
         series = ["Rules only", "GNN only", "DeFeat (rules + GNN)"]
         keys = ["rule", "gnn", "fused"]
         vals = [[fu[k]["fillet"]["f1"], fu[k]["chamfer"]["f1"]] for k in keys]
-        grouped(ax, t, ["Fillets", "Chamfers"], series, vals)
-        title(f, t, "Blend recognition on real designer parts (F1)",
+        cis = [[fu[k]["fillet"].get("f1_ci95"), fu[k]["chamfer"].get("f1_ci95")] for k in keys]
+        grouped(ax, t, ["Fillets", "Chamfers"], series, vals, cis=cis)
+        title(f, t, "Blend recognition on real designer parts (F1, 95% bootstrap interval)",
               f"Fusion 360 Gallery, official test split — {fu['parts_ok']:,} parts, {fu['faces']:,} faces")
         f.subplots_adjust(top=0.72, bottom=0.1, left=0.05, right=0.98)
         f.savefig(os.path.join(OUT, f"chart-fusion-{name}.png"), facecolor=t["bg"])

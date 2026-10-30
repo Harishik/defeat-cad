@@ -2,7 +2,10 @@
 optionally mesh + stress check) on random real-world STEP models and report how often each stage
 succeeds, how long it takes, and how much the models are simplified.
 
-    python -m bench.robust --n 500 --mesh 80
+    python -m bench.robust --n 500 --mesh 500
+
+Every part that has something to remove is meshed and solved before and after (parts with nothing to
+remove have nothing to compare). Rates carry 95% Wilson intervals, medians a part-level bootstrap.
 """
 from __future__ import annotations
 
@@ -12,7 +15,7 @@ import os
 import random
 import statistics as st
 
-from bench.common import DATA, pmap_hard, save
+from bench.common import DATA, bootstrap, pmap_hard, save, wilson
 
 BASE = os.path.join(DATA, "fusion_ext", "s2.0.1_extended_step")
 
@@ -70,13 +73,28 @@ def pct(xs, q):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=500)
-    ap.add_argument("--mesh", type=int, default=80, help="how many of the parts also get mesh + stress check")
+    ap.add_argument("--mesh", type=int, default=500, help="how many of the parts also get mesh + stress check")
     ap.add_argument("--workers", type=int, default=6)
+    ap.add_argument("--timeout", type=int, default=240, help="seconds per part")
+    ap.add_argument("--retry", type=int, default=0,
+                    help="re-run only the parts that timed out in the saved rows, with this per-part timeout")
     a = ap.parse_args()
     test = json.load(open(os.path.join(BASE, "train_test.json")))["test"]
     random.Random(1).shuffle(test)
     items = [(n, i < a.mesh) for i, n in enumerate(test[: a.n])]
-    res = pmap_hard("bench.robust:run_one", items, workers=a.workers, timeout=240, label="robust")
+    if a.retry:
+        from bench.common import RESULTS
+        res = json.load(open(os.path.join(RESULTS, "robustness_rows.json")))
+        again = [i for i, r in zip(items, res) if r.get("error") == "timeout"]
+        redo = {str(i): r for i, r in zip(again, pmap_hard("bench.robust:run_one", again, workers=a.workers,
+                                                            timeout=a.retry, label="retry"))}
+        res = [redo.get(r["item"], r) for r in res]
+    else:
+        res = pmap_hard("bench.robust:run_one", items, workers=a.workers, timeout=a.timeout, label="robust")
+    report(res, items, a.retry or a.timeout)
+
+
+def report(res, items, timeout):
     ok = [r for r in res if r.get("ok")]
     fail = {}
     for r in res:
@@ -88,6 +106,23 @@ def main():
     dd = [abs(r["tip_disp_delta_pct"]) for r in ok if "tip_disp_delta_pct" in r]
     ds = [abs(r["stress_p99_delta_pct"]) for r in ok if "stress_p99_delta_pct" in r]
     secs = [r["seconds"] for r in ok]
+    n_in = sum(1 for r in ok if r.get("input_valid"))
+    n_valid = sum(1 for r in ok if r.get("output_valid") and r.get("input_valid"))
+    within = sum(1 for x in dd if x <= 5)
+    before = [abs(r.get("guard_before_pct", r["tip_disp_delta_pct"])) for r in ok if "tip_disp_delta_pct" in r]
+    within_before = sum(1 for x in before if x <= 5)
+    # the kernel's job is to remove what was asked; the stress guard may then put some back on purpose
+    rm_pairs = [(r["to_remove"] - r.get("kept_by_kernel", 0), r["to_remove"]) for r in with_rm]
+    restored = sum(r.get("guard_restored", 0) for r in with_rm if r.get("guard_accepted"))
+    asked = sum(r["to_remove"] for r in with_rm)
+    ci = {
+        "completion_rate": wilson(len(ok), len(items)),
+        "output_valid_rate": wilson(n_valid, n_in),
+        "feature_removal_success_rate": bootstrap(rm_pairs, lambda s: sum(a for a, _ in s) / max(sum(b for _, b in s), 1)),
+        "share_within_5pct_deflection": wilson(within, len(dd)),
+        "share_within_5pct_before_guard": wilson(within_before, len(before)),
+        "median_abs_deflection_change_pct": bootstrap(dd, st.median),
+    }
     rep = {
         "dataset": "Fusion 360 Gallery extended STEP, official test split (real designer models)",
         "parts": len(items), "completed": len(ok), "completion_rate": round(len(ok) / len(items), 4),
@@ -96,7 +131,12 @@ def main():
         "output_valid_rate": round(sum(1 for r in ok if r.get("output_valid") and r.get("input_valid")) / max(sum(1 for r in ok if r.get("input_valid")), 1), 4),
         "invalid_inputs": sum(1 for r in ok if not r.get("input_valid")),
         "parts_with_features_to_remove": len(with_rm),
-        "feature_removal_success_rate": round(sum(r["removed"] for r in with_rm) / max(sum(r["to_remove"] for r in with_rm), 1), 4),
+        "timeout_seconds_per_part": timeout,
+        "feature_removal_success_rate": round(sum(a for a, _ in rm_pairs) / max(asked, 1), 4),
+        "features_targeted": asked,
+        "features_kept_by_kernel": sum(r.get("kept_by_kernel", 0) for r in with_rm),
+        "features_restored_by_stress_guard": restored,
+        "features_removed_in_final_output": sum(r["removed"] for r in with_rm),
         "median_faces": st.median([r["faces"] for r in ok]) if ok else None,
         "median_face_reduction_pct": st.median([100 * (1 - r["faces_after"] / r["faces"]) for r in with_rm if "faces_after" in r]) if with_rm else None,
         "median_volume_change_pct": st.median([abs(r["volume_delta_pct"]) for r in with_rm if "volume_delta_pct" in r]) if with_rm else None,
@@ -111,7 +151,9 @@ def main():
                           "p90_abs_deflection_change_pct": pct(dd, 0.9),
                           "median_abs_peak_stress_change_pct": st.median(ds) if ds else None,
                           "p90_abs_peak_stress_change_pct": pct(ds, 0.9),
-                          "share_within_5pct_deflection": round(sum(1 for x in dd if x <= 5) / len(dd), 4) if dd else None},
+                          "share_within_5pct_deflection": round(within / len(dd), 4) if dd else None},
+        "ci95": ci,
+        "ci_method": "Wilson score interval for rates; 2000-sample part-level bootstrap for the removal rate and medians",
     }
     save("robustness_rows", res)
     print(save("robustness", rep))

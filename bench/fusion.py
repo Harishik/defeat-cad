@@ -12,7 +12,7 @@ import json
 import os
 import random
 
-from bench.common import DATA, OURS_GROUP, fuse, binary_metrics, face_metrics, pmap, rule_face_labels, save
+from bench.common import DATA, OURS_GROUP, binary_metrics, f1_ci, face_metrics, pmap, rule_face_labels, save
 
 BASE = os.path.join(DATA, "fusion_ext", "s2.0.1_extended_step")
 NAMES = ["ExtrudeSide", "ExtrudeEnd", "CutSide", "CutEnd", "Fillet", "Chamfer", "RevolveSide", "RevolveEnd"]
@@ -41,9 +41,21 @@ def evaluate_one(name):
         from defeat.gnn import predict_faces
         P = predict_faces(g)
         out["gnn"] = [OURS_GROUP.get(LABELS[i], "base") for i in P.argmax(1)]
-        out["fused"] = fuse(out["rule"], P, LABELS)
+        # exactly what the app ships: defeat.recognize.refine_with_gnn with the tuned thresholds
+        from defeat.recognize import FUSION, refine_with_gnn
+        out["fused"] = [OURS_GROUP[k] for k in rule_face_labels(g, refine_with_gnn(g, feats, P, LABELS, **FUSION))]
     except Exception:
         pass
+    return out
+
+
+def _counts(ok, who, cls):
+    out = []
+    for r in ok:
+        if who in r:
+            z = list(zip(r["gt"], r[who]))
+            out.append((sum(1 for g, p in z if g == cls and p == cls), sum(1 for g, p in z if g != cls and p == cls),
+                        sum(1 for g, p in z if g == cls and p != cls)))
     return out
 
 
@@ -56,8 +68,8 @@ def summarize(ok):
         # merge cut-like predictions for the comparison with design cuts
         merged = [(gt, "cut" if pr in ("cut", "step") else pr) for gt, pr in pairs]
         rep[who] = {
-            "fillet": binary_metrics(pairs, {"fillet"}),
-            "chamfer": binary_metrics(pairs, {"chamfer"}),
+            "fillet": {**binary_metrics(pairs, {"fillet"}), "f1_ci95": f1_ci(_counts(ok, who, "fillet"))},
+            "chamfer": {**binary_metrics(pairs, {"chamfer"}), "f1_ci95": f1_ci(_counts(ok, who, "chamfer"))},
             "cut_indicative": binary_metrics(merged, {"cut"}),
             "per_class": face_metrics([(gt, pr if pr in ("base", "cut", "fillet", "chamfer") else "base") for gt, pr in merged],
                                       ["base", "cut", "fillet", "chamfer"]),

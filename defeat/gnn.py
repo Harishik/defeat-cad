@@ -1,6 +1,7 @@
 """Edge-aware graph neural network for face-level feature classification (PyTorch Geometric).
 
-Trained on procedurally generated mold parts with construction-derived labels. At runtime it
+Trained on procedurally generated mold parts plus real labelled CAD (MFCAD, Fusion 360 Gallery
+train split, see bench/build_real.py). At runtime it
 gives every rule-based feature instance a second, learned opinion: class probabilities,
 agreement with the rules and a confidence that the UI shows next to each feature.
 """
@@ -22,7 +23,7 @@ from torch_geometric.nn import GINEConv
 from .datagen import LABELS, node_features
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL_PATH = os.path.join(HERE, "models", "gnn.pt")
+MODEL_PATH = os.environ.get("DEFEAT_GNN_MODEL") or os.path.join(HERE, "models", "gnn.pt")
 METRICS_PATH = os.path.join(HERE, "models", "gnn_metrics.json")
 
 # rule class -> GNN label that counts as agreement
@@ -69,7 +70,7 @@ def _loss(logits, y, w):
     return loss
 
 
-def train(dataset_path, epochs=60, seed=0, extra_paths=()):
+def train(dataset_path, epochs=60, seed=0, extra_paths=(), hidden=96, layers=4, batch=16, out=None):
     torch.manual_seed(seed)
     random.seed(seed)
     data = [to_data(d) for d in pickle.load(open(dataset_path, "rb"))]
@@ -84,10 +85,10 @@ def train(dataset_path, epochs=60, seed=0, extra_paths=()):
     counts = torch.bincount(ys, minlength=len(LABELS)).float()
     w = (counts.sum() / (counts + 1)) ** 0.5
     w = w / w.mean()
-    model = FaceGNN(tr[0].x.shape[1], tr[0].edge_attr.shape[1])
+    model = FaceGNN(tr[0].x.shape[1], tr[0].edge_attr.shape[1], hidden=hidden, layers=layers)
     opt = torch.optim.AdamW(model.parameters(), lr=3e-3, weight_decay=1e-4)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, epochs)
-    loader = DataLoader(tr, batch_size=16, shuffle=True)
+    loader = DataLoader(tr, batch_size=batch, shuffle=True)
     for ep in range(epochs):
         model.train()
         tot = 0
@@ -103,9 +104,11 @@ def train(dataset_path, epochs=60, seed=0, extra_paths=()):
     metrics = evaluate(model, test)
     metrics.update(n_train=len(tr), n_test=len(test), params=sum(p.numel() for p in model.parameters()),
                    train_faces=int(len(ys)))
-    os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
-    torch.save({"state": model.state_dict(), "in_dim": tr[0].x.shape[1], "edge_dim": tr[0].edge_attr.shape[1]}, MODEL_PATH)
-    json.dump(metrics, open(METRICS_PATH, "w", encoding="utf-8"), indent=1)
+    out = out or MODEL_PATH
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    torch.save({"state": model.state_dict(), "in_dim": tr[0].x.shape[1], "edge_dim": tr[0].edge_attr.shape[1],
+                "hidden": hidden, "layers": layers}, out)
+    json.dump(metrics, open(os.path.splitext(out)[0] + "_metrics.json", "w", encoding="utf-8"), indent=1)
     return metrics
 
 
@@ -137,7 +140,7 @@ def load():
     global _MODEL
     if _MODEL is None:
         ck = torch.load(MODEL_PATH, map_location="cpu")
-        m = FaceGNN(ck["in_dim"], ck["edge_dim"])
+        m = FaceGNN(ck["in_dim"], ck["edge_dim"], hidden=ck.get("hidden", 96), layers=ck.get("layers", 4))
         m.load_state_dict(ck["state"])
         m.eval()
         _MODEL = m

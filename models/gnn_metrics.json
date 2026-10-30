@@ -1,9 +1,9 @@
 {
- "accuracy": 0.9989,
+ "accuracy": 0.9991,
  "per_class": {
   "base": {
    "precision": 0.9939,
-   "recall": 0.9969,
+   "recall": 0.9985,
    "support": 654
   },
   "hole": {
@@ -22,7 +22,7 @@
    "support": 839
   },
   "emboss": {
-   "precision": 0.9993,
+   "precision": 0.9997,
    "recall": 1.0,
    "support": 2988
   },
@@ -49,11 +49,11 @@
  },
  "confusion": [
   [
-   652,
+   653,
    0,
    0,
    0,
-   2,
+   1,
    0,
    0,
    0,
@@ -159,8 +159,8 @@
   "pocket",
   "step"
  ],
- "n_train": 7236,
+ "n_train": 39247,
  "n_test": 60,
  "params": 99081,
- "train_faces": 99186
+ "train_faces": 198683
 }

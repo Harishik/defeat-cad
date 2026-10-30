@@ -92,6 +92,37 @@ def binary_metrics(pairs, positive):
     return m
 
 
+def wilson(k, n, z=1.96):
+    """95% Wilson score interval for a proportion k/n (well behaved for small n and rates near 0 or 1)."""
+    if not n:
+        return None
+    p = k / n
+    d = 1 + z * z / n
+    c = (p + z * z / (2 * n)) / d
+    h = z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5) / d
+    return [round(max(0.0, c - h), 4), round(min(1.0, c + h), 4)]
+
+
+def bootstrap(values, stat, b=2000, seed=0):
+    """95% percentile bootstrap interval of stat(sample), resampling the list items (parts) with replacement."""
+    import random as _r
+    if not values:
+        return None
+    rng = _r.Random(seed)
+    n = len(values)
+    xs = sorted(stat([values[rng.randrange(n)] for _ in range(n)]) for _ in range(b))
+    return [round(xs[int(0.025 * b)], 4), round(xs[int(0.975 * b) - 1], 4)]
+
+
+def f1_ci(per_part, b=2000, seed=0):
+    """Part-level bootstrap of F1 from per-part (tp, fp, fn) counts: faces of one part are not
+    independent, so parts, not faces, are the unit that gets resampled."""
+    def f1(sample):
+        tp = sum(x[0] for x in sample); fp = sum(x[1] for x in sample); fn = sum(x[2] for x in sample)
+        return 2 * tp / (2 * tp + fp + fn) if tp else 0.0
+    return bootstrap(per_part, f1, b, seed)
+
+
 # ---------------------------------------------------------------- safe parallel map
 class _Timeout(Exception):
     pass

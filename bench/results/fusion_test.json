@@ -4,21 +4,29 @@
  "parts_ok": 1500,
  "faces": 33363,
  "failure_reasons": {},
- "seconds_per_part": 1.296,
+ "seconds_per_part": 0.875,
  "rule": {
   "fillet": {
    "precision": 0.5461,
    "recall": 0.8806,
    "f1": 0.6741,
    "support": 3500,
-   "accuracy": 0.9107
+   "accuracy": 0.9107,
+   "f1_ci95": [
+    0.6062,
+    0.7393
+   ]
   },
   "chamfer": {
    "precision": 0.6604,
    "recall": 0.4823,
    "f1": 0.5575,
    "support": 734,
-   "accuracy": 0.9832
+   "accuracy": 0.9832,
+   "f1_ci95": [
+    0.4663,
+    0.642
+   ]
   },
   "cut_indicative": {
    "precision": 0.525,
@@ -75,184 +83,200 @@
      "chamfer": 157,
      "fillet": 1752
     },
+    "fillet": {
+     "fillet": 3082,
+     "base": 322,
+     "cut": 96
+    },
     "cut": {
      "cut": 4064,
      "base": 1761,
      "fillet": 789,
      "chamfer": 25
-    },
-    "fillet": {
-     "fillet": 3082,
-     "base": 322,
-     "cut": 96
     }
    }
   }
  },
  "gnn": {
   "fillet": {
-   "precision": 0.7999,
-   "recall": 0.9034,
-   "f1": 0.8485,
+   "precision": 0.748,
+   "recall": 0.9814,
+   "f1": 0.849,
    "support": 3500,
-   "accuracy": 0.9662
+   "accuracy": 0.9634,
+   "f1_ci95": [
+    0.8054,
+    0.8824
+   ]
   },
   "chamfer": {
-   "precision": 0.7408,
-   "recall": 0.7166,
-   "f1": 0.7285,
+   "precision": 0.6302,
+   "recall": 0.8406,
+   "f1": 0.7204,
    "support": 734,
-   "accuracy": 0.9882
+   "accuracy": 0.9856,
+   "f1_ci95": [
+    0.6208,
+    0.803
+   ]
   },
   "cut_indicative": {
-   "precision": 0.3243,
-   "recall": 0.4356,
-   "f1": 0.3718,
+   "precision": 0.3223,
+   "recall": 0.6292,
+   "f1": 0.4262,
    "support": 6639,
-   "accuracy": 0.707
+   "accuracy": 0.6629
   },
   "per_class": {
    "faces": 33361,
-   "accuracy": 0.6724,
-   "macro_f1": 0.6747,
-   "miou": 0.5346,
+   "accuracy": 0.6235,
+   "macro_f1": 0.6673,
+   "miou": 0.5199,
    "per_class": {
     "base": {
-     "precision": 0.8014,
-     "recall": 0.7049,
-     "f1": 0.75,
+     "precision": 0.8477,
+     "recall": 0.559,
+     "f1": 0.6737,
      "support": 22488,
-     "iou": 0.6001
+     "iou": 0.508
     },
     "cut": {
-     "precision": 0.3243,
-     "recall": 0.4356,
-     "f1": 0.3718,
+     "precision": 0.3223,
+     "recall": 0.6292,
+     "f1": 0.4262,
      "support": 6639,
-     "iou": 0.2283
+     "iou": 0.2708
     },
     "fillet": {
-     "precision": 0.7999,
-     "recall": 0.9034,
-     "f1": 0.8485,
+     "precision": 0.748,
+     "recall": 0.9814,
+     "f1": 0.849,
      "support": 3500,
-     "iou": 0.7369
+     "iou": 0.7376
     },
     "chamfer": {
-     "precision": 0.7408,
-     "recall": 0.7166,
-     "f1": 0.7285,
+     "precision": 0.6302,
+     "recall": 0.8406,
+     "f1": 0.7204,
      "support": 734,
-     "iou": 0.573
+     "iou": 0.563
     }
    },
    "confusion": {
     "chamfer": {
-     "chamfer": 526,
-     "base": 165,
-     "cut": 35,
-     "fillet": 8
+     "chamfer": 617,
+     "base": 42,
+     "cut": 73,
+     "fillet": 2
     },
     "base": {
-     "base": 15851,
-     "chamfer": 134,
-     "fillet": 697,
-     "cut": 5806
-    },
-    "cut": {
-     "base": 3611,
-     "cut": 2892,
-     "fillet": 86,
-     "chamfer": 50
+     "base": 12571,
+     "chamfer": 239,
+     "cut": 8684,
+     "fillet": 994
     },
     "fillet": {
-     "fillet": 3162,
-     "cut": 186,
-     "base": 152
+     "fillet": 3435,
+     "base": 38,
+     "cut": 27
+    },
+    "cut": {
+     "cut": 4177,
+     "base": 2178,
+     "fillet": 161,
+     "chamfer": 123
     }
    }
   }
  },
  "fused": {
   "fillet": {
-   "precision": 0.8124,
-   "recall": 0.8697,
-   "f1": 0.8401,
+   "precision": 0.8238,
+   "recall": 0.8791,
+   "f1": 0.8506,
    "support": 3500,
-   "accuracy": 0.9653
+   "accuracy": 0.9676,
+   "f1_ci95": [
+    0.8053,
+    0.8848
+   ]
   },
   "chamfer": {
-   "precision": 0.8252,
-   "recall": 0.624,
-   "f1": 0.7106,
+   "precision": 0.7751,
+   "recall": 0.7793,
+   "f1": 0.7772,
    "support": 734,
-   "accuracy": 0.9888
+   "accuracy": 0.9902,
+   "f1_ci95": [
+    0.6808,
+    0.8537
+   ]
   },
   "cut_indicative": {
-   "precision": 0.525,
-   "recall": 0.6121,
-   "f1": 0.5652,
+   "precision": 0.5315,
+   "recall": 0.6076,
+   "f1": 0.567,
    "support": 6639,
-   "accuracy": 0.8126
+   "accuracy": 0.8153
   },
   "per_class": {
    "faces": 33361,
-   "accuracy": 0.7747,
-   "macro_f1": 0.7376,
-   "miou": 0.5963,
+   "accuracy": 0.7786,
+   "macro_f1": 0.7576,
+   "miou": 0.6222,
    "per_class": {
     "base": {
-     "precision": 0.8574,
-     "recall": 0.8128,
-     "f1": 0.8345,
+     "precision": 0.8589,
+     "recall": 0.8135,
+     "f1": 0.8356,
      "support": 22488,
-     "iou": 0.716
+     "iou": 0.7176
     },
     "cut": {
-     "precision": 0.525,
-     "recall": 0.6121,
-     "f1": 0.5652,
+     "precision": 0.5315,
+     "recall": 0.6076,
+     "f1": 0.567,
      "support": 6639,
-     "iou": 0.394
+     "iou": 0.3957
     },
     "fillet": {
-     "precision": 0.8124,
-     "recall": 0.8697,
-     "f1": 0.8401,
+     "precision": 0.8238,
+     "recall": 0.8791,
+     "f1": 0.8506,
      "support": 3500,
-     "iou": 0.7242
+     "iou": 0.74
     },
     "chamfer": {
-     "precision": 0.8252,
-     "recall": 0.624,
-     "f1": 0.7106,
+     "precision": 0.7751,
+     "recall": 0.7793,
+     "f1": 0.7772,
      "support": 734,
-     "iou": 0.5511
+     "iou": 0.6356
     }
    },
    "confusion": {
     "chamfer": {
-     "chamfer": 458,
-     "base": 182,
-     "cut": 86,
-     "fillet": 8
+     "chamfer": 572,
+     "base": 120,
+     "cut": 39,
+     "fillet": 3
     },
     "base": {
-     "base": 18278,
-     "fillet": 630,
-     "chamfer": 85,
-     "cut": 3495
-    },
-    "cut": {
-     "cut": 4064,
-     "base": 2498,
-     "fillet": 65,
-     "chamfer": 12
+     "base": 18293,
+     "chamfer": 118,
+     "cut": 3485,
+     "fillet": 592
     },
     "fillet": {
-     "fillet": 3044,
-     "base": 360,
-     "cut": 96
+     "fillet": 3077,
+     "base": 391,
+     "cut": 32
+    },
+    "cut": {
+     "cut": 4034,
+     "base": 2494,
+     "chamfer": 48,
+     "fillet": 63
     }
    }
   }
