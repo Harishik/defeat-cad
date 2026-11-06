@@ -49,7 +49,7 @@
    {
     "id": "s1",
     "bar": 16.6,
-    "text": "It sees every feature.",
+    "text": "It finds the features.",
     "speed": 0.9
    },
    {
@@ -73,7 +73,7 @@
    {
     "id": "proof",
     "bar": 25.2,
-    "text": "Then it proves it, with a real stress solve. Every time.",
+    "text": "Then it checks the result, with a real stress solve on both models.",
     "speed": 0.9
    },
    {
@@ -135,7 +135,7 @@
     "id": "map",
     "bar": 17.6,
     "chapter": 2,
-    "text": "DeFeat reads the boundary representation and finds every feature. Each one comes with a plain-English reason, and a second opinion from the neural network."
+    "text": "DeFeat reads the boundary representation and finds its features. Each one comes with a plain-English reason, and a second opinion from the neural network."
    },
    {
     "id": "isolate",
@@ -167,7 +167,7 @@
    {
     "id": "guard",
     "bar": 39.0,
-    "text": "If simplifying moves the result by more than five percent, the stress guard restores the features that matter. On its own."
+    "text": "If simplifying moves any load case by more than five percent, the stress guard puts features back. On its own."
    },
    {
     "id": "compare",
@@ -200,12 +200,12 @@
    {
     "id": "bench",
     "bar": 61.4,
-    "text": "Every number is measured on held-out, real-world cad. Fillets found with an F1 of zero point eight four. And a valid solid, every single time."
+    "text": "Every number is measured on held-out, real-world cad. Fillets found with an F1 of zero point eight seven. And a valid solid, on all five hundred test parts."
    },
    {
     "id": "end",
     "bar": 66.4,
-    "text": "DeFeat. Step in. Simulation-ready step out. Proven."
+    "text": "DeFeat. Step in. Simulation-ready step out. Checked."
    }
   ]
  }

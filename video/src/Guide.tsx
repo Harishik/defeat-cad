@@ -10,7 +10,7 @@ export const GUIDE_FRAMES = CUES.guide.frames
 const L = CUES.guide.lines
 const sec = (s: number) => Math.round(s * 30)
 const TITLES = ['Install', 'Open a part', 'Read the feature map', 'Choose the analysis', 'Simplify & verify', 'Compare & export',
-  'Ask in plain English', 'Batch, FreeCAD & proof']
+  'Ask in plain English', 'Batch, FreeCAD & results']
 const CH = Object.values(L).filter((c) => c.chapter != null).sort((a, b) => a.s - b.s)
   .map((c, i, all) => ({ n: String(i + 1).padStart(2, '0'), t: TITLES[i], s: c.s, e: i + 1 < all.length ? all[i + 1].s : L.end.s }))
 
@@ -169,8 +169,8 @@ export const Guide: React.FC = () => {
       <Seg a={CH[7].s + 16} b={L.batch.s + sec(4.2)}>{(dur, off) => (
         <Terminal dur={dur} title="Batch mode" lines={[
           { c: '$ python -m defeat.cli parts/*.step --preset static --out out/', t: rel(L.batch, 0.3, off) - 16 },
-          { o: 'l_bracket.step        23/27 removed   faces 84→31    tets −55%', t: rel(L.batch, 1.9, off) },
-          { o: 'printer_chassis.step  21/31 removed   faces 261→105  tets −42%', t: rel(L.batch, 2.4, off) },
+          { o: 'l_bracket.step        16/25 removed   faces 84→36    tets −26%', t: rel(L.batch, 1.9, off) },
+          { o: 'printer_chassis.step  11/31 removed   faces 261→168  tets −29%', t: rel(L.batch, 2.4, off) },
           { o: '✓ STEP · report · Python · C++ for every part', t: rel(L.batch, 2.9, off), ok: true },
         ]} />
       )}</Seg>
@@ -185,7 +185,7 @@ export const Guide: React.FC = () => {
           <AbsoluteFill style={{ justifyContent: 'flex-end', alignItems: 'center', paddingBottom: 160 }}>
             <Brand at={26} size={80} glow={lerp(f, [L.end.s, L.end.s + 30, L.end.s + 90], [0, 1, 0.4])} />
             <div style={{ height: 24 }} />
-            <Spoken cue={{ ...L.end, s: 30, e: 30 + L.end.e - L.end.s }} text="Step in. Simulation-ready step out. Proven." size={40} weight={400} color={C.ink2} align="center" highlight={['Proven']} />
+            <Spoken cue={{ ...L.end, s: 30, e: 30 + L.end.e - L.end.s }} text="Step in. Simulation-ready step out. Checked." size={40} weight={400} color={C.ink2} align="center" highlight={['Checked']} />
           </AbsoluteFill>
         </>
       )}</Seg>
@@ -301,16 +301,16 @@ const Guard: React.FC<{ dur: number; off: number }> = ({ dur, off }) => {
         <div style={{ width: 760 }}>
           <Pill>Stress guard</Pill>
           <div style={{ height: 30 }} />
-          <Spoken cue={{ ...L.guard, s, e: L.guard.e - off }} text="More than five percent? The features that matter come back." size={66} highlight={['five', 'percent?']} />
+          <Spoken cue={{ ...L.guard, s, e: L.guard.e - off }} text="More than five percent? Features come back." size={66} highlight={['five', 'percent?']} />
         </div>
         <div style={{ width: 520, padding: '30px 34px', borderRadius: 26, background: 'rgba(20,23,27,0.85)', border: `1px solid ${C.line}`, backdropFilter: 'blur(20px)',
           boxShadow: '0 40px 120px rgba(0,0,0,0.6)', opacity: g, transform: `perspective(1600px) rotateY(${(1 - g) * -24 - 8}deg) translateZ(${(1 - g) * -120}px)` }}>
-          {[['Before guard', '7.4%', C.orange, 74], ['After guard', '2.1%', C.green, 21]].map(([l, v, col, w], i) => {
+          {[['Before guard', '6.6%', C.orange, 66], ['After guard', '4.0%', C.green, 40]].map(([l, v, col, w], i) => {
             const show = i === 0 ? 1 : restored
             return (
               <div key={l as string} style={{ marginBottom: i === 0 ? 26 : 0, opacity: 0.25 + 0.75 * show }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <span style={{ fontFamily: MONO, fontSize: 22, color: C.ink3 }}>{l} · Δ deflection</span>
+                  <span style={{ fontFamily: MONO, fontSize: 22, color: C.ink3 }}>{l} · worst load case</span>
                   <span style={{ fontFamily: PIXEL, fontSize: 60, color: col as string }}>{v}</span>
                 </div>
                 <div style={{ height: 8, borderRadius: 4, background: C.line, marginTop: 10, overflow: 'hidden' }}>
@@ -319,7 +319,7 @@ const Guard: React.FC<{ dur: number; off: number }> = ({ dur, off }) => {
               </div>
             )
           })}
-          <div style={{ marginTop: 24, fontSize: 24, color: C.ink2, opacity: restored }}>3 features restored, automatically</div>
+          <div style={{ marginTop: 24, fontSize: 24, color: C.ink2, opacity: restored }}>Printer chassis: 10 of 21 features put back, automatically</div>
         </div>
       </div>
     </AbsoluteFill>
@@ -349,7 +349,7 @@ const FreeCad: React.FC<{ dur: number }> = ({ dur }) => {
                 background: i ? 'rgba(251,86,7,0.14)' : 'transparent', border: i ? '1px solid rgba(251,86,7,0.4)' : '1px solid transparent' }}>{t}</div></Fade>
             ))}
             <Fade at={50}><div style={{ marginTop: 26, fontFamily: MONO, fontSize: 17, lineHeight: 1.6, color: C.ink3 }}>
-              DeFeat: 23 features removed<br />faces 84 → 31<br />mesh elements −55%<br /><span style={{ color: C.green }}>valid solid ✓</span>
+              DeFeat: 16 features removed<br />faces 84 → 36<br />mesh elements −26%<br /><span style={{ color: C.green }}>valid solid ✓</span>
             </div></Fade>
           </div>
           <div style={{ flex: 1, position: 'relative', background: '#1e1e1e' }}>
@@ -366,10 +366,10 @@ const Bars: React.FC<{ dur: number; off: number }> = ({ dur, off }) => {
   const f = useCurrentFrame()
   const s = L.bench.s - off
   const rows = [
-    { l: 'Fillets found · F1 on 1,500 real designer parts', a: 0.67, b: NUM.filletF1 },
-    { l: 'Chamfers found · F1', a: 0.56, b: NUM.chamferF1 },
-    { l: 'Feature vs body · F1 on 2,000 MFCAD parts', a: 0.95, b: NUM.mfcadF1 },
-    { l: `Valid solids out · ${NUM.parts} random real parts`, a: 1.0, b: NUM.valid / 100 },
+    { l: 'Fillets found · F1 on 3,000 real designer parts', a: 0.69, b: NUM.filletF1 },
+    { l: 'Chamfers found · F1', a: 0.58, b: NUM.chamferF1 },
+    { l: 'Feature vs body · F1 on 3,122 MFCAD parts', a: 0.95, b: NUM.mfcadF1 },
+    { l: `Valid solids out · ${NUM.parts} real parts`, a: 1.0, b: NUM.valid / 100 },
   ]
   const out = interpolate(f, [dur - 14, dur], [1, 0], clamp)
   return (

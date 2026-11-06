@@ -186,11 +186,53 @@ def label_faces(shape, spec, g=None):
 SURF = ["plane", "cylinder", "cone", "sphere", "torus", "bspline", "revolution", "extrusion", "other"]
 
 
+RULE_KINDS = ["fillet", "chamfer", "hole", "slot", "pocket", "step", "boss", "rib", "emboss", "protrusion"]
+
+
+def _shape_features(g, n):
+    """How blend-like a face is: a long thin strip, tangent to its neighbours along its long sides,
+    much smaller than the faces it joins."""
+    Lc = g.char_len
+    ed, nb = [], []
+    for m, eids in n.neighbors.items():
+        nb.append(g.nodes[m].area)
+        ed += [g.edges[e] for e in eids]
+    if not ed:
+        return [0.0] * 9
+    ed.sort(key=lambda e: -e.length)
+    longest = max(ed[0].length, 1e-9)
+    width = n.area / longest
+    perim = max(sum(e.length for e in ed), 1e-9)
+    smooth = sum(e.length for e in ed if e.convexity == 0) / perim
+    long2 = ed[:2]
+    span = min(width / n.info.radius, 2 * math.pi) / (2 * math.pi) if n.info.radius else 0.0
+    return [math.tanh(width / Lc * 20), min(width / longest, 1.0), smooth,
+            1.0 if long2[0].convexity == 0 else 0.0, 1.0 if long2[-1].convexity == 0 else 0.0,
+            sum(e.angle for e in long2) / len(long2) / math.pi, span,
+            min(math.log10(max(max(nb), 1e-12) / max(n.area, 1e-12)), 6) / 6,
+            min(math.log10(max(min(nb), 1e-12) / max(n.area, 1e-12)), 6) / 6]
+
+
+def _rule_kinds(g):
+    """What the rule recognizer calls each face, so the network learns when to trust it."""
+    from .recognize import Recognizer
+    out = [[0.0] * len(RULE_KINDS) for _ in g.nodes]
+    try:
+        for f in Recognizer(g).run():
+            if f.kind in RULE_KINDS:
+                for i in f.faces:
+                    out[i][RULE_KINDS.index(f.kind)] = 1.0
+    except Exception:
+        pass
+    return out
+
+
 def node_features(g):
     import numpy as np
     Lc = g.char_len
+    rule = _rule_kinds(g)
     X = []
-    for n in g.nodes:
+    for i, n in enumerate(g.nodes):
         oh = [1.0 if n.kind == s else 0.0 for s in SURF]
         conv = [0, 0, 0]
         deg = 0
@@ -206,7 +248,7 @@ def node_features(g):
             1.0 if n.concave_axis else 0.0, 1.0 if n.concave_axis is False else 0.0,
             min(r * 20, 1.0), min(n.n_inner_loops, 5) / 5.0,
             conv[0] / deg, conv[1] / deg, conv[2] / deg, math.log1p(deg) / 4,
-        ])
+        ] + _shape_features(g, n) + rule[i])
     E, EA = [], []
     for e in g.edges:
         a = [1.0 if e.convexity == k else 0.0 for k in (-1, 0, 1)] + [e.angle / math.pi, math.log10(max(e.length / Lc, 1e-6)) / 6 + 1]

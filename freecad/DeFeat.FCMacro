@@ -78,7 +78,7 @@ def _summary(m):
     parts = [f"{len(m['removed'])} features removed", f"faces {g['faces'][0]} -> {g['faces'][1]}",
              f"volume {g['volume_delta_pct']:+.2f}%"]
     if mesh.get("tet_reduction_pct") is not None:
-        parts.append(f"mesh elements -{mesh['tet_reduction_pct']:.0f}%")
+        parts.append(f"mesh elements {-mesh['tet_reduction_pct']:+.0f}%")
     if fea.get("tip_disp_delta_pct") is not None:
         parts.append(f"deflection {fea['tip_disp_delta_pct']:+.2f}%")
     if (m.get("guard") or {}).get("accepted"):

@@ -99,10 +99,10 @@ export const CUES: Record<'intro' | 'guide', { frames: number; lines: Record<str
    "s1": {
     "s": 1245,
     "e": 1287,
-    "text": "It sees every feature.",
+    "text": "It finds the features.",
     "subs": [
      {
-      "text": "It sees every feature.",
+      "text": "It finds the features.",
       "s": 1245,
       "e": 1287
      }
@@ -150,18 +150,13 @@ export const CUES: Record<'intro' | 'guide', { frames: number; lines: Record<str
    },
    "proof": {
     "s": 1890,
-    "e": 1987,
-    "text": "Then it proves it, with a real stress solve. Every time.",
+    "e": 2007,
+    "text": "Then it checks the result, with a real stress solve on both models.",
     "subs": [
      {
-      "text": "Then it proves it, with a real stress solve.",
+      "text": "Then it checks the result, with a real stress solve on both models.",
       "s": 1890,
-      "e": 1967
-     },
-     {
-      "text": "Every time.",
-      "s": 1967,
-      "e": 1987
+      "e": 2007
      }
     ],
     "chapter": null
@@ -325,18 +320,18 @@ export const CUES: Record<'intro' | 'guide', { frames: number; lines: Record<str
    },
    "map": {
     "s": 1320,
-    "e": 1616,
-    "text": "DeFeat reads the boundary representation and finds every feature. Each one comes with a plain-English reason, and a second opinion from the neural network.",
+    "e": 1611,
+    "text": "DeFeat reads the boundary representation and finds its features. Each one comes with a plain-English reason, and a second opinion from the neural network.",
     "subs": [
      {
-      "text": "DeFeat reads the boundary representation and finds every feature.",
+      "text": "DeFeat reads the boundary representation and finds its features.",
       "s": 1320,
-      "e": 1445
+      "e": 1442
      },
      {
       "text": "Each one comes with a plain-English reason, and a second opinion from the neural network.",
-      "s": 1445,
-      "e": 1616
+      "s": 1442,
+      "e": 1611
      }
     ],
     "chapter": 2
@@ -438,18 +433,18 @@ export const CUES: Record<'intro' | 'guide', { frames: number; lines: Record<str
    },
    "guard": {
     "s": 2925,
-    "e": 3150,
-    "text": "If simplifying moves the result by more than five percent, the stress guard restores the features that matter. On its own.",
+    "e": 3128,
+    "text": "If simplifying moves any load case by more than five percent, the stress guard puts features back. On its own.",
     "subs": [
      {
-      "text": "If simplifying moves the result by more than five percent, the stress guard restores the features that matter.",
+      "text": "If simplifying moves any load case by more than five percent, the stress guard puts features back.",
       "s": 2925,
-      "e": 3130
+      "e": 3107
      },
      {
       "text": "On its own.",
-      "s": 3130,
-      "e": 3150
+      "s": 3107,
+      "e": 3128
      }
     ],
     "chapter": null
@@ -531,51 +526,51 @@ export const CUES: Record<'intro' | 'guide', { frames: number; lines: Record<str
    },
    "bench": {
     "s": 4605,
-    "e": 4902,
-    "text": "Every number is measured on held-out, real-world cad. Fillets found with an F1 of zero point eight four. And a valid solid, every single time.",
+    "e": 4934,
+    "text": "Every number is measured on held-out, real-world cad. Fillets found with an F1 of zero point eight seven. And a valid solid, on all five hundred test parts.",
     "subs": [
      {
       "text": "Every number is measured on held-out, real-world cad.",
       "s": 4605,
-      "e": 4717
+      "e": 4718
      },
      {
-      "text": "Fillets found with an F1 of zero point eight four.",
-      "s": 4717,
-      "e": 4823
+      "text": "Fillets found with an F1 of zero point eight seven.",
+      "s": 4718,
+      "e": 4828
      },
      {
-      "text": "And a valid solid, every single time.",
-      "s": 4823,
-      "e": 4902
+      "text": "And a valid solid, on all five hundred test parts.",
+      "s": 4828,
+      "e": 4934
      }
     ],
     "chapter": null
    },
    "end": {
     "s": 4980,
-    "e": 5089,
-    "text": "DeFeat. Step in. Simulation-ready step out. Proven.",
+    "e": 5083,
+    "text": "DeFeat. Step in. Simulation-ready step out. Checked.",
     "subs": [
      {
       "text": "DeFeat.",
       "s": 4980,
-      "e": 4996
+      "e": 4995
      },
      {
       "text": "Step in.",
-      "s": 4996,
-      "e": 5014
+      "s": 4995,
+      "e": 5012
      },
      {
       "text": "Simulation-ready step out.",
-      "s": 5014,
-      "e": 5073
+      "s": 5012,
+      "e": 5066
      },
      {
-      "text": "Proven.",
-      "s": 5073,
-      "e": 5089
+      "text": "Checked.",
+      "s": 5066,
+      "e": 5083
      }
     ],
     "chapter": null

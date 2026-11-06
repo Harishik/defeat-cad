@@ -7,39 +7,43 @@
  "failed_items": [],
  "output_valid_rate": 1.0,
  "invalid_inputs": 0,
- "parts_with_features_to_remove": 203,
- "timeout_seconds_per_part": 900,
- "feature_removal_success_rate": 0.9331,
- "features_targeted": 987,
- "features_kept_by_kernel": 66,
- "features_restored_by_stress_guard": 295,
- "features_removed_in_final_output": 627,
+ "parts_with_features_to_remove": 154,
+ "timeout_seconds_per_part": 2400,
+ "feature_removal_success_rate": 0.8918,
+ "features_targeted": 850,
+ "features_kept_by_kernel": 92,
+ "features_restored_by_stress_guard": 116,
+ "features_removed_in_final_output": 642,
  "median_faces": 10.0,
- "median_face_reduction_pct": 14.28571428571429,
- "median_volume_change_pct": 0.3457331341984017,
+ "median_face_reduction_pct": 12.701612903225806,
+ "median_volume_change_pct": 0.13959917518117027,
  "seconds_per_part": {
-  "median": 0.751,
-  "p90": 28.797
+  "median": 0.5265,
+  "p90": 125.155
  },
  "mesh_subset": {
-  "n": 180,
-  "median_tet_reduction_pct": 11.876754158283529,
-  "p10_tet_reduction_pct": 0.0,
-  "p90_tet_reduction_pct": 61.87757691087853
+  "n": 151,
+  "median_tet_reduction_pct": 9.328859060402685,
+  "p10_tet_reduction_pct": -0.25148605395518975,
+  "p90_tet_reduction_pct": 75.45333923042901
  },
  "stress_guard": {
-  "triggered": 86,
-  "accepted": 84,
-  "share_within_5pct_before_guard": 0.4342,
-  "median_features_restored": 2.0
+  "triggered": 27,
+  "accepted": 27,
+  "undone": 11,
+  "share_within_5pct_before_guard": 0.82,
+  "median_features_restored": 2
  },
  "stress_subset": {
-  "n": 152,
-  "median_abs_deflection_change_pct": 1.5028276650189865,
-  "p90_abs_deflection_change_pct": 5.883221527974042,
-  "median_abs_peak_stress_change_pct": 2.35072828766303,
-  "p90_abs_peak_stress_change_pct": 21.305955401041558,
-  "share_within_5pct_deflection": 0.8684
+  "n": 150,
+  "median_abs_deflection_change_pct": 0.30477836662856084,
+  "p90_abs_deflection_change_pct": 2.264345875679201,
+  "median_abs_peak_stress_change_pct": 0.3962816323868371,
+  "p90_abs_peak_stress_change_pct": 2.4402585118584166,
+  "share_within_5pct_deflection": 1.0,
+  "share_within_5pct_worst_load_case": 1.0,
+  "median_worst_load_case_pct": 0.947005007544824,
+  "p90_worst_load_case_pct": 3.3409695829281305
  },
  "ci95": {
   "completion_rate": [
@@ -51,20 +55,28 @@
    1.0
   ],
   "feature_removal_success_rate": [
-   0.8811,
-   0.9691
+   0.8138,
+   0.9466
   ],
   "share_within_5pct_deflection": [
-   0.8055,
-   0.9132
+   0.975,
+   1.0
+  ],
+  "share_within_5pct_worst_load_case": [
+   0.975,
+   1.0
+  ],
+  "median_worst_load_case_pct": [
+   0.7205,
+   1.3629
   ],
   "share_within_5pct_before_guard": [
-   0.358,
-   0.5137
+   0.7508,
+   0.8732
   ],
   "median_abs_deflection_change_pct": [
-   0.9889,
-   1.9932
+   0.2009,
+   0.4428
   ]
  },
  "ci_method": "Wilson score interval for rates; 2000-sample part-level bootstrap for the removal rate and medians"

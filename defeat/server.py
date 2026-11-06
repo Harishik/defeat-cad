@@ -67,7 +67,7 @@ def preview(name: str):
     shape = occ.read_cad(p)
     g = build_graph(shape, curvature=False)
     feats = Recognizer(g).run()
-    d = decide(feats, Policy("static", default_h(g.char_len)))
+    d = decide(feats, Policy("static", default_h(g.char_len)), g, occ.volume(shape))
     removable = sorted({fid for f in feats if d[f.id].action == "remove" for fid in f.faces})
     out = {"mesh": mesh_payload(shape), "removable": removable, "features": len(feats),
            "faces": len(g.nodes), "remove": sum(1 for f in feats if d[f.id].action == "remove")}
@@ -371,4 +371,5 @@ if os.path.isdir(WEB):
         f = os.path.realpath(os.path.join(WEB, path))
         if path and f.startswith(os.path.realpath(WEB) + os.sep) and os.path.isfile(f):
             return FileResponse(f)
-        return FileResponse(os.path.join(WEB, "index.html"))
+        # the page names hashed assets, so it must be revalidated or an update keeps showing the old UI
+        return FileResponse(os.path.join(WEB, "index.html"), headers={"Cache-Control": "no-cache"})

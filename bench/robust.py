@@ -24,7 +24,7 @@ def run_one(args):
     """Full shipped pipeline via Session (rules + GNN, static preset, stress guard when meshing)."""
     name, with_mesh = args
     import shutil
-    from defeat import occ
+    from defeat import fea, occ
     from defeat.session import Session
     out = {"stage": "read"}
     s = Session(os.path.join(BASE, "breps", "step", name + ".stp"))
@@ -54,11 +54,14 @@ def run_one(args):
         if fd.get("tip_disp_delta_pct") is not None:
             out["tip_disp_delta_pct"] = fd["tip_disp_delta_pct"]
             out["stress_p99_delta_pct"] = fd["vm_p99_delta_pct"]
+            out["worst_case_pct"] = fea.worst_case(fd)
+            out["cases_pct"] = fd.get("cases_delta_pct")
         gd = s.metrics.get("guard") or {}
         if gd.get("triggered"):
-            out["guard_before_pct"] = gd.get("deflection_delta_pct", gd.get("before_pct"))
+            out["guard_before_pct"] = gd.get("before_pct")
             out["guard_accepted"] = bool(gd.get("accepted"))
             out["guard_restored"] = gd.get("restored", 0)
+            out["guard_undone"] = bool(gd.get("undone"))
         out["stage"] = "done"
         return out
     finally:
@@ -76,25 +79,35 @@ def main():
     ap.add_argument("--mesh", type=int, default=500, help="how many of the parts also get mesh + stress check")
     ap.add_argument("--workers", type=int, default=6)
     ap.add_argument("--timeout", type=int, default=240, help="seconds per part")
+    ap.add_argument("--val", action="store_true", help="validation parts, for tuning; saved apart from the test results")
+    ap.add_argument("--skip", type=int, default=0, help="start this far into the shuffled test split (for parts not scored before)")
     ap.add_argument("--retry", type=int, default=0,
                     help="re-run only the parts that timed out in the saved rows, with this per-part timeout")
     a = ap.parse_args()
-    test = json.load(open(os.path.join(BASE, "train_test.json")))["test"]
-    random.Random(1).shuffle(test)
-    items = [(n, i < a.mesh) for i, n in enumerate(test[: a.n])]
+    split = json.load(open(os.path.join(BASE, "train_test.json")))
+    if a.val:
+        tr = split["train"]
+        random.Random(0).shuffle(tr)
+        names = tr[4000: 4000 + a.n]
+    else:
+        test = split["test"]
+        random.Random(1).shuffle(test)
+        names = test[a.skip: a.skip + a.n]
+    tag = "robust_val" if a.val else "robustness"
+    items = [(n, i < a.mesh) for i, n in enumerate(names)]
     if a.retry:
         from bench.common import RESULTS
-        res = json.load(open(os.path.join(RESULTS, "robustness_rows.json")))
+        res = json.load(open(os.path.join(RESULTS, tag + "_rows.json")))
         again = [i for i, r in zip(items, res) if r.get("error") == "timeout"]
         redo = {str(i): r for i, r in zip(again, pmap_hard("bench.robust:run_one", again, workers=a.workers,
                                                             timeout=a.retry, label="retry"))}
         res = [redo.get(r["item"], r) for r in res]
     else:
         res = pmap_hard("bench.robust:run_one", items, workers=a.workers, timeout=a.timeout, label="robust")
-    report(res, items, a.retry or a.timeout)
+    report(res, items, a.retry or a.timeout, tag)
 
 
-def report(res, items, timeout):
+def report(res, items, timeout, tag="robustness"):
     ok = [r for r in res if r.get("ok")]
     fail = {}
     for r in res:
@@ -109,7 +122,9 @@ def report(res, items, timeout):
     n_in = sum(1 for r in ok if r.get("input_valid"))
     n_valid = sum(1 for r in ok if r.get("output_valid") and r.get("input_valid"))
     within = sum(1 for x in dd if x <= 5)
-    before = [abs(r.get("guard_before_pct", r["tip_disp_delta_pct"])) for r in ok if "tip_disp_delta_pct" in r]
+    worst = [r["worst_case_pct"] for r in ok if r.get("worst_case_pct") is not None]
+    within_worst = sum(1 for x in worst if x <= 5)
+    before = [r.get("guard_before_pct") or r["worst_case_pct"] for r in ok if r.get("worst_case_pct") is not None]
     within_before = sum(1 for x in before if x <= 5)
     # the kernel's job is to remove what was asked; the stress guard may then put some back on purpose
     rm_pairs = [(r["to_remove"] - r.get("kept_by_kernel", 0), r["to_remove"]) for r in with_rm]
@@ -120,6 +135,8 @@ def report(res, items, timeout):
         "output_valid_rate": wilson(n_valid, n_in),
         "feature_removal_success_rate": bootstrap(rm_pairs, lambda s: sum(a for a, _ in s) / max(sum(b for _, b in s), 1)),
         "share_within_5pct_deflection": wilson(within, len(dd)),
+        "share_within_5pct_worst_load_case": wilson(within_worst, len(worst)),
+        "median_worst_load_case_pct": bootstrap(worst, st.median),
         "share_within_5pct_before_guard": wilson(within_before, len(before)),
         "median_abs_deflection_change_pct": bootstrap(dd, st.median),
     }
@@ -145,18 +162,22 @@ def report(res, items, timeout):
                         "p10_tet_reduction_pct": pct(tets, 0.1), "p90_tet_reduction_pct": pct(tets, 0.9)},
         "stress_guard": {"triggered": sum(1 for r in ok if "guard_accepted" in r),
                          "accepted": sum(1 for r in ok if r.get("guard_accepted")),
-                         "share_within_5pct_before_guard": round(sum(1 for r in ok if "tip_disp_delta_pct" in r and abs(r.get("guard_before_pct", r["tip_disp_delta_pct"])) <= 5) / max(len(dd), 1), 4) if dd else None,
+                         "undone": sum(1 for r in ok if r.get("guard_undone")),
+                         "share_within_5pct_before_guard": round(within_before / max(len(before), 1), 4) if before else None,
                          "median_features_restored": st.median([r["guard_restored"] for r in ok if r.get("guard_accepted")]) if any(r.get("guard_accepted") for r in ok) else None},
         "stress_subset": {"n": len(dd), "median_abs_deflection_change_pct": st.median(dd) if dd else None,
                           "p90_abs_deflection_change_pct": pct(dd, 0.9),
                           "median_abs_peak_stress_change_pct": st.median(ds) if ds else None,
                           "p90_abs_peak_stress_change_pct": pct(ds, 0.9),
-                          "share_within_5pct_deflection": round(within / len(dd), 4) if dd else None},
+                          "share_within_5pct_deflection": round(within / len(dd), 4) if dd else None,
+                          "share_within_5pct_worst_load_case": round(within_worst / len(worst), 4) if worst else None,
+                          "median_worst_load_case_pct": st.median(worst) if worst else None,
+                          "p90_worst_load_case_pct": pct(worst, 0.9)},
         "ci95": ci,
         "ci_method": "Wilson score interval for rates; 2000-sample part-level bootstrap for the removal rate and medians",
     }
-    save("robustness_rows", res)
-    print(save("robustness", rep))
+    save(tag + "_rows", res)
+    print(save(tag, rep))
     print(json.dumps(rep, indent=1))
 
 

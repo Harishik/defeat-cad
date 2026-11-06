@@ -12,9 +12,9 @@
   "height": 39.9
  },
  "features.run": {
-  "x": 1764.7,
+  "x": 1767.9,
   "y": 24,
-  "width": 130.3,
+  "width": 127.1,
   "height": 40
  },
  "features.side": {
@@ -36,19 +36,19 @@
   "height": 31.4
  },
  "features.presets": {
-  "x": 1229.9,
+  "x": 1233.1,
   "y": 25.6,
   "width": 250.1,
   "height": 36.8
  },
  "features.h": {
-  "x": 1494.0,
+  "x": 1497.2,
   "y": 33.8,
   "width": 203.5,
   "height": 20.3
  },
  "features.kbtn": {
-  "x": 1711.5,
+  "x": 1714.7,
   "y": 24,
   "width": 39.2,
   "height": 40
@@ -63,25 +63,25 @@
   "x": 650,
   "y": 151.2,
   "width": 620,
-  "height": 183.7
+  "height": 451.1
  },
  "results": {
   "x": 14,
-  "y": 275.0,
+  "y": 140.5,
   "width": 640,
-  "height": 791.0
+  "height": 925.5
  },
  "results.stats": {
   "x": 33,
-  "y": 363.0,
+  "y": 228.4,
   "width": 602,
   "height": 194.4
  },
  "results.fea": {
   "x": 33,
-  "y": 571.4,
+  "y": 436.9,
   "width": 602,
-  "height": 142.4
+  "height": 276.9
  },
  "results.dl": {
   "x": 33,

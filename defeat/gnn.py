@@ -57,16 +57,20 @@ def to_data(d):
                 y=torch.tensor(d["y"], dtype=torch.long))
 
 
+NOT_BLEND_WEIGHT = float(os.environ.get("DEFEAT_NOT_BLEND_WEIGHT", 1.0))
+
+
 def _loss(logits, y, w):
     """Cross-entropy on labelled faces (y >= 0), ignore y == -1, and for partially labelled faces
-    (y == -2, 'not a fillet or chamfer') push probability mass away from the blend classes."""
+    (y == -2, 'not a fillet or chamfer') push probability mass away from the blend classes. The
+    weight on those faces sets the balance between finding every blend and raising no false alarms."""
     full = y >= 0
     loss = F.cross_entropy(logits[full], y[full], weight=w) if full.any() else logits.sum() * 0
     nb = y == -2
     if nb.any():
         p = torch.softmax(logits[nb], 1)
         p_blend = p[:, LABELS.index("fillet")] + p[:, LABELS.index("chamfer")]
-        loss = loss + 0.5 * (-torch.log((1 - p_blend).clamp_min(1e-6))).mean()
+        loss = loss + NOT_BLEND_WEIGHT * (-torch.log((1 - p_blend).clamp_min(1e-6))).mean()
     return loss
 
 

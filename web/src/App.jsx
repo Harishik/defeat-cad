@@ -47,10 +47,10 @@ function Pressable({ className = '', children, ...p }) {
 
 // ------------------------------------------------------------------ welcome
 const STATS = [
-  { v: '0.84', l: 'fillet F1 on 1,500 real designer parts' },
+  { v: '0.87', l: 'fillet F1 on 3,000 real designer parts' },
   { v: '500', l: 'random real-world parts run end to end' },
-  { v: '100%', l: 'valid solids out, never a broken model' },
-  { v: '−55%', l: 'mesh elements on the sample bracket' },
+  { v: '100%', l: 'valid solids out on those 500 parts' },
+  { v: '−26%', l: 'mesh elements on the sample bracket' },
 ]
 
 function usePreview(name) {
@@ -115,8 +115,8 @@ function Welcome({ onOpen, onUpload, onCreate, busy, llm, dark }) {
           <motion.div className="pill-badge" {...rise(0.05)}><span className="spark" />Open source · runs fully offline</motion.div>
           <motion.h1 {...rise(0.1)}><span className="nowrap">Simulation‑ready</span> <span className="nowrap">CAD, in a</span> sentence.</motion.h1>
           <motion.p className="lede" {...rise(0.16)}>
-            Drop in a mold part. DeFeat finds every <b>hole, fillet, rib, boss and logo</b>, decides what matters for <b>your analysis</b>,
-            and hands back a clean STEP — <b>proven</b> by meshing and a stress check on both models.
+            Drop in a mold part. DeFeat finds its <b>holes, fillets, ribs, bosses and logos</b>, decides what matters for <b>your analysis</b>,
+            and hands back a clean STEP, <b>checked</b> by meshing and a stress check on both models.
           </motion.p>
 
           <motion.div className={`command ${drag ? 'drag' : ''}`} {...rise(0.22)}>
@@ -363,22 +363,28 @@ function Results({ sid, res, onClose }) {
   const [verify, setVerify] = useState(null)
   const g = res.metrics.geometry, m = res.metrics.mesh, fea = res.metrics.fea
   const failed = Object.keys(res.metrics.failed || {}).length
+  const worst = fea?.delta?.cases_delta_pct ? Math.max(...Object.values(fea.delta.cases_delta_pct).map(Math.abs)) : null
+  const guard = res.metrics.guard
+  const guardOutside = guard?.triggered && (!guard.accepted || (guard.within_tol === false))
+  const unchanged = res.metrics.removed.length === 0
+  const solveSpeedup = fea?.original && fea?.defeatured ? fea.original.seconds / Math.max(fea.defeatured.seconds, 0.01) : null
+  const signed = (v, digits = 0) => `${v > 0 ? '−' : v < 0 ? '+' : ''}${fmt(Math.abs(v), digits)}%`
   return (
     <motion.div className="results glass" initial={{ y: 40, opacity: 0, scale: 0.98 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 40, opacity: 0 }} transition={spring}>
       <div className="results-head">
         <div>
-          <div className="results-title">Ready for meshing</div>
-          <div className="results-sub">{res.metrics.removed.length} features removed{failed ? ` · ${failed} kept (kernel could not remove)` : ''} · {res.metrics.strategy} · {fmt(res.metrics.seconds, 1)} s</div>
+          <div className="results-title">{!unchanged ? 'Ready for meshing' : guard?.undone ? 'Kept as designed' : 'Nothing to simplify'}</div>
+          <div className="results-sub">{unchanged && guard?.undone ? 'The stress guard undid every removal, so this is your original part' : `${res.metrics.removed.length} features removed`}{failed ? ` · ${failed} kept (kernel could not remove)` : ''}{unchanged ? '' : ` · ${res.metrics.strategy}`} · {fmt(res.metrics.seconds, 1)} s</div>
         </div>
         <Pressable className="icon-btn" onClick={onClose}>{I.close}</Pressable>
       </div>
       <div className="stats">
-        {m?.tet_reduction_pct != null && <Stat label="Mesh elements" value={`−${fmt(m.tet_reduction_pct, 0)}%`} sub={`${fmt(m.original.tets, 0)} → ${fmt(m.defeatured.tets, 0)} tets`} accent="var(--accent)" />}
-        <Stat label="Faces" value={`${g.faces[0]} → ${g.faces[1]}`} sub={`−${fmt(100 * (1 - g.faces[1] / g.faces[0]), 0)}%`} />
+        {m?.tet_reduction_pct != null && <Stat label="Mesh elements" value={signed(m.tet_reduction_pct)} sub={`${fmt(m.original.tets, 0)} → ${fmt(m.defeatured.tets, 0)} tets`} accent="var(--accent)" />}
+        <Stat label="Faces" value={`${g.faces[0]} → ${g.faces[1]}`} sub={signed(100 * (1 - g.faces[1] / g.faces[0]))} />
         <Stat label="Volume change" value={`${g.volume_delta_pct >= 0 ? '+' : ''}${fmt(g.volume_delta_pct, 2)}%`} sub={g.bbox_changed ? 'bounding box changed' : 'bounding box unchanged'} />
         <Stat label="Max deviation" value={`${fmt(g.deviation.max, 2)} mm`} sub={`mean ${fmt(g.deviation.mean, 2)} mm`} />
         {m?.defeatured?.ok && <Stat label="Mesh quality (min)" value={fmt(m.defeatured.q_min, 2)} sub={`was ${fmt(m.original.q_min, 2)} · SICN`} />}
-        {m?.speedup && <Stat label="Meshing time" value={`${fmt(m.speedup, 1)}× faster`} sub={`${fmt(m.original.seconds, 2)} s → ${fmt(m.defeatured.seconds, 2)} s`} />}
+        {!unchanged && m?.speedup >= 1.1 && <Stat label="Meshing time" value={`${fmt(m.speedup, 1)}× faster`} sub={`${fmt(m.original.seconds, 2)} s → ${fmt(m.defeatured.seconds, 2)} s`} />}
       </div>
       {fea?.delta && (
         <div className="fea">
@@ -386,10 +392,12 @@ function Results({ sid, res, onClose }) {
             <div className="fea-title">Static stress check</div>
             <div className="fea-sub">{fea.load_case}</div>
           </div>
+          {res.metrics.guard_message && <div className={`fea-guard${guardOutside ? ' warn' : ''}`}><b>Stress guard.</b> {res.metrics.guard_message}</div>}
           <div className="stats">
+            {worst != null && <Stat label="Worst of 4 load cases" value={`${fmt(worst, 2)}%`} sub="two bending directions, tension, torsion" accent={worst <= 5 ? 'var(--green)' : '#ff9f0a'} />}
             <Stat label="Tip deflection" value={`${fea.delta.tip_disp_delta_pct >= 0 ? '+' : ''}${fmt(fea.delta.tip_disp_delta_pct, 2)}%`} sub={`${fmt(fea.original.tip_disp, 4)} → ${fmt(fea.defeatured.tip_disp, 4)} mm`} accent={Math.abs(fea.delta.tip_disp_delta_pct) < 5 ? 'var(--green)' : '#ff9f0a'} />
             <Stat label="Peak stress (p99)" value={`${fea.delta.vm_p99_delta_pct >= 0 ? '+' : ''}${fmt(fea.delta.vm_p99_delta_pct, 2)}%`} sub={`${fmt(fea.original.vm_p99, 2)} → ${fmt(fea.defeatured.vm_p99, 2)} MPa`} accent={Math.abs(fea.delta.vm_p99_delta_pct) < 5 ? 'var(--green)' : '#ff9f0a'} />
-            <Stat label="Solve time" value={`${fmt(fea.original.seconds / Math.max(fea.defeatured.seconds, 0.01), 1)}× faster`} sub={`${fmt(fea.original.dofs, 0)} → ${fmt(fea.defeatured.dofs, 0)} DOFs`} />
+            {!unchanged && solveSpeedup >= 1.1 && <Stat label="Solve time" value={`${fmt(solveSpeedup, 1)}× faster`} sub={`${fmt(fea.original.dofs, 0)} → ${fmt(fea.defeatured.dofs, 0)} DOFs`} />}
           </div>
         </div>
       )}

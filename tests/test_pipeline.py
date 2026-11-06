@@ -94,3 +94,72 @@ def test_offline_intent_parser():
     rules = {c["arguments"]["feature_class"]: c["arguments"] for c in calls if c["name"] == "set_class_rule"}
     assert rules["emboss"]["action"] == "remove" and rules["hole"]["action"] == "keep"
     assert rules["fillet"]["max_size_mm"] == 2.0
+
+
+def test_native_cad_formats_get_a_clear_message(tmp_path):
+    from defeat import occ
+    p = tmp_path / "part.prt"
+    p.write_bytes(b"x")
+    with pytest.raises(ValueError, match="nx/export_step.py"):
+        occ.read_cad(str(p))
+
+
+def test_stress_check_uses_the_same_regions_for_both_models():
+    import numpy as np
+    from defeat import fea
+    # a 10 x 10 x 100 bar: deflection must match beam theory, and locking the end regions must hold
+    pts = []
+    for z in range(0, 101, 10):
+        for y in (0, 5, 10):
+            for x in (0, 5, 10):
+                pts.append((x, y, z))
+    p = np.array(pts, float)
+    idx = lambda i, j, k: k * 9 + j * 3 + i
+    t = []
+    for k in range(10):
+        for j in range(2):
+            for i in range(2):
+                c = [idx(i, j, k), idx(i + 1, j, k), idx(i + 1, j + 1, k), idx(i, j + 1, k),
+                     idx(i, j, k + 1), idx(i + 1, j, k + 1), idx(i + 1, j + 1, k + 1), idx(i, j + 1, k + 1)]
+                t += [[c[0], c[1], c[3], c[4]], [c[1], c[2], c[3], c[6]], [c[1], c[3], c[4], c[6]],
+                      [c[1], c[4], c[5], c[6]], [c[3], c[4], c[6], c[7]]]
+    bc = fea.load_case((0, 0, 0, 10, 10, 100))
+    a = fea.solve(p, t, bc)
+    assert a["ok"] and len(a["ends"]) == 2
+    a["h_fea"] = 5.0
+    fea.lock(bc, a)
+    b = fea.solve(p, t, bc)
+    assert b["ends"] == a["ends"]
+    assert b["tip_disp"] == pytest.approx(a["tip_disp"])
+    # free length about 90 of 100: F L^3 / 3 E I, within a factor that covers the end regions
+    L, I = 90.0, 10 ** 4 / 12
+    beam = fea.FORCE_N * L ** 3 / (3 * fea.MATERIAL["E"] * I)
+    assert 0.5 * beam < a["tip_disp"] < 1.5 * beam
+
+
+def test_volume_budget_keeps_the_largest_features(bracket):
+    from defeat.decide import Policy, decide, est_volume
+    from defeat import occ
+    shape, g, feats = bracket
+    free = decide(feats, Policy("static", 4.0))
+    vol = occ.volume(shape)
+    d = decide(feats, Policy("static", 4.0), g, vol)
+    moved = sum(est_volume(f, g) for f in feats if d[f.id].action == "remove")
+    assert moved <= 0.01 * vol
+    removed = [f for f in feats if d[f.id].action == "remove"]
+    kept_by_budget = [f for f in feats if free[f.id].action == "remove" and d[f.id].action == "keep"]
+    if removed and kept_by_budget:
+        assert max(est_volume(f, g) for f in removed) <= min(est_volume(f, g) for f in kept_by_budget)
+
+
+def test_removal_that_rebuilds_too_much_material_is_rejected(bracket, monkeypatch):
+    from defeat import execute, occ
+    from defeat.execute import _remove_faces
+    monkeypatch.setattr(execute, "TINY_VOLUME", 0.0)
+    monkeypatch.setattr(execute, "TINY_GROWTH", 0.0)
+    shape, g, feats = bracket
+    f = next(x for x in feats if x.kind == "fillet")
+    brep = occ.to_brep_string(shape)
+    assert _remove_faces(brep, f.faces)["ok"]
+    r = _remove_faces(brep, f.faces, 0.0, (0.0, 0.0))
+    assert not r["ok"] and "material" in r["error"]

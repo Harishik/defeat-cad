@@ -176,14 +176,6 @@ export const Intro: React.FC = () => {
             <AbsoluteFill style={{ justifyContent: 'flex-start', alignItems: 'center', paddingTop: 120 }}>
               <Spoken cue={{ ...L.noise, s: L.noise.s - bar(8.2), e: L.noise.e - bar(8.2) }} text="But to a simulation," size={52} weight={500} align="center" />
             </AbsoluteFill>
-            <Fade at={sec(2.4)} style={{ position: 'absolute', left: 150, bottom: 110 }}>
-              <div style={{ fontFamily: MONO, fontSize: 22, color: C.ink3, letterSpacing: '0.12em' }}>MESH ELEMENTS</div>
-              <Counter to={1284000} from={96000} at={sec(2.4)} dur={sec(5.5)} style={{ fontFamily: PIXEL, fontSize: 84, color: C.ink }} />
-            </Fade>
-            <Fade at={sec(3.6)} style={{ position: 'absolute', right: 150, bottom: 110, textAlign: 'right' }}>
-              <div style={{ fontFamily: MONO, fontSize: 22, color: C.ink3, letterSpacing: '0.12em' }}>SOLVE TIME</div>
-              <Counter to={6.4} from={0.3} decimals={1} suffix=" h" at={sec(3.6)} dur={sec(4.5)} style={{ fontFamily: PIXEL, fontSize: 84, color: C.orange }} />
-            </Fade>
           </>
         )
       }}</Seg>
@@ -205,7 +197,7 @@ export const Intro: React.FC = () => {
       {/* ---------- 5. sees / keeps / removes */}
       <Seg a={bar(16.5)} b={L.s2.s - 6}>{(t, dur) => (
         <>
-          <Super text="Sees." at={L.s1.s - bar(16.5) + 2} size={190} y={-300} />
+          <Super text="Finds." at={L.s1.s - bar(16.5) + 2} size={190} y={-300} />
         </>
       )}</Seg>
       <Seg a={L.s2.s - 6} b={L.s3.s - 6}>{(t, dur) => (
@@ -240,7 +232,7 @@ export const Intro: React.FC = () => {
       )}</Seg>
       <Seg a={bar(26)} b={bar(27)}>{(t, dur) => (
         <>
-          <Stat at={4} dur={dur} value={<><span style={{ color: C.orange }}>&lt;</span><Counter to={3} at={4} dur={18} />%</>} label="change in stress response" sub="REAL STATIC SOLVE · BOTH MODELS" />
+          <Stat at={4} dur={dur} value={<><span style={{ color: C.orange }}>&lt;</span><Counter to={3} at={4} dur={18} />%</>} label="change in stress response" sub="FOUR LOAD CASES · SAMPLE BRACKET" />
         </>
       )}</Seg>
       <Seg a={bar(27)} b={bar(28)}>{(t, dur) => (
@@ -248,7 +240,7 @@ export const Intro: React.FC = () => {
       )}</Seg>
       <Seg a={bar(28)} b={bar(29)}>{(t, dur) => (
         <>
-          <Stat at={4} dur={dur} value={<><Counter to={NUM.valid} at={4} dur={22} />%</>} label="valid solids, every time" sub={`${NUM.parts} RANDOM REAL PARTS`} />
+          <Stat at={4} dur={dur} value={<><Counter to={NUM.valid} at={4} dur={22} />%</>} label="valid solids" sub={`${NUM.parts} RANDOM REAL PARTS`} />
         </>
       )}</Seg>
 

@@ -94,12 +94,12 @@ def main():
 
         # MFCAD
         f, ax = fig(t)
-        series = ["Rules only", "GNN only"]
-        pr, pg = mf["rule"], mf["gnn"]
-        vals = [[pr["feature_vs_stock"]["f1"], pr["per_class"]["per_class"]["cut"]["f1"], pr["per_class"]["per_class"]["step"]["f1"]],
-                [pg["feature_vs_stock"]["f1"], pg["per_class"]["per_class"]["cut"]["f1"], pg["per_class"]["per_class"]["step"]["f1"]]]
-        t2 = dict(t, c=[t["c"][0], t["c"][1]])
-        grouped(ax, t2, ["Feature vs. body", "Cut-outs", "Steps"], series, vals)
+        series = ["Rules only", "GNN only", "DeFeat (rules + GNN)"]
+
+        def row(p):
+            return [p["feature_vs_stock"]["f1"], p["per_class"]["per_class"]["cut"]["f1"], p["per_class"]["per_class"]["step"]["f1"]]
+        vals = [row(mf["rule"]), row(mf["gnn"]), row(mf["fused"])]
+        grouped(ax, t, ["Feature vs. body", "Cut-outs", "Steps"], series, vals)
         title(f, t, "Machining-feature recognition (F1)",
               f"MFCAD held-out split — {mf['parts_ok']:,} parts, {mf['rule']['per_class']['faces']:,} faces")
         f.subplots_adjust(top=0.72, bottom=0.1, left=0.05, right=0.98)

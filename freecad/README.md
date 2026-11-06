@@ -17,5 +17,5 @@ python freecad/DeFeat.FCMacro part.step part_defeatured.step modal
 ```
 
 ## Tested
-- **Headless FreeCAD 1.1.4 (`freecadcmd`) on the bracket sample:** 27 features recognized, 23 removed, 84 → 31 faces, a valid solid, mesh elements −55%.
-- **Full FreeCAD 1.1.4 GUI on the bracket sample (modal preset):** the preset dialog lists static, modal, thermal and CFD; the result is added as `<name>_defeatured` (31 faces, one valid solid); the original is hidden and left at 84 faces; the summary dialog reports the features removed, faces, volume (+0.83%), mesh elements (−55%) and deflection (−2.91%). The dialogs were answered by a startup script, not clicked by hand.
+- **Headless FreeCAD 1.1.4 (`freecadcmd`) on the bracket sample, this release:** 25 features recognized, 16 removed, 84 → 36 faces, one valid solid, the original left at 84 faces, volume +0.08%, mesh elements −26%, deflection −0.89%.
+- **Full FreeCAD 1.1.4 GUI on the bracket sample, previous release (modal preset):** the preset dialog lists static, modal, thermal and CFD; the result is added as `<name>_defeatured`; the original is hidden and left unchanged; the summary dialog reports the result. The dialogs were answered by a startup script, not clicked by hand, and this hasn't been repeated on this release.

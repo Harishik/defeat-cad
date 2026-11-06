@@ -441,10 +441,52 @@ class Recognizer:
         return self.features
 
 
-def refine_with_gnn(g: FaceGraph, feats, P, labels, veto=0.4, add=0.5, override=1.01):
-    """Rules + GNN for blends (thresholds tuned on held-out validation parts, see bench/tune_fusion.py):
-    drop a rule fillet/chamfer the GNN finds unlikely, add blends the GNN is confident about, and let a
-    very confident blend call (> override) take a face back from a non-blend rule feature."""
+def _machined_with_gnn(g: FaceGraph, feats, P, labels, t):
+    """Steps and cut-outs: the network reads these far better than the rules. Drop a rule step it
+    rejects, rename a rule cut-out it calls a step, and add confident groups of faces the rules left
+    as body. A group holding a large share of the part is a body, whatever the network thinks."""
+    si, pi = labels.index("step"), labels.index("pocket")
+    keep = []
+    for f in feats:
+        p = sum(P[x][si] for x in f.faces) / len(f.faces)
+        if f.kind == "step" and p < 1 - t:
+            continue
+        if f.kind in ("slot", "pocket") and p > t:
+            f.kind = "step"
+        keep.append(f)
+    owned = {x for f in keep for x in f.faces}
+    for kind, idx in (("step", si), ("pocket", pi)):
+        cand = {n.id for n in g.nodes if n.id not in owned and P[n.id][idx] > t and P[n.id].argmax() == idx}
+        while cand:
+            s = cand.pop()
+            comp, q = {s}, deque([s])
+            while q:
+                for m in g.nodes[q.popleft()].neighbors:
+                    if m in cand:
+                        cand.discard(m)
+                        comp.add(m)
+                        q.append(m)
+            faces = sorted(comp)
+            area = sum(g.nodes[x].area for x in faces)
+            if area > MAX_MACHINED_AREA * g.total_area:
+                continue
+            L = max(g.edges[e].length for x in faces for es in g.nodes[x].neighbors.values() for e in es)
+            w = area / max(L, 1e-9)
+            keep.append(Feature(0, kind, faces, params={"width": round(w, 3)}, size=w, source="gnn",
+                                confidence=round(float(sum(P[x][idx] for x in faces) / len(faces)), 3),
+                                note=f"{kind}, width {w:.2f} (found by GNN)"))
+            owned |= comp
+    return keep
+
+
+MAX_MACHINED_AREA = 0.25
+
+
+def refine_with_gnn(g: FaceGraph, feats, P, labels, veto=0.4, add=0.5, override=1.01, machined=1.01):
+    """Rules + GNN (thresholds tuned on held-out validation parts, see bench/tune_fusion.py): drop a
+    rule fillet/chamfer the GNN finds unlikely, add blends the GNN is confident about, let a very
+    confident blend call (> override) take a face back from a non-blend rule feature, and above
+    `machined` let it settle steps and cut-outs."""
     fi, ci = labels.index("fillet"), labels.index("chamfer")
     keep = []
     for f in feats:
@@ -491,13 +533,16 @@ def refine_with_gnn(g: FaceGraph, feats, P, labels, veto=0.4, add=0.5, override=
             keep.append(ft)
             for x in faces:
                 R.owner[x] = -1
+    if machined <= 1:
+        keep = _machined_with_gnn(g, keep, P, labels, machined)
     for i, f in enumerate(keep):
         f.id = i
     return keep
 
 
-# rules + GNN thresholds, tuned on the validation parts by bench/tune_fusion.py
-FUSION = {"veto": 0.7, "add": 0.8, "override": 0.95}
+# rules + GNN thresholds: blends tuned on the validation parts by bench/tune_fusion.py, `machined` on
+# unused MFCAD train-split parts, choosing the setting that adds least on real parts for the same score
+FUSION = {"veto": 0.9, "add": 0.6, "override": 0.5, "machined": 0.99}
 
 
 def recognize(shape, g: FaceGraph | None = None, use_gnn=True):

@@ -11,7 +11,7 @@ import os
 import pickle
 import random
 
-from bench.common import DATA, OURS_GROUP, fuse, binary_metrics, face_metrics, pmap, rule_face_labels, save
+from bench.common import DATA, OURS_GROUP, binary_metrics, face_metrics, pmap, rule_face_labels, save
 
 FEAT_NAMES = ['rectangular_through_slot', 'triangular_through_slot',
               'rectangular_passage', 'triangular_passage', '6sides_passage',
@@ -59,7 +59,8 @@ def evaluate_one(path):
         from defeat.datagen import LABELS
         P = predict_faces(g)
         out["gnn"] = [OURS_GROUP.get(LABELS[i], "base") for i in P.argmax(1)]
-        out["fused"] = fuse(rule, P, LABELS)
+        from defeat.recognize import FUSION, refine_with_gnn
+        out["fused"] = [OURS_GROUP[k] for k in rule_face_labels(g, refine_with_gnn(g, feats, P, LABELS, **FUSION))]
     except Exception:
         pass
     return out

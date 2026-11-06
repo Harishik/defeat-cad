@@ -15,9 +15,9 @@ from bench.common import OURS_GROUP, pmap, rule_face_labels, save
 from bench.fusion import BASE, GT, load
 
 
-VETO = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+VETO = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 ADD = [0.4, 0.5, 0.6, 0.7, 0.8, 1.01]
-OVERRIDE = [0.6, 0.7, 0.8, 0.9, 0.95, 1.01]   # 1.01 = off
+OVERRIDE = [0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 1.01]   # 1.01 = off
 
 
 def one(name):

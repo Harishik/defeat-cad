@@ -3,7 +3,7 @@ labels (ExtrudeSide/End, CutSide/End, Fillet, Chamfer, RevolveSide/End). Uses th
 split. Fillet and chamfer labels map 1:1 to DeFeat classes; 'Cut' faces are reported as an
 indicative comparison only (a design cut is not always a small feature).
 
-    python -m bench.fusion --n 1500
+    python -m bench.fusion --n 1500 --skip 1500
 """
 from __future__ import annotations
 
@@ -81,10 +81,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=1500)
     ap.add_argument("--workers", type=int, default=7)
+    ap.add_argument("--skip", type=int, default=0, help="start this far into the shuffled test split (for parts not scored before)")
+    ap.add_argument("--out", default="fusion_test", help="name of the results file")
     a = ap.parse_args()
     test = json.load(open(os.path.join(BASE, "train_test.json")))["test"]
     random.Random(0).shuffle(test)
-    names = test[: a.n]
+    names = test[a.skip: a.skip + a.n]
     res = pmap(evaluate_one, names, workers=a.workers, timeout=90, label="fusion")
     ok = [r for r in res if r.get("ok")]
     report = {"dataset": "Fusion 360 Gallery segmentation, extended STEP (official test split)",
@@ -96,7 +98,7 @@ def main():
             k = r.get("error", "?").split(":")[0]
             report["failure_reasons"][k] = report["failure_reasons"].get(k, 0) + 1
     report.update(summarize(ok))
-    print(save("fusion_test", report))
+    print(save(a.out, report))
     for who in ("rule", "gnn", "fused"):
         if who in report:
             print(who, {k: report[who][k] for k in ("fillet", "chamfer", "cut_indicative")})

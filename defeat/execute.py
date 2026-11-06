@@ -15,13 +15,18 @@ from dataclasses import dataclass, field
 
 from . import occ
 
+VOLUME_LIMIT = 1.0
+GROWTH_LIMIT = 2.0
+TINY_VOLUME = 0.002      # share of the part's volume
+TINY_GROWTH = 0.01       # share of its diagonal
 ORDER = ["emboss", "chamfer", "fillet", "hole", "slot", "pocket", "step", "boss", "rib", "protrusion"]
 
 
 # ---------------------------------------------------------------- worker side
-def _remove_faces(brep: bytes, face_ids: list[int], fuzzy: float = 0.0):
+def _remove_faces(brep: bytes, face_ids: list[int], fuzzy: float = 0.0, limits=None):
     """Remove faces; also return where every input face went (from the kernel's own history),
-    so later features can be found again exactly even when their neighbours changed."""
+    so later features can be found again exactly even when their neighbours changed.
+    limits = (max_volume_change, max_growth): what the removed faces could physically account for."""
     from OCP.BRepAlgoAPI import BRepAlgoAPI_Defeaturing
     from OCP.TopAbs import TopAbs_FACE
     from OCP.TopTools import TopTools_ListOfShape
@@ -52,6 +57,15 @@ def _remove_faces(brep: bytes, face_ids: list[int], fuzzy: float = 0.0):
         return {"ok": False, "error": "removal split or merged bodies"}
     if len(_occ.faces_of(res)) >= len(faces):
         return {"ok": False, "error": "kernel returned the part unchanged"}
+    if limits is not None:
+        v0 = abs(_occ.volume(shape))
+        dv = abs(_occ.volume(res) - _occ.volume(shape))
+        a, b = _occ.bbox(shape), _occ.bbox(res)
+        grow = max(max(a[i] - b[i] for i in range(3)), max(b[i + 3] - a[i + 3] for i in range(3)))
+        diag = _occ.norm(_occ.sub(a[3:], a[:3]))
+        # tiny changes always pass: a deep slot or a sharp corner can beat the estimate and still be harmless
+        if (dv > limits[0] and dv > TINY_VOLUME * v0) or (grow > limits[1] and grow > TINY_GROWTH * diag):
+            return {"ok": False, "error": "the kernel rebuilt far more material than the feature holds"}
     fmap = None
     if not healed:
         out = _occ.indexed(res, TopAbs_FACE)
@@ -223,6 +237,12 @@ def _blend_neighbours(ft, graph, todo_by_face, owner_kind):
     return extra
 
 
+def _limits(face_ids, size, areas, slack):
+    """A feature cannot hold more material than its faces times its size, nor reach further than its
+    size. Anything beyond that means the kernel extended neighbouring faces somewhere they should not go."""
+    return VOLUME_LIMIT * sum(areas[i] for i in face_ids) * size + slack, GROWTH_LIMIT * size + slack
+
+
 def defeature(shape, features, decisions, progress=None, timeout=30.0, graph=None) -> ExecResult:
     t0 = time.time()
     todo = [f for f in features if decisions[f.id].action == "remove"]
@@ -240,8 +260,15 @@ def defeature(shape, features, decisions, progress=None, timeout=30.0, graph=Non
             progress(msg)
 
     all_faces = sorted({fid for f in todo for fid in f.faces})
+    areas = [occ.area(f) for f in occ.faces_of(shape)]
+    box = occ.bbox(shape)
+    diag = max(1.0, occ.norm(occ.sub(box[3:], box[:3])))
+    slack = 1e-3 * diag
+    vol_slack = slack * sum(areas) * 1e-3
     say(f"Removing {len(todo)} features ({len(all_faces)} faces) in one pass")
-    r = w.call("_remove_faces", brep, all_faces, timeout=timeout)
+    one_by_one = [_limits(f.faces, f.size, areas, 0) for f in todo]
+    batch = (sum(l[0] for l in one_by_one) + vol_slack, max(l[1] for l in one_by_one) + slack)
+    r = w.call("_remove_faces", brep, all_faces, 0.0, batch, timeout=timeout)
     if r["ok"]:
         res.shape = occ.from_brep_string(r["brep"])
         res.removed = [f.id for f in todo]
@@ -256,7 +283,6 @@ def defeature(shape, features, decisions, progress=None, timeout=30.0, graph=Non
     faces = occ.faces_of(cur)
     sigs = [_signature(f) for f in faces]
     idmap = {i: i for i in range(len(faces))}   # original face id -> current face id
-    diag = max(1.0, occ.norm(occ.sub(occ.bbox(shape)[3:], occ.bbox(shape)[:3])))
     tol = 1e-3 * diag
     todo_by_face = {fid: f for f in todo for fid in f.faces}
     owner_kind = {fid: f.kind for f in features for fid in f.faces}
@@ -304,7 +330,8 @@ def defeature(shape, features, decisions, progress=None, timeout=30.0, graph=Non
             if not cur_ids or any(c is None for c in cur_ids):
                 last = "geometry changed by an earlier removal"
                 continue
-            r = w.call("_remove_faces", cur_brep, cur_ids, fz, timeout=timeout)
+            vol, grow = _limits(grp, ft.size, areas, 0)
+            r = w.call("_remove_faces", cur_brep, cur_ids, fz, (vol + vol_slack, grow + slack), timeout=timeout)
             if r["ok"]:
                 apply(r)
                 done.add(ft.id)

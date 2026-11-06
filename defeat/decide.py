@@ -1,5 +1,7 @@
-"""Keep / remove decisions. Thresholds are multiples of the target mesh size h,
-because a feature only hurts the mesh when it is small relative to the elements."""
+"""Keep / remove decisions. Thresholds are multiples of the target mesh size h, because a feature
+only hurts the mesh when it is small relative to the elements. On top of that sits a volume budget:
+on real parts the change in stiffness follows how much material moves, not how wide a feature is, so
+a preset removes the smallest features first and stops once it has used its share of the part."""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -7,6 +9,7 @@ from dataclasses import dataclass, field
 PRESETS = {
     "static": {
         "label": "Linear static (stress)",
+        "volume_budget_pct": 1.0,
         "blurb": "Removes cosmetic detail; keeps ribs, gussets and load-path geometry.",
         "rules": {
             "emboss": {"remove": "always"},
@@ -23,6 +26,7 @@ PRESETS = {
     },
     "modal": {
         "label": "Modal (vibration)",
+        "volume_budget_pct": 1.0,
         "blurb": "Keeps stiffness and mass-carrying geometry; strips small detail.",
         "rules": {
             "emboss": {"remove": "always"},
@@ -39,6 +43,7 @@ PRESETS = {
     },
     "thermal": {
         "label": "Thermal",
+        "volume_budget_pct": 2.0,
         "blurb": "Keeps ribs and fins (they carry heat); removes blends and small holes.",
         "rules": {
             "emboss": {"remove": "always"},
@@ -55,6 +60,7 @@ PRESETS = {
     },
     "cfd": {
         "label": "CFD (external flow)",
+        "volume_budget_pct": 5.0,
         "blurb": "Aggressive cleanup for a light surface mesh; thin ribs go too.",
         "rules": {
             "emboss": {"remove": "always"},
@@ -70,6 +76,16 @@ PRESETS = {
         },
     },
 }
+
+# material in a feature, as a share of (its face area x its size): a hole is exactly A*d/4, a fillet
+# 0.14*A*R, a chamfer about 0.35*A*c; pockets and slots depend on depth, a quarter is typical
+VOLUME_SHARE = {"hole": 0.25, "boss": 0.25, "slot": 0.25, "pocket": 0.25, "step": 0.5, "fillet": 0.14,
+                "chamfer": 0.35, "emboss": 0.5, "rib": 0.5, "protrusion": 0.5}
+
+
+def est_volume(ft, graph):
+    return VOLUME_SHARE.get(ft.kind, 0.5) * sum(graph.nodes[f].area for f in ft.faces) * ft.size
+
 
 SIZE_LABEL = {"hole": "Ø", "slot": "width", "pocket": "width", "step": "width", "boss": "Ø", "rib": "thickness",
               "fillet": "R", "chamfer": "width", "emboss": "height", "protrusion": "height"}
@@ -114,7 +130,22 @@ def _fmt(v):
     return f"{v:.2f}".rstrip("0").rstrip(".")
 
 
-def decide(features, policy: Policy):
+def _apply_budget(features, policy, out, graph, part_volume):
+    """Smallest first; once the preset's share of the part is used, everything larger stays.
+    Your own choices (per feature or per class) are never overridden."""
+    pct = PRESETS[policy.preset].get("volume_budget_pct")
+    if not pct or not part_volume:
+        return
+    free = [f for f in features if out[f.id].action == "remove" and not out[f.id].locked and f.kind not in policy.overrides]
+    used, limit = 0.0, pct / 100 * abs(part_volume)
+    for f in sorted(free, key=lambda f: est_volume(f, graph)):
+        used += est_volume(f, graph)
+        if used > limit:
+            out[f.id] = Decision(f.id, "keep", f"Kept: simplifying this far would move more than {_fmt(pct)}% of the part's "
+                                               "volume, and that is what changes its stiffness")
+
+
+def decide(features, policy: Policy, graph=None, part_volume=None):
     out = {}
     for ft in features:
         if ft.id in policy.feature_overrides:
@@ -141,4 +172,6 @@ def decide(features, policy: Policy):
                                       if "max_size" not in rule else f"{size_txt} < {_fmt(lim)} (your limit)")
             else:
                 out[ft.id] = Decision(ft.id, "keep", f"{size_txt} ≥ {_fmt(lim)} — large enough to affect results")
+    if graph is not None:
+        _apply_budget(features, policy, out, graph, part_volume)
     return out

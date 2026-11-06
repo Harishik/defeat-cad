@@ -1,6 +1,8 @@
 """Thin helpers over OpenCASCADE (OCP) used across the engine."""
 from __future__ import annotations
 
+import os
+
 import math
 from dataclasses import dataclass
 
@@ -39,6 +41,10 @@ SURF_NAMES = ["plane", "cylinder", "cone", "sphere", "torus", "bspline", "revolu
 
 
 # ---------------------------------------------------------------- I/O
+NATIVE_FORMATS = {".prt": "Siemens NX", ".sldprt": "SolidWorks", ".catpart": "CATIA", ".ipt": "Inventor",
+                  ".f3d": "Fusion", ".par": "Solid Edge", ".x_t": "Parasolid", ".x_b": "Parasolid"}
+
+
 def read_cad(path: str) -> TopoDS_Shape:
     p = path.lower()
     if p.endswith((".step", ".stp")):
@@ -57,6 +63,11 @@ def read_cad(path: str) -> TopoDS_Shape:
         shape = TopoDS_Shape()
         BRepTools.Read_s(shape, path, BRep_Builder())
     else:
+        ext = os.path.splitext(p)[1]
+        if ext in NATIVE_FORMATS:
+            raise ValueError(f"{ext} is {NATIVE_FORMATS[ext]}'s own format and has no open-source reader. "
+                             "Export the part to STEP from that program, then open the STEP file."
+                             + (" For NX, nx/export_step.py does this, one part or a whole batch." if ext == ".prt" else ""))
         raise ValueError("Supported formats: .step .stp .iges .igs .brep")
     return shape
 

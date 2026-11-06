@@ -52,7 +52,10 @@ def geometry_report(orig, new):
 
 
 # ---------------------------------------------------------------- gmsh (runs in the worker)
-def mesh_stats(step_bytes: bytes, h: float, order: int = 1, keep_mesh: bool = False):
+MESHERS = (1, 10, 4)   # Delaunay first (deterministic); HXT and frontal when it fails on a surface mesh
+
+
+def mesh_stats(step_bytes: bytes, h: float, order: int = 1, keep_mesh: bool = False, curvature: int = 12):
     import gmsh
     fd, path = tempfile.mkstemp(suffix=".step")
     os.write(fd, step_bytes)
@@ -67,12 +70,21 @@ def mesh_stats(step_bytes: bytes, h: float, order: int = 1, keep_mesh: bool = Fa
         gmsh.model.occ.synchronize()
         gmsh.option.setNumber("Mesh.MeshSizeMax", h)
         gmsh.option.setNumber("Mesh.MeshSizeMin", h * 0.05)
-        gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", 12)
-        gmsh.option.setNumber("Mesh.Algorithm3D", 1)    # Delaunay (deterministic)
+        gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", curvature)
         gmsh.option.setNumber("Mesh.Optimize", 1)         # remove sliver tetrahedra
         gmsh.option.setNumber("Mesh.OptimizeNetgen", 1)
         t = time.time()
-        gmsh.model.mesh.generate(3)
+        for algorithm in MESHERS:
+            gmsh.option.setNumber("Mesh.Algorithm3D", algorithm)
+            try:
+                gmsh.model.mesh.generate(3)
+                if not len(gmsh.model.mesh.getElementsByType(4)[0]):
+                    raise RuntimeError("the mesher produced no volume elements")
+                break
+            except Exception:
+                if algorithm == MESHERS[-1]:
+                    raise
+                gmsh.model.mesh.clear()
         dt = time.time() - t
         types, tags, nodes = gmsh.model.mesh.getElements(3)
         tets = np.concatenate([tg for ty, tg in zip(types, tags) if ty in (4, 11)]) if len(types) else np.array([])
@@ -108,14 +120,26 @@ def step_bytes(shape) -> bytes:
     return data
 
 
+COARSER = (1, 2, 4)   # a part too heavy to mesh in time at h still gets a comparison, on a coarser mesh
+
+
 def mesh_compare(orig, new, h, timeout=300.0, with_fea=True):
     from . import fea
     from .execute import worker
     w = worker()
     if with_fea:
-        bc = fea.load_case(occ.bbox(orig))
-        a = w.call("defeat.fea:mesh_and_solve", step_bytes(orig), h, bc, timeout=timeout)
-        b = w.call("defeat.fea:mesh_and_solve", step_bytes(new), h, bc, timeout=timeout)
+        b = {"ok": False, "error": "the original could not be meshed"}
+        base = h
+        for k in COARSER:
+            bc = fea.load_case(occ.bbox(orig))
+            a = w.call("defeat.fea:mesh_and_solve", step_bytes(orig), base * k, bc, timeout=timeout)
+            if not (a.get("fea") or {}).get("ok"):
+                continue
+            fea.lock(bc, a.get("fea"))   # same mesh size and same end regions for both models
+            b = w.call("defeat.fea:mesh_and_solve", step_bytes(new), base * k, bc, timeout=timeout)
+            if (b.get("fea") or {}).get("ok"):
+                h = base * k
+                break
     else:
         a = w.call("defeat.validate:mesh_stats", step_bytes(orig), h, timeout=timeout)
         b = w.call("defeat.validate:mesh_stats", step_bytes(new), h, timeout=timeout)

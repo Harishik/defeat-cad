@@ -348,6 +348,9 @@ button.chip:hover { border-color: var(--line2); }
 .fea-title { font-weight: 600; font-size: 15px; letter-spacing: -0.01em; }
 .fea-sub { font-size: 12px; color: var(--ink2); }
 .fea .stats { margin-top: 8px; }
+.fea-guard { margin-top: 8px; padding: 10px 12px; font-size: 12.5px; line-height: 1.45; color: var(--ink2); border: 1px solid var(--line2); border-radius: 12px; }
+.fea-guard b { color: var(--ink); font-weight: 600; }
+.fea-guard.warn { color: var(--ink); border-color: #ff9f0a; }
 
 /* ------------------------------------------------------------ command palette */
 .cmdk-scrim { position: fixed; inset: 0; z-index: 70; background: rgba(0,0,0,0.25); display: flex; justify-content: center; padding-top: 14vh; }

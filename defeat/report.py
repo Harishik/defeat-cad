@@ -40,6 +40,8 @@ def build_report(s) -> str:
         rows.append(f"<tr><td>#{f.id}</td><td><span class='dot' style='background:rgb({','.join(str(int(255*c)) for c in CLASS_COLORS.get(f.kind,(0.6,0.6,0.6)))})'></span>{f.kind}</td>"
                     f"<td>{html.escape(f.note)}</td><td class='{ 'rm' if st=='remove' else 'kp'}'>{st}</td><td>{html.escape(d.reason)}</td></tr>")
 
+    from .fea import guard_message, worst_case
+
     def stat(label, val, sub=""):
         return f"<div class='stat'><div class='v'>{val}</div><div class='l'>{label}</div><div class='s'>{sub}</div></div>"
 
@@ -56,6 +58,9 @@ def build_report(s) -> str:
     if fea and fea.get("delta"):
         dlt, fo, fd = fea["delta"], fea["original"], fea["defeatured"]
         stats += stat("Tip deflection Δ", f"{dlt['tip_disp_delta_pct']:+.2f}%", f"{fo['tip_disp']:.4f} → {fd['tip_disp']:.4f} mm")
+        worst = worst_case(dlt)
+        if worst is not None:
+            stats += stat("Worst of 4 load cases", f"{worst:.2f}%", "two bending directions, tension, torsion")
         stats += stat("Peak stress Δ (p99)", f"{dlt['vm_p99_delta_pct']:+.2f}%", f"{fo['vm_p99']:.2f} → {fd['vm_p99']:.2f} MPa")
         stats += stat("Solve time", f"{fo['seconds']:.1f} → {fd['seconds']:.1f} s", f"{fo['dofs']:,} → {fd['dofs']:,} DOFs")
         rows_f = "".join(f"<tr><td>{lbl}</td><td>{fo[k]:.4g}</td><td>{fd[k]:.4g}</td><td>{100*(fd[k]-fo[k])/fo[k]:+.2f}%</td></tr>"
@@ -63,9 +68,12 @@ def build_report(s) -> str:
                                         ("Stiffness (N/mm)", "stiffness"), ("von Mises p99 (MPa)", "vm_p99"),
                                         ("von Mises p95 (MPa)", "vm_p95"), ("von Mises vol-mean (MPa)", "vm_mean"),
                                         ("Degrees of freedom", "dofs")] if fo.get(k) and fd.get(k))
+        guard_note = guard_message(m.get("guard"))
         fea_html = (f"<h2>Static stress check</h2><p class='sub'>{html.escape(fea['load_case'])}. Both models meshed at the same h "
-                    f"and solved with linear tetrahedra (scikit-fem). Peak values use the 99th percentile to ignore the "
-                    f"singular corners at the clamp.</p><table><tr><th>Quantity</th><th>Original</th><th>Simplified</th><th>Change</th></tr>{rows_f}</table>")
+                    f"and solved with quadratic tetrahedra (scikit-fem). Peak values use the 99th percentile to ignore the "
+                    f"singular corners at the clamp. This is a comparison between the two models, not a replacement for your full analysis.</p>"
+                    + (f"<p><b>Stress guard:</b> {html.escape(guard_note)}</p>" if guard_note else "")
+                    + f"<table><tr><th>Quantity</th><th>Original</th><th>Simplified</th><th>Change</th></tr>{rows_f}</table>")
     page = f"""<!doctype html><html><head><meta charset='utf-8'><title>DeFeat report — {html.escape(s.name)}</title>
 <style>
 body{{font:14px/1.5 -apple-system,BlinkMacSystemFont,'SF Pro Text','Inter',sans-serif;color:#1d1d1f;max-width:980px;margin:40px auto;padding:0 24px}}
