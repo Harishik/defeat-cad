@@ -32,7 +32,7 @@ It decides what matters for your analysis and removes the rest. Then it **checks
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/results-dark.png"><img src="docs/images/results-light.png" alt="Results sheet"></picture></td>
 </tr>
 <tr>
-<td width="50%"><b>Every feature, explained</b><br><sub>Colour-coded by class, with a plain-English keep/remove reason and a GNN second opinion. Click a chip to isolate a class, or press <kbd>⌘K</kbd> for the command palette.</sub><br><br>
+<td width="50%"><b>Every feature, explained</b><br><sub>Colour-coded by class, with a plain-English keep/remove reason and the network's second opinion. Click a chip to isolate a class, or press <kbd>⌘K</kbd> for the command palette.</sub><br><br>
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/features-dark.png"><img src="docs/images/features-light.png" alt="Feature panel"></picture></td>
 <td width="50%"><b>Talk to your part</b><br><sub>A local open-source LLM turns plain English into exact tool calls. No CAD skills needed, and nothing leaves the machine.</sub><br><br>
 <img src="docs/images/assistant-light.png" alt="Assistant"></td>
@@ -66,7 +66,7 @@ npm install && npm run render:intro && npm run render:guide
 flowchart LR
     A[STEP / IGES / BREP] --> B[Heal + face graph<br/>convex · concave · smooth edges]
     B --> C[Rule recognizer<br/>holes · slots · pockets · steps<br/>bosses · ribs · logos]
-    B --> D[GNN<br/>trained on real CAD]
+    B --> D[Recognition network<br/>surface grids · B-Rep walks · attention]
     C --> E{Fuse}
     D --> E
     E --> F[Decide<br/>preset × mesh size h]
@@ -81,119 +81,145 @@ flowchart LR
 | Ingest | `occ.py` | Reads STEP/IGES/BREP, heals the shape with ShapeFix, and indexes faces stably |
 | Face graph | `graph.py` | Builds a face-adjacency graph with exact convex/concave/smooth edges (material-side rule on the edge's 2D curve) |
 | Rules | `recognize.py` | Inner-loop flood fill finds holes, slots, pockets, bosses and embosses. Concave-edge regions find steps and open channels. Also detects thin-wall ribs and gussets, blend chains and chamfers |
-| GNN | `gnn.py`, `datagen.py` | GINE network on pose-invariant face/edge features, trained on generated mold parts plus real labelled CAD (MFCAD, Fusion 360 Gallery). It vetoes or adds fillets/chamfers on top of the rules, fills in the steps and cut-outs the rules miss, and a very confident call can take a face back from a rule feature, with all thresholds tuned on validation parts |
-| Decide | `decide.py` | Presets for static, modal, thermal and CFD. Thresholds are multiples of the target mesh size *h*, because a feature only hurts the mesh when it's small relative to the elements. Each preset also has a volume budget, so removal stops before it adds up to a real change in material |
-| Execute | `execute.py` | `BRepAlgoAPI_Defeaturing` runs in a killable worker process, so hangs and native crashes are contained. It tries a single pass first, then goes feature by feature. Features are tracked exactly through each removal using the kernel's own history. A refused blend is retried together with its tangent neighbours, then with a fuzzy tolerance. A removal that adds or takes away more material than its feature could account for is rejected |
-| Validate | `validate.py`, `fea.py` | Surface deviation, deterministic gmsh meshing of both models at the same *h*, a linear static solve on both meshes (scikit-fem, quadratic tetrahedra, four load cases), and a **stress guard** that puts features back when any load case moves more than 5% |
+| Network | `net.py`, `brepfeat.py` | Two models, averaged. Each face is described by a 10×10 grid of points and normals sampled on its surface (the UV-Net idea) and each edge by a sampled curve. Winged-edge walks around every coedge pass information through the B-Rep topology (the BRepNet idea). Two layers of face self-attention let distant faces of the same part inform each other, and part-wide context and the rule recognizer's guesses are inputs too. One head predicts DeFeat's classes, a second predicts the Fusion 360 Gallery's eight modelling labels. 2.8–2.9 million parameters per model; the second model drops the surface grids, so the pair disagree in useful ways |
+| Fuse | `recognize.py` | The network confirms or vetoes rule fillets and chamfers, adds the ones the rules miss, and fills in steps and cut-outs the rules can't see. Its cut-history head marks small cut-outs only: a large design cut is part of the shape, not a feature to remove. Every threshold was tuned on validation parts |
+| Decide | `decide.py` | Presets for static, modal, thermal and CFD. Thresholds are multiples of the target mesh size *h*, because a feature only hurts the mesh when it's small relative to the elements. When the stress check will run, it judges what can go, so nothing is held back up front. Without it, a volume budget keeps the total change small |
+| Execute | `execute.py` | `BRepAlgoAPI_Defeaturing` (run in parallel) inside a killable worker process, so hangs and native crashes are contained. It tries a single pass first, then goes feature by feature, then retries a refused blend with its tangent neighbours. Features are tracked exactly through each removal using the kernel's own history. A removal that adds or takes away more material than its feature could account for is rejected |
+| Validate | `validate.py`, `fea.py`, `sensitivity.py` | Surface deviation, deterministic gmsh meshing of both models at the same *h*, a linear static solve on both meshes (scikit-fem, quadratic tetrahedra, four load cases), and a **stress guard**. When a load case moves more than 5% (for the static preset: deflection or peak stress), it prices each removed feature by the stress field around it, puts back the costliest first, and bisects to keep as many removals as stay within tolerance |
 | Export | `codegen.py` | Python (OCP) and C++ (OCCT) programs that locate faces by geometric signature |
-| Assistant | `agent.py`, `server.py` | Ollama tool calling (`qwen3.5:4b`) with a keyword fallback that needs no model, plus sandboxed text-to-CAD (CadQuery) |
+| Assistant | `agent.py`, `server.py` | Ollama tool calling (`qwen3.5:4b`) with a keyword fallback that needs no model, plus sandboxed text-to-CAD (CadQuery) with a repair loop |
 
 ## Benchmarks
 
-Every number below is measured on **held-out test data that was never used for training or tuning**, unless a line says otherwise. The raw results are in [`bench/results/`](bench/results/), and every benchmark can be re-run (see *Reproduce*). Hardware: a CPU-only laptop. "Precision" means: of the faces DeFeat flags, how many are right. "Recall" means: of the true feature faces, how many DeFeat finds.
+Every number below is measured on **held-out test data that was never used for training or tuning**, unless a line says otherwise. Each test set was scored once, after every choice had been made on validation parts. The raw results are in [`bench/results/`](bench/results/), and every benchmark can be re-run (see *Reproduce*). Hardware: a CPU-only laptop. "Precision" means: of the faces DeFeat flags, how many are right. "Recall" means: of the true feature faces, how many DeFeat finds. Intervals are 95%: Wilson score intervals for rates, and a 2,000-sample bootstrap that resamples whole parts (faces of one part aren't independent) for everything else.
+
+### Recognition
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/chart-fusion-dark.png">
   <img alt="Fusion 360 benchmark" src="docs/images/chart-fusion-light.png" width="100%">
 </picture>
 
-| Fusion 360 Gallery: 3,000 real designer parts (63,888 faces) | Rules only (P / R / F1) | GNN only | **Shipped: rules + GNN** |
+| Fusion 360 Gallery: the whole test split, 6,454 real designer parts (139,200 faces) | Rules only (P / R / F1) | Network only | **Shipped: rules + network** |
 |---|---|---|---|
-| Fillets | 0.56 / 0.88 / 0.69 | 0.81 / 0.96 / 0.88 | **0.85 / 0.88 / 0.87** |
-| Chamfers | 0.65 / 0.52 / 0.58 | 0.75 / 0.87 / 0.81 | **0.78 / 0.86 / 0.82** |
-| F1, 95% interval (shipped) | | | fillets 0.84–0.89 · chamfers 0.76–0.87 |
+| Fillets | 0.60 / 0.88 / 0.71 | 0.98 / 0.99 / 0.99 | **0.985 / 0.991 / 0.988** (0.979–0.994) |
+| Chamfers | 0.71 / 0.53 / 0.61 | 0.96 / 0.97 / 0.97 | **0.993 / 0.947 / 0.969** (0.957–0.979) |
 
-| Shipped F1 on each half of those parts | Fillets | Chamfers |
+- The shipped column is the app's own code path (`defeat.recognize.refine_with_net`), not a separate benchmark copy. It takes 1.8 s per part, including reading the STEP file.
+- The previous release scored fillet F1 0.87 and chamfer F1 0.82 on half of these parts. The new network cuts the error about tenfold on fillets and sixfold on chamfers.
+- Fusion's "cut" label records how a face was modelled, not whether it is a small feature. The network's own eight-label head gets cut faces right at F1 0.92. The shipped path scores 0.69 against that label on purpose: it only marks cut-outs that are small enough to remove.
+
+**Eight-label segmentation**, the measure used in published work on this dataset. These are the network's own predictions on 6,449 test parts:
+
+| Model | Accuracy | Mean IoU |
 |---|---|---|
-| Fresh 1,500 parts, never looked at before this run | 0.87 (0.84–0.90) | 0.87 (0.82–0.91) |
-| The 1,500 parts the previous release reported on | 0.87 (0.83–0.89) | 0.77 (0.68–0.85) |
+| **DeFeat, two-model ensemble** | **94.95%** (94.39–95.46) | **81.2%** (79.4–83.8) |
+| DeFeat, the same model with only B-Rep walks | 94.51% (93.88–95.06) | 80.3% (78.4–82.3) |
+| BRepNet, published | 92.52% | 77.10% |
+| BRT (B-rep transformer), published | 90.47% | 70.16% |
+| UV-Net, published | 89.03% | 66.47% |
 
-- The 95% intervals come from a 2,000-sample bootstrap that resamples whole parts, since faces of one part aren't independent.
-- The shipped column is the app's own code path (`defeat.recognize.refine_with_gnn`), not a separate benchmark copy.
-- Chamfers are few (about 1,400 faces here) and vary a lot between slices. On the same 1,500 parts as the previous release, chamfer F1 is 0.77 against 0.78 then, so read the interval, not the single number.
-- The GNN alone finds more fillets, but flags more faces wrongly. The shipped mix favours precision, because a face removed by mistake costs more than one left in.
-- Some counted errors are label conventions rather than mistakes. Of 214 wrongly flagged fillet faces on the validation parts, 130 were tangent to their neighbours along both long sides: they look like fillets, but were modelled as part of an extrusion.
+- The published numbers use version s2.0.0 of the dataset. DeFeat is scored on the s2.0.1 extended-STEP release of the same official split, so the comparison is close but not exact.
+- The walks-only row is DeFeat's own BRepNet-style model trained the same way, and it already beats the published BRepNet. So most of the gain probably comes from training data and the dataset version rather than the architecture. The ensemble adds a further gain inside overlapping intervals.
+- Rotating every test part at random gives the same score (94.98%, 81.3%), so the network doesn't depend on how a part is oriented.
+- IoU by label: Fillet 0.98, ExtrudeSide 0.93, Chamfer 0.93, ExtrudeEnd 0.88, RevolveSide 0.87, CutSide 0.85, CutEnd 0.74, RevolveEnd 0.32. RevolveEnd is rare and is usually indistinguishable from an extrude end.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/chart-mfcad-dark.png">
   <img alt="MFCAD benchmark" src="docs/images/chart-mfcad-light.png" width="100%">
 </picture>
 
-| MFCAD: all 3,122 test parts (70,850 faces) | Rules only (P / R / F1) | GNN only | **Shipped: rules + GNN** |
+| MFCAD: all 3,122 test parts (70,850 faces) | Rules only (P / R / F1) | Network only | **Shipped: rules + network** |
 |---|---|---|---|
-| Feature vs. body | 0.98 / 0.91 / 0.95 | 1.00 / 1.00 / 1.00 | **0.98 / 0.99 / 0.99** |
-| Cut-outs (slots, passages, pockets) | 0.84 / 0.82 / 0.83 | 0.98 / 1.00 / 0.99 | **0.99 / 0.98 / 0.98** |
-| Steps / shoulders | 0.41 / 0.33 / 0.37 | 0.88 / 1.00 / 0.93 | **0.86 / 0.93 / 0.89** |
+| Feature vs. body | 0.98 / 0.91 / 0.95 | 1.00 / 1.00 / 1.00 | **0.98 / 0.94 / 0.96** |
+| Cut-outs (slots, passages, pockets) | 0.84 / 0.82 / 0.83 | 0.96 / 1.00 / 0.98 | **1.00 / 0.98 / 0.99** |
+| Steps / shoulders | 0.41 / 0.33 / 0.37 | 0.93 / 1.00 / 0.96 | **1.00 / 0.93 / 0.96** |
 
-- On MFCAD the GNN is near-perfect because MFCAD's parts all come from one generator, so train and test look alike. Fusion 360 is the harder, more honest test.
-- MFCAD's "chamfer" class is a large bevel cut, not an edge chamfer, so it isn't scored as a chamfer.
-- The rules+GNN thresholds were tuned on 400 separate validation parts from the Fusion train split. The GNN never trains on them, and nothing is tuned on the test split.
+- MFCAD's parts all come from one generator, so train and test look alike, and the network alone is near-perfect. Fusion 360 is the harder, more honest test.
+- Steps went from F1 0.89 to 0.96 against the previous release, and cut-outs from 0.98 to 0.99.
+- Feature vs. body dropped from 0.99 to 0.96 because of MFCAD's "chamfer" class. It is a large bevel cut, not an edge chamfer, and the shipped path keeps 2,383 of its 2,622 faces as body: a bevel that size is part of the shape. It isn't retuned, because that would mean tuning on the test set.
+
+### The full pipeline on real parts
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/chart-robust-dark.png">
   <img alt="Robustness benchmark" src="docs/images/chart-robust-light.png" width="100%">
 </picture>
 
+The run uses 500 Fusion 360 test parts that none of the other benchmarks or tuning runs touched, with a 40-minute limit per part.
+
 | Full pipeline on 500 fresh real parts | Result |
 |---|---|
-| Parts completed | **500 / 500** (95% interval 99.2–100%) |
+| Parts completed | **500 / 500** (99.2–100%) |
 | Output is a valid solid | **100%** (99.2–100%) |
-| Targeted features the kernel removed | **89.2%** (81.4–94.7%). The rest are kept and reported, never broken |
-| Targeted features still gone after the stress guard | 75.5% (642 of 850) |
-| Time per part | median 0.53 s, 90th percentile 125 s (this includes meshing and solving both models) |
-| Faces removed / volume change | median 13% / 0.14% |
-| Mesh elements removed (151 parts) | median 9%, 90th percentile 75%. About a third of these parts don't shrink, most of them because nothing ended up removed |
-| Within 5% on all four load cases, **before** the guard (150 parts) | 82.0% (75.1–87.3%) |
-| Within 5% on all four load cases, **after** the guard (150 parts) | 100% (97.5–100%). This is what the guard enforces, not an independent result; see below |
-| Median worst load-case change (same 150 parts) | 0.95% (0.72–1.36%), 90th percentile 3.3% |
+| Targeted features the kernel removed | **86.4%** (74.5–95.5%). The rest are kept and reported, never broken |
+| Within 5% on all four load cases, after the guard (204 parts) | **100%** (98.2–100%). This is what the guard enforces; see below |
+| Median worst load-case change (same 204 parts) | **0.70%** (0.47–1.08%), 90th percentile 3.7% |
+| Median change in deflection / peak stress | 0.26% / 0.27%, 90th percentile 2.3% / 2.0% |
+| Faces removed / volume change | median 11% / 0.14% |
+| Mesh elements removed (207 parts) | median 7.5%, 90th percentile 63% |
+| Time per part | median 1.0 s, 90th percentile 128 s (this includes meshing and solving both models) |
 
-- 154 of the 500 parts had something to remove. The other 346 are left as they were and have nothing to compare. 150 of the 154 gave a stress result on both models. The other 4 still get a valid solid, just no stress check.
-- Intervals are 95%: Wilson score intervals for rates, a part-level bootstrap for medians.
+220 of the 500 parts had something to remove; the other 280 have no features worth removing and are returned as they were. Where every targeted feature went:
 
-**The stress check:** the last 5% of the part's volume at one end of its long axis is clamped, and the same share at the other end carries the load: bending about both axes, tension and torsion. Both regions are fixed on the original and reused unchanged for the simplified model, so removing something right at an end can't change the test. The result is the largest change across the four cases.
+| 1,478 targeted features | Count |
+|---|---|
+| Removed, and still gone in the final part | **762** |
+| Put back by the stress guard | 373 |
+| Refused by the kernel, kept and reported | 201 |
+| Kept because no stress comparison came back, so only the volume-budget removals were allowed | 142 |
 
-**Stress guard:**
-- **What it does:** when any load case moves more than 5%, DeFeat puts the largest removed features back in batches and re-checks. If only the full part stays within tolerance, it undoes every removal and says so.
-- **Measured:** it triggered on 27 of the 150 parts. On 16 of them putting some features back was enough. On the other 11 every removal was undone, so those parts come out unchanged. 116 features were put back in total.
-- **What the 100% means:** 32 of the 150 parts ended with nothing removed (those 11, plus 21 where the kernel or the material check kept everything), so they pass trivially. The fairer figure is the 118 parts that really changed: all 118 are within 5%, with a largest change of 4.98%.
+- **Parts without a stress comparison:** 16 of the 220. Four couldn't be meshed, two were too heavy for this laptop, and on two the simplified part couldn't carry the original's supports. Eight of the 16 come out unchanged. The other eight keep only small volume-budget removals, and the app tells the user plainly that this part has no stress check.
+- **The median mesh reduction is modest because most real parts have little to remove.** On parts with real features the cut is large: the 90th percentile is 63%, and on the worked examples below it is about half.
 
-**Does the answer depend on the mesh?** Measured on validation parts, comparing the working mesh with one twice as fine, before any guard. Only parts small enough for the finer mesh to fit the solver can be checked: 53 of the 144 with something removed.
+**The stress check:** the last 5% of the part's volume at one end of its long axis is clamped, and the same share at the other end carries the load: bending about both axes, tension and torsion. Both regions are fixed on the original and reused unchanged for the simplified model, so removing something right at an end can't change the test. You can choose your own supports and loads in the app instead. The solver matches CalculiX given the same meshes, supports and loads (40 parts tried, one too large and one timed out; median difference 0.0000003%, largest 0.000006%), and beam theory on a cantilever to within 0.3%.
+
+**What the stress guard prevented:**
+- DeFeat now removes everything the physics might allow and lets the check decide. The previous release capped removal up front with a volume budget. So the guard works harder: before it, 52.9% (46.1–59.7%) of the 204 parts were within 5% on every load case.
+- It triggered on 96 parts. On 55, putting some features back was enough (a median of 2). On 41 every removal was undone, so those parts come out unchanged.
+- The 41 full undos are mostly tiny parts where the only "feature" is structural. On 22 of them a single feature was targeted, and removing it changed the result by about 25% on median, up to 774%.
+- After the guard all 204 parts are within 5%. That is what the guard enforces, not an independent result; the mesh check below is the independent one.
+
+**Does the answer depend on the mesh?** Measured on validation parts, comparing the working mesh with one twice as fine, before any guard. Only parts small enough for the finer mesh to fit the solver can be checked: 55 of the parts with something removed.
 
 | Mesh check | Result |
 |---|---|
-| Same unchanged part at *h* and 0.9 *h* (the check's own noise, 65 parts) | median 0.79%, 90th percentile 4.1% |
-| Change from defeaturing, working mesh vs. finer mesh | median difference 0.78 points, 90th percentile 5.0 |
-| Both meshes agree on the within-5% verdict | **92.5%** (82.1–97.0%), 49 of 53 |
-| Passed on the working mesh, failed on the finer one | **2 of 44** (at 6.0% and 9.8%) |
+| Same unchanged part at *h* and 0.9 *h* (the check's own noise, 68 parts) | median 0.85%, 90th percentile 3.8% |
+| Change from defeaturing, working mesh vs. finer mesh | median difference 0.78 points, 90th percentile 3.4 |
+| Both meshes agree on the within-5% verdict | **92.7%** (82.7–97.1%), 51 of 55 |
+| Passed on the working mesh, failed on the finer one | **3 of 42** (at 5.1%, 6.0% and 9.8%) |
 
 So a pass is strong evidence, not a guarantee. Treat anything close to 5% as a reason to look.
 
-| Assistant | Local LLM (`qwen3.5:4b`, offline) | Keyword fallback |
+**Worked examples** (bundled samples, static preset):
+
+| Part | Removed | Faces | Tetrahedra | Worst load case | Stress guard |
+|---|---|---|---|---|---|
+| L-bracket | 22 / 27 | 84 → 32 | **−50%** | 2.8% | saw 5.0%, put 1 feature back |
+| Printer chassis | 21 / 31 | 261 → 105 | **−54%** | 4.2% (4.4% on the finer mesh) | not needed |
+
+The previous release removed 16 and 11 features here, for −26% and −29%. On the L-bracket the thermal preset removes 23 features (−55%) and CFD removes 21 (−45%).
+
+### Assistant
+
+| Commands, tool calls exactly right | Local LLM (`qwen3.5:4b`, offline) | Keyword fallback |
 |---|---|---|
-| 72 held-out commands (tool calls exactly right) | **87.5%** (77.9–93.3%), F1 0.89 | 66.7% (55.2–76.5%), F1 0.82 |
-| 24 development commands | 91.7% (74.2–97.7%) | 95.8% (tuned on these) |
+| **80 held-out commands** | **93.8%** (86.2–97.3%), F1 0.97 | 80.0% (70.0–87.3%), F1 0.90 |
+| 96 development commands (tuned on these) | 99.0% | 100% |
 
-| Text-to-CAD: 50 part descriptions (`qwen3.5:4b`) | Result |
+| Text-to-CAD: 50 held-out part descriptions (`qwen3.5:4b`) | Result |
 |---|---|
-| Produces a valid solid | 70% (56.3–80.9%), 50% on the first try |
-| Within 10% of the requested dimensions | 50% (36.6–63.4%) |
-| Median time | 34 s (commands: 25 s) |
+| Produces a valid solid | **96%** (86.5–98.9%), 44% on the first try (the repair loop fixes the rest) |
+| Within 10% of the requested dimensions | **82%** (69.2–90.2%) |
+| Median time | 62 s (commands: 26 s) |
 
-Nothing was tuned on the held-out commands or the 50 descriptions. These are lower than the 12-item figures in the previous release because the larger sets are harder and the intervals are real.
+- The held-out commands and descriptions were written before the new prompts, examples and repair loop were run on them. The previous release scored 87.5% and 66.7% on its commands, and 70% valid / 50% on dimensions for text-to-CAD.
+- The model's typical miss is reading "fill the pockets" as keep, when filling a pocket removes it.
 
-**Worked examples** (bundled samples):
-
-| Part | Removed | Faces | Tetrahedra | Volume | Deflection Δ | Peak stress Δ (p99) | Worst load case |
-|---|---|---|---|---|---|---|---|
-| L-bracket | 16 / 25 | 84 → 36 | **−26%** | +0.08% | −0.9% | −2.9% | 2.3% |
-| Printer chassis | 11 / 31 | 261 → 168 | **−29%** | +0.02% | +0.4% | +1.1% | 4.0% |
-
-On the chassis the guard saw 6.6% on tension and put 10 of 21 features back. The previous release showed bigger mesh reductions on these parts (−55% and −42%) but checked only one load case. Removing less is the price of staying within tolerance in all four.
-
-**Training data:** the GNN (175k parameters) learns from three sources:
-- **300 procedurally generated mold parts**
-- **3,000 MFCAD training parts**
-- **36,007 Fusion 360 Gallery training parts**: the whole official train split except 400 parts held back for validation (fillet/chamfer labels, with a partial-label loss for the other faces)
+**Training data:** each network learns from 43,698 parts:
+- **34,908 Fusion 360 Gallery training parts** (731,417 faces, all eight labels), the official train split minus 1,499 parts held back for validation
+- **6,000 MFCAD training parts**
+- **2,790 procedurally generated mold parts** with exact labels for logos, bosses, ribs and pockets
 
 The rule recognizer isn't trained; it reads exact B-Rep geometry.
 
@@ -232,26 +258,30 @@ python -m defeat.cli parts/*.step --preset static --h 3 --out out/
 # datasets go in ~/defeat-data (or set DEFEAT_DATA):
 #   git clone https://github.com/hducg/MFCAD ~/defeat-data/mfcad
 #   Fusion 360 Gallery s2.0.1_extended_step.7z -> ~/defeat-data/fusion_ext/
-python -m bench.build_synth --n 300              # generated training graphs
-python -m bench.build_real                       # training graphs (train split only, validation parts skipped)
-python -c "from defeat.gnn import train; train('models/dataset.pkl', epochs=40, batch=32, hidden=128, extra_paths=['models/dataset_real.pkl'])"
-python -m bench.tune_fusion --n 400              # rules + GNN thresholds, on the 400 validation parts
-python -m bench.mfcad --n 99999                  # every MFCAD test part
-python -m bench.fusion --n 3000
-python -m bench.robust --n 500 --skip 1000 --mesh 500 --timeout 2400
-python -m bench.convergence --n 400 --workers 5  # does the stress check depend on the mesh? (validation parts)
+python -m bench.build_brep --workers 8                    # training tensors: Fusion train split, MFCAD, generated parts
+python -m bench.train_net --name m1 --epochs 12 --attn 2 --seed 1
+python -m bench.train_net --name m2 --epochs 12 --attn 2 --seed 2 --no-uv
+cp models/net_m1.pt models/recognizer_1.pt && cp models/net_m2.pt models/recognizer_2.pt
+python -m bench.tune_net                                  # rules + network thresholds, on the validation parts
+python -m bench.segment --split test                      # eight-label segmentation
+python -m bench.fusion --n 99999                          # the whole Fusion test split
+python -m bench.mfcad --n 99999                           # every MFCAD test part
+python -m bench.robust --n 500 --skip 1500 --mesh 500 --workers 5 --timeout 2400
+python -m bench.convergence --n 400 --workers 8           # does the stress check depend on the mesh? (validation parts)
+python -m bench.solver_check --n 40                       # stress solver vs CalculiX and beam theory
 python -m bench.assistant
 python docs/make_charts.py          # regenerate the charts above
 python docs/capture.py              # regenerate the screenshots (app must be running)
 ```
 
 ## Limits
-- **No external baseline.** These results show how the parts of DeFeat compare with each other. Nothing here compares it with another defeaturing tool or a published recognizer on the same parts.
-- **The stress check is a comparison tool, not a replacement for the real CAE run.** It's linear and isotropic, with automatic supports and loads rather than yours, and the clamped and loaded end regions themselves aren't stress-tested.
-- **A pass isn't a guarantee.** 2 of 44 checked parts that passed on the working mesh failed on a finer one, and that check only reaches smaller parts.
-- **Mesh reduction is modest on many parts.** The median is 9%, and on the worked examples it's about a quarter. The safer defaults remove less than the previous release did, and on 11 of 150 parts the guard undoes everything. Review anything it flags.
-- **Fillet false alarms and chamfers.** Rounded sketch profiles and freeform spline walls can look like fillets. Chamfer scores vary a lot between slices (0.77 to 0.87).
-- **Steps and cut-outs on real parts.** They're strong on MFCAD (0.89 and 0.98), but MFCAD's parts are all generated. On Fusion 360's rougher cut-side labels, shipped F1 is only 0.51 (rules alone: 0.55), so real-part performance is unproven.
-- **NX files need exporting to STEP first.** There's no open-source `.prt` reader, and the NX journal is untested.
-- **FreeCAD macro:** re-tested on this release in headless FreeCAD. The full GUI run dates from the previous release; see [`freecad/README.md`](freecad/README.md).
-- **The assistant isn't perfect.** The local LLM gets about 7 in 8 commands exactly right. The keyword fallback gets 2 in 3. Text-to-CAD reaches the requested dimensions only half the time, so check what it builds.
+- **The stress check is a comparison tool, not a replacement for the real CAE run.** It's linear and isotropic, and the automatic supports and loads are a stand-in for yours. Choose your own in the app when you know them.
+- **A pass isn't a guarantee.** 3 of 42 checked parts that passed on the working mesh failed on a finer one, and that check only reaches parts small enough for the finer mesh.
+- **Some parts get no stress check.** 16 of 220 on the real-part run, because they couldn't be meshed or were too heavy for a 16 GB laptop. They keep only small removals, and the app says so.
+- **Recognition isn't perfect.** Fillets and chamfers are near 0.97–0.99 F1, but no model here is at 1.0. Rare labels such as revolve ends are weak (IoU 0.32).
+- **The segmentation comparison isn't exact.** The published scores use an earlier version of the dataset.
+- **NX files need exporting to STEP first.** There's no open-source `.prt` reader, and the NX journal hasn't run in a real NX install.
+- **FreeCAD macro:** re-tested on this release in headless FreeCAD. The full GUI run dates from an earlier release; see [`freecad/README.md`](freecad/README.md).
+- **The assistant can misread a command.** The local LLM gets about 15 in 16 held-out commands exactly right, and the keyword fallback 4 in 5. Text-to-CAD misses the requested dimensions on about 1 part in 5, so check what it builds.
+
+**Tried and dropped:** rebuilding parts from cells instead of removing faces (more failures, not fewer), a fixed stress hot-spot rule in place of the guard's pricing (it put back the wrong features), training without random rotations (worse on rotated parts), and retrying refused removals with a fuzzy tolerance (0 of 83 retries succeeded).

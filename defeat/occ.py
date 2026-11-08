@@ -118,6 +118,16 @@ def heal(shape: TopoDS_Shape) -> TopoDS_Shape:
     return fix.Shape()
 
 
+def compound_of(shapes):
+    from OCP.BRep import BRep_Builder
+    from OCP.TopoDS import TopoDS_Compound
+    c, b = TopoDS_Compound(), BRep_Builder()
+    b.MakeCompound(c)
+    for x in shapes:
+        b.Add(c, x)
+    return c
+
+
 def is_valid(shape: TopoDS_Shape) -> bool:
     return BRepCheck_Analyzer(shape).IsValid()
 

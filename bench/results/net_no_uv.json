@@ -1,0 +1,263 @@
+{
+ "args": {
+  "name": "no_uv",
+  "epochs": 12,
+  "limit": 8000,
+  "h": 128,
+  "layers": 3,
+  "attn": 0,
+  "lr": 0.002,
+  "max_faces": 1500,
+  "seed": 0,
+  "threads": 4,
+  "no_uv": true,
+  "no_ctx": false,
+  "no_hints": false,
+  "no_rotate": false,
+  "device": "cpu"
+ },
+ "history": [
+  {
+   "accuracy": 0.7419,
+   "miou": 0.4933,
+   "iou": {
+    "ExtrudeSide": 0.5905,
+    "ExtrudeEnd": 0.6608,
+    "CutSide": 0.4812,
+    "CutEnd": 0.6032,
+    "Fillet": 0.9147,
+    "Chamfer": 0.5145,
+    "RevolveSide": 0.1815,
+    "RevolveEnd": 0.0
+   },
+   "fillet_f1_8": 0.9555,
+   "chamfer_f1_8": 0.6794,
+   "cut_f1_8": 0.6734,
+   "fillet_f1_9": 0.9334,
+   "chamfer_f1_9": 0.7032,
+   "epoch": 0,
+   "loss": 2.0608,
+   "seconds": 364
+  },
+  {
+   "accuracy": 0.8866,
+   "miou": 0.6982,
+   "iou": {
+    "ExtrudeSide": 0.8235,
+    "ExtrudeEnd": 0.7836,
+    "CutSide": 0.6992,
+    "CutEnd": 0.6045,
+    "Fillet": 0.9634,
+    "Chamfer": 0.8535,
+    "RevolveSide": 0.6669,
+    "RevolveEnd": 0.1912
+   },
+   "fillet_f1_8": 0.9814,
+   "chamfer_f1_8": 0.9209,
+   "cut_f1_8": 0.8253,
+   "fillet_f1_9": 0.9795,
+   "chamfer_f1_9": 0.9138,
+   "epoch": 1,
+   "loss": 0.6897,
+   "seconds": 344
+  },
+  {
+   "accuracy": 0.865,
+   "miou": 0.6748,
+   "iou": {
+    "ExtrudeSide": 0.7822,
+    "ExtrudeEnd": 0.7743,
+    "CutSide": 0.6356,
+    "CutEnd": 0.5925,
+    "Fillet": 0.9621,
+    "Chamfer": 0.8211,
+    "RevolveSide": 0.7167,
+    "RevolveEnd": 0.114
+   },
+   "fillet_f1_8": 0.9807,
+   "chamfer_f1_8": 0.9018,
+   "cut_f1_8": 0.7845,
+   "fillet_f1_9": 0.9776,
+   "chamfer_f1_9": 0.9154,
+   "epoch": 2,
+   "loss": 0.4608,
+   "seconds": 298
+  },
+  {
+   "accuracy": 0.909,
+   "miou": 0.7098,
+   "iou": {
+    "ExtrudeSide": 0.8663,
+    "ExtrudeEnd": 0.7949,
+    "CutSide": 0.7566,
+    "CutEnd": 0.6497,
+    "Fillet": 0.9675,
+    "Chamfer": 0.7638,
+    "RevolveSide": 0.75,
+    "RevolveEnd": 0.1295
+   },
+   "fillet_f1_8": 0.9835,
+   "chamfer_f1_8": 0.8661,
+   "cut_f1_8": 0.8601,
+   "fillet_f1_9": 0.9819,
+   "chamfer_f1_9": 0.8842,
+   "epoch": 3,
+   "loss": 0.3895,
+   "seconds": 252
+  },
+  {
+   "accuracy": 0.9008,
+   "miou": 0.7121,
+   "iou": {
+    "ExtrudeSide": 0.8412,
+    "ExtrudeEnd": 0.7982,
+    "CutSide": 0.7428,
+    "CutEnd": 0.6089,
+    "Fillet": 0.9563,
+    "Chamfer": 0.7349,
+    "RevolveSide": 0.8113,
+    "RevolveEnd": 0.2034
+   },
+   "fillet_f1_8": 0.9777,
+   "chamfer_f1_8": 0.8472,
+   "cut_f1_8": 0.8507,
+   "fillet_f1_9": 0.9784,
+   "chamfer_f1_9": 0.8783,
+   "epoch": 4,
+   "loss": 0.3158,
+   "seconds": 252
+  },
+  {
+   "accuracy": 0.9154,
+   "miou": 0.7293,
+   "iou": {
+    "ExtrudeSide": 0.8738,
+    "ExtrudeEnd": 0.7944,
+    "CutSide": 0.7827,
+    "CutEnd": 0.6188,
+    "Fillet": 0.9722,
+    "Chamfer": 0.8695,
+    "RevolveSide": 0.7543,
+    "RevolveEnd": 0.1684
+   },
+   "fillet_f1_8": 0.9859,
+   "chamfer_f1_8": 0.9302,
+   "cut_f1_8": 0.8754,
+   "fillet_f1_9": 0.985,
+   "chamfer_f1_9": 0.9194,
+   "epoch": 5,
+   "loss": 0.2751,
+   "seconds": 278
+  },
+  {
+   "accuracy": 0.9219,
+   "miou": 0.7453,
+   "iou": {
+    "ExtrudeSide": 0.8852,
+    "ExtrudeEnd": 0.806,
+    "CutSide": 0.7874,
+    "CutEnd": 0.6848,
+    "Fillet": 0.9714,
+    "Chamfer": 0.7537,
+    "RevolveSide": 0.8095,
+    "RevolveEnd": 0.2642
+   },
+   "fillet_f1_8": 0.9855,
+   "chamfer_f1_8": 0.8596,
+   "cut_f1_8": 0.8816,
+   "fillet_f1_9": 0.9843,
+   "chamfer_f1_9": 0.8618,
+   "epoch": 6,
+   "loss": 0.2427,
+   "seconds": 324
+  },
+  {
+   "accuracy": 0.9207,
+   "miou": 0.7501,
+   "iou": {
+    "ExtrudeSide": 0.8764,
+    "ExtrudeEnd": 0.827,
+    "CutSide": 0.7855,
+    "CutEnd": 0.6459,
+    "Fillet": 0.9676,
+    "Chamfer": 0.8381,
+    "RevolveSide": 0.8059,
+    "RevolveEnd": 0.2545
+   },
+   "fillet_f1_8": 0.9835,
+   "chamfer_f1_8": 0.9119,
+   "cut_f1_8": 0.8773,
+   "fillet_f1_9": 0.9847,
+   "chamfer_f1_9": 0.9122,
+   "epoch": 7,
+   "loss": 0.2238,
+   "seconds": 322
+  },
+  {
+   "accuracy": 0.9257,
+   "miou": 0.7566,
+   "iou": {
+    "ExtrudeSide": 0.8834,
+    "ExtrudeEnd": 0.8463,
+    "CutSide": 0.7922,
+    "CutEnd": 0.6606,
+    "Fillet": 0.9719,
+    "Chamfer": 0.8431,
+    "RevolveSide": 0.8096,
+    "RevolveEnd": 0.2453
+   },
+   "fillet_f1_8": 0.9857,
+   "chamfer_f1_8": 0.9149,
+   "cut_f1_8": 0.8831,
+   "fillet_f1_9": 0.9847,
+   "chamfer_f1_9": 0.9129,
+   "epoch": 8,
+   "loss": 0.1822,
+   "seconds": 322
+  },
+  {
+   "accuracy": 0.9273,
+   "miou": 0.7599,
+   "iou": {
+    "ExtrudeSide": 0.8843,
+    "ExtrudeEnd": 0.8448,
+    "CutSide": 0.8002,
+    "CutEnd": 0.669,
+    "Fillet": 0.9723,
+    "Chamfer": 0.7913,
+    "RevolveSide": 0.8461,
+    "RevolveEnd": 0.2712
+   },
+   "fillet_f1_8": 0.986,
+   "chamfer_f1_8": 0.8835,
+   "cut_f1_8": 0.8879,
+   "fillet_f1_9": 0.9856,
+   "chamfer_f1_9": 0.9186,
+   "epoch": 9,
+   "loss": 0.1597,
+   "seconds": 322
+  },
+  {
+   "accuracy": 0.9292,
+   "miou": 0.7675,
+   "iou": {
+    "ExtrudeSide": 0.8869,
+    "ExtrudeEnd": 0.8535,
+    "CutSide": 0.8081,
+    "CutEnd": 0.6644,
+    "Fillet": 0.9717,
+    "Chamfer": 0.7899,
+    "RevolveSide": 0.8462,
+    "RevolveEnd": 0.3191
+   },
+   "fillet_f1_8": 0.9857,
+   "chamfer_f1_8": 0.8826,
+   "cut_f1_8": 0.8919,
+   "fillet_f1_9": 0.9844,
+   "chamfer_f1_9": 0.9145,
+   "epoch": 10,
+   "loss": 0.145,
+   "seconds": 303
+  }
+ ]
+}

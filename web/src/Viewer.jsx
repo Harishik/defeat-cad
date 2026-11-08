@@ -38,9 +38,27 @@ function paint(g, faceColor, dark) {
   g.attributes.color.needsUpdate = true
 }
 
-export default function Viewer({ original, result, features, mode, wipe, selected, hovered, onPick, onHover, dark }) {
+export default function Viewer({ original, result, features, mode, wipe, selected, hovered, onPick, onHover, dark, boundary, faceMode, onFace, wipeApi }) {
   const host = useRef(null)
   const S = useRef({})
+
+  // The wipe plane slides along the camera's right axis, so its depth never changes and its screen x is
+  // linear in the wipe value: two projections are enough to turn a pointer x back into a wipe value.
+  useEffect(() => {
+    if (!wipeApi) return
+    wipeApi.current = {
+      xToWipe(clientX) {
+        const s = S.current
+        if (!s.center || !s.camera || !host.current) return null
+        const r = host.current.getBoundingClientRect()
+        const right = new THREE.Vector3().setFromMatrixColumn(s.camera.matrixWorld, 0).normalize()
+        const sx = (w) => r.left + ((s.center.clone().addScaledVector(right, (w - 0.5) * 2 * s.radius).project(s.camera).x + 1) / 2) * r.width
+        const x0 = sx(0), x1 = sx(1)
+        if (Math.abs(x1 - x0) < 1) return null
+        return Math.min(0.98, Math.max(0.02, (clientX - x0) / (x1 - x0)))
+      },
+    }
+  }, [wipeApi])
 
   // ---------------------------------------------------------------- scene setup
   useEffect(() => {
@@ -193,8 +211,10 @@ export default function Viewer({ original, result, features, mode, wipe, selecte
         s.faceToFeature.set(fid, f.id)
       }
     }
+    for (const fid of boundary?.fixed || []) fc.set(fid, new THREE.Color('#0A84FF'))
+    for (const fid of boundary?.loaded || []) fc.set(fid, new THREE.Color('#FF375F'))
     paint(m.geometry, fc, dark)
-  }, [features, selected, hovered, original, dark])
+  }, [features, selected, hovered, original, dark, boundary])
 
   // ---------------------------------------------------------------- view mode
   useEffect(() => {
@@ -238,7 +258,7 @@ export default function Viewer({ original, result, features, mode, wipe, selecte
   })
 
   // ---------------------------------------------------------------- picking
-  const pick = (e) => {
+  const pick = (e, raw = false) => {
     const s = S.current
     const m = s.meshes.original
     if (!m || !m.visible) return null
@@ -248,7 +268,7 @@ export default function Viewer({ original, result, features, mode, wipe, selecte
     const hit = s.ray.intersectObject(m, false)[0]
     if (!hit) return null
     const fid = m.geometry.userData.triFace[hit.faceIndex]
-    return s.faceToFeature?.get(fid) ?? null
+    return raw ? fid : s.faceToFeature?.get(fid) ?? null
   }
   const down = useRef(null)
   return (
@@ -258,9 +278,11 @@ export default function Viewer({ original, result, features, mode, wipe, selecte
       onPointerDown={(e) => (down.current = [e.clientX, e.clientY])}
       onPointerUp={(e) => {
         const d = down.current
-        if (d && Math.hypot(e.clientX - d[0], e.clientY - d[1]) < 4) onPick?.(pick(e))
+        if (d && Math.hypot(e.clientX - d[0], e.clientY - d[1]) < 4) {
+          if (faceMode) { const f = pick(e, true); if (f != null) onFace?.(f) } else onPick?.(pick(e))
+        }
       }}
-      onPointerMove={(e) => { if (e.buttons === 0) onHover?.(pick(e)) }}
+      onPointerMove={(e) => { if (e.buttons === 0 && !faceMode) onHover?.(pick(e)) }}
     />
   )
 }

@@ -48,6 +48,7 @@ from OCP.GProp import GProp_GProps
 from OCP.GeomAbs import GeomAbs_Plane, GeomAbs_Cylinder, GeomAbs_Cone, GeomAbs_Sphere, GeomAbs_Torus
 from OCP.IFSelect import IFSelect_RetDone
 from OCP.STEPControl import STEPControl_Reader, STEPControl_Writer, STEPControl_AsIs
+from OCP.ShapeUpgrade import ShapeUpgrade_UnifySameDomain
 from OCP.TopAbs import TopAbs_FACE
 from OCP.TopExp import TopExp
 from OCP.TopTools import TopTools_IndexedMapOfShape, TopTools_ListOfShape
@@ -132,6 +133,11 @@ def main(src, dst):
                 print(f"  kept  {{ft['note']}} (kernel could not remove)")
             else:
                 result = nxt
+    # merge faces and edges split by the removals: same shape, fewer mesh constraints
+    u = ShapeUpgrade_UnifySameDomain(result, True, True, False)
+    u.Build()
+    if BRepCheck_Analyzer(u.Shape()).IsValid():
+        result = u.Shape()
     w = STEPControl_Writer()
     w.Transfer(result, STEPControl_AsIs)
     w.Write(dst)
@@ -156,6 +162,7 @@ CPP_TEMPLATE = r'''// DeFeat defeaturing program — generated {date}
 #include <GProp_GProps.hxx>
 #include <STEPControl_Reader.hxx>
 #include <STEPControl_Writer.hxx>
+#include <ShapeUpgrade_UnifySameDomain.hxx>
 #include <TopExp.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
@@ -206,7 +213,11 @@ int main(int argc, char** argv) {{
   if (!algo.IsDone() || !BRepCheck_Analyzer(algo.Shape()).IsValid()) {{
     std::cerr << "defeaturing failed; use the Python script for feature-by-feature fallback\n"; return 2;
   }}
-  STEPControl_Writer w; w.Transfer(algo.Shape(), STEPControl_AsIs); w.Write(dst);
+  // merge faces and edges split by the removals: same shape, fewer mesh constraints
+  ShapeUpgrade_UnifySameDomain unify(algo.Shape(), Standard_True, Standard_True, Standard_False);
+  unify.Build();
+  TopoDS_Shape out = BRepCheck_Analyzer(unify.Shape()).IsValid() ? unify.Shape() : algo.Shape();
+  STEPControl_Writer w; w.Transfer(out, STEPControl_AsIs); w.Write(dst);
   std::cout << "wrote " << dst << "\n";
   return 0;
 }}

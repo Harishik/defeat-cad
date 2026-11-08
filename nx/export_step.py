@@ -22,9 +22,13 @@ def export(session, part, out):
         creator.OutputFile = out
         creator.ObjectTypes.Solids = True
         creator.FileSaveFlag = False
+        creator.LayerMask = "1-256"       # bodies on any layer, not just the visible ones
+        creator.ProcessHoldFlag = True    # wait for the translator, so the file exists when Commit returns
         creator.Commit()
     finally:
         creator.Destroy()
+    if not os.path.isfile(out) or os.path.getsize(out) == 0:
+        raise RuntimeError("NX did not write " + out + ". Check the translator log next to the part.")
 
 
 def main():

@@ -6,44 +6,59 @@
  "failure_reasons": {},
  "failed_items": [],
  "output_valid_rate": 1.0,
- "invalid_inputs": 0,
- "parts_with_features_to_remove": 154,
+ "invalid_inputs": 2,
+ "parts_with_features_to_remove": 220,
  "timeout_seconds_per_part": 2400,
- "feature_removal_success_rate": 0.8918,
- "features_targeted": 850,
- "features_kept_by_kernel": 92,
- "features_restored_by_stress_guard": 116,
- "features_removed_in_final_output": 642,
+ "feature_removal_success_rate": 0.864,
+ "features_targeted": 1478,
+ "features_kept_by_kernel": 201,
+ "features_restored_by_stress_guard": 373,
+ "features_removed_in_final_output": 762,
+ "features_left_by_the_no_check_fallback": 142,
+ "parts_without_a_stress_comparison": {
+  "total": 16,
+  "shipped_unchanged": 8
+ },
  "median_faces": 10.0,
- "median_face_reduction_pct": 12.701612903225806,
- "median_volume_change_pct": 0.13959917518117027,
+ "median_face_reduction_pct": 11.111111111111116,
+ "median_volume_change_pct": 0.13557434187130488,
  "seconds_per_part": {
-  "median": 0.5265,
-  "p90": 125.155
+  "median": 0.9844999999999999,
+  "p90": 127.548
  },
  "mesh_subset": {
-  "n": 151,
-  "median_tet_reduction_pct": 9.328859060402685,
-  "p10_tet_reduction_pct": -0.25148605395518975,
-  "p90_tet_reduction_pct": 75.45333923042901
+  "n": 207,
+  "median_tet_reduction_pct": 7.451797811360083,
+  "p10_tet_reduction_pct": 0.0,
+  "p90_tet_reduction_pct": 62.941992986557565
  },
+ "no_stress_check": {
+  "parts": 8,
+  "why": {
+   "The simplified part could not be solved with the original's supports and loads, so it has no stress check.": 2,
+   "This part was too heavy to stress-check here.": 2,
+   "The mesher could not build a volume mesh of this part, so it has no stress check.": 4
+  }
+ },
+ "meshed_with_curvature_sizing_off": 19,
  "stress_guard": {
-  "triggered": 27,
-  "accepted": 27,
-  "undone": 11,
-  "share_within_5pct_before_guard": 0.82,
-  "median_features_restored": 2
+  "triggered": 96,
+  "accepted": 96,
+  "undone": 41,
+  "share_within_5pct_before_guard": 0.5294,
+  "share_stiffness_within_5pct_before_guard": 0.5441,
+  "median_features_restored": 2.0
  },
  "stress_subset": {
-  "n": 150,
-  "median_abs_deflection_change_pct": 0.30477836662856084,
-  "p90_abs_deflection_change_pct": 2.264345875679201,
-  "median_abs_peak_stress_change_pct": 0.3962816323868371,
-  "p90_abs_peak_stress_change_pct": 2.4402585118584166,
+  "n": 204,
+  "median_abs_deflection_change_pct": 0.2581942314027953,
+  "p90_abs_deflection_change_pct": 2.2649599306492236,
+  "median_abs_peak_stress_change_pct": 0.27160818397203035,
+  "p90_abs_peak_stress_change_pct": 2.018770611732387,
   "share_within_5pct_deflection": 1.0,
   "share_within_5pct_worst_load_case": 1.0,
-  "median_worst_load_case_pct": 0.947005007544824,
-  "p90_worst_load_case_pct": 3.3409695829281305
+  "median_worst_load_case_pct": 0.7000156522553848,
+  "p90_worst_load_case_pct": 3.724186154270009
  },
  "ci95": {
   "completion_rate": [
@@ -51,32 +66,36 @@
    1.0
   ],
   "output_valid_rate": [
-   0.9924,
+   0.9923,
    1.0
   ],
   "feature_removal_success_rate": [
-   0.8138,
-   0.9466
+   0.7452,
+   0.9551
   ],
   "share_within_5pct_deflection": [
-   0.975,
+   0.9815,
    1.0
   ],
   "share_within_5pct_worst_load_case": [
-   0.975,
+   0.9815,
    1.0
   ],
   "median_worst_load_case_pct": [
-   0.7205,
-   1.3629
+   0.4687,
+   1.0765
   ],
   "share_within_5pct_before_guard": [
-   0.7508,
-   0.8732
+   0.461,
+   0.5967
+  ],
+  "share_stiffness_within_5pct_before_guard": [
+   0.4756,
+   0.611
   ],
   "median_abs_deflection_change_pct": [
-   0.2009,
-   0.4428
+   0.1739,
+   0.3452
   ]
  },
  "ci_method": "Wilson score interval for rates; 2000-sample part-level bootstrap for the removal rate and medians"

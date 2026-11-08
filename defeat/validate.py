@@ -120,30 +120,51 @@ def step_bytes(shape) -> bytes:
     return data
 
 
-COARSER = (1, 2, 4)   # a part too heavy to mesh in time at h still gets a comparison, on a coarser mesh
+def _mesh_rounds(h, diag):
+    """(element size, curvature sizing, share of the time left). A part too heavy at h gets a coarser mesh
+    that still follows its rounds. Curvature sizing is what hangs: on parts that timed out in every round
+    it was the cause, and with it off they mesh in about a second. So the last rounds switch it off and
+    size elements from the part itself, in case h is tiny for this part. They come last because a mesh
+    that ignores curvature does not refine around fillets, so it understates what removing them saves."""
+    return ((h, 12, 0.35), (2 * h, 6, 0.4), (max(h, diag / 20), 0, 0.6), (max(2 * h, diag / 10), 0, 1.0))
 
 
-def mesh_compare(orig, new, h, timeout=300.0, with_fea=True):
+def mesh_compare(orig, new, h, timeout=300.0, with_fea=True, want_field=False, analysis="static", boundary=None, budget=300.0):
+    """budget: seconds for the whole comparison, shared out so a coarser mesh always gets its turn."""
     from . import fea
     from .execute import worker
     w = worker()
     if with_fea:
+        import time
         b = {"ok": False, "error": "the original could not be meshed"}
-        base = h
-        for k in COARSER:
-            bc = fea.load_case(occ.bbox(orig))
-            a = w.call("defeat.fea:mesh_and_solve", step_bytes(orig), base * k, bc, timeout=timeout)
+        curvature = 12
+        end = time.time() + budget
+        box = occ.bbox(orig)
+        rounds = _mesh_rounds(h, occ.norm(occ.sub(box[3:], box[:3])))
+        for size, curve, share in rounds:
+            left = end - time.time()
+            if left < 5:
+                break
+            timeout = left * share / 2
+            bc = fea.load_case(occ.bbox(orig), analysis)
+            if boundary and boundary.get("fixed"):
+                fea.user_case(occ.faces_of(orig), boundary, bc)
+            bc["want_field"] = want_field
+            bc["stat_curvature"] = curve
+            a = w.call("defeat.fea:mesh_and_solve", step_bytes(orig), size, bc, timeout=timeout)
             if not (a.get("fea") or {}).get("ok"):
                 continue
+            bc["want_field"] = False
             fea.lock(bc, a.get("fea"))   # same mesh size and same end regions for both models
-            b = w.call("defeat.fea:mesh_and_solve", step_bytes(new), base * k, bc, timeout=timeout)
+            b = w.call("defeat.fea:mesh_and_solve", step_bytes(new), size, bc, timeout=max(timeout, 5.0))
             if (b.get("fea") or {}).get("ok"):
-                h = base * k
+                h = size
+                curvature = curve
                 break
     else:
         a = w.call("defeat.validate:mesh_stats", step_bytes(orig), h, timeout=timeout)
         b = w.call("defeat.validate:mesh_stats", step_bytes(new), h, timeout=timeout)
-    out = {"h": h, "original": a, "defeatured": b}
+    out = {"h": h, "original": a, "defeatured": b, "stat_curvature": curvature if with_fea else 12}
     if with_fea and a.get("fea") and b.get("fea"):
         out["fea"] = {"load_case": bc["text"], "material": fea.MATERIAL, "original": a.pop("fea"),
                       "defeatured": b.pop("fea")}

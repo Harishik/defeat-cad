@@ -23,6 +23,51 @@ ORDER = ["emboss", "chamfer", "fillet", "hole", "slot", "pocket", "step", "boss"
 
 
 # ---------------------------------------------------------------- worker side
+KERNEL_PARALLEL = os.environ.get("DEFEAT_KERNEL_PARALLEL", "1") != "0"
+
+
+def _change_is_local(a, b, removed, reach, diag):
+    """True if all material added or removed between a and b sits within `reach` of the removed faces."""
+    from OCP.BRepAlgoAPI import BRepAlgoAPI_Cut
+    from defeat import occ as _occ
+    boxes = [_occ.bbox(f) for f in removed]
+    lo = [min(x[i] for x in boxes) - reach - 1e-4 * diag for i in range(3)]
+    hi = [max(x[i + 3] for x in boxes) + reach + 1e-4 * diag for i in range(3)]
+    # The part grew past its old box somewhere outside the region: that is new material far from the
+    # feature, so the answer is already known. The booleans below can take many times the rebuild itself.
+    ba, bb = _occ.bbox(a), _occ.bbox(b)
+    eps = 1e-4 * diag
+    for i in range(3):
+        if (bb[i] < ba[i] - eps and bb[i] < lo[i]) or (bb[i + 3] > ba[i + 3] + eps and bb[i + 3] > hi[i]):
+            return False
+    for p, q in ((a, b), (b, a)):
+        cut = BRepAlgoAPI_Cut(p, q)
+        cut.Build()
+        if not cut.IsDone():
+            return False
+        d = cut.Shape()
+        if not _occ.faces_of(d) or abs(_occ.volume(d)) <= 1e-9 * abs(_occ.volume(a)):
+            continue
+        x = _occ.bbox(d)
+        if any(x[i] < lo[i] or x[i + 3] > hi[i] for i in range(3)):
+            return False
+    return True
+
+
+def _unify(brep: bytes):
+    """Merge faces and edges split by earlier modelling or by removals: same shape, far fewer mesh constraints."""
+    from OCP.ShapeUpgrade import ShapeUpgrade_UnifySameDomain
+    from defeat import occ as _occ
+    shape = _occ.from_brep_string(brep)
+    u = ShapeUpgrade_UnifySameDomain(shape, True, True, False)
+    u.Build()
+    res = u.Shape()
+    v0, v1 = abs(_occ.volume(shape)), abs(_occ.volume(res))
+    if not _occ.is_valid(res) or abs(v1 - v0) > 1e-6 * max(v0, 1e-12) or len(_occ.solids_of(res)) != len(_occ.solids_of(shape)):
+        return {"ok": False, "error": "merging faces changed the solid"}
+    return {"ok": True, "brep": _occ.to_brep_string(res), "faces": len(_occ.faces_of(res))}
+
+
 def _remove_faces(brep: bytes, face_ids: list[int], fuzzy: float = 0.0, limits=None):
     """Remove faces; also return where every input face went (from the kernel's own history),
     so later features can be found again exactly even when their neighbours changed.
@@ -39,7 +84,7 @@ def _remove_faces(brep: bytes, face_ids: list[int], fuzzy: float = 0.0, limits=N
     d = BRepAlgoAPI_Defeaturing()
     d.SetShape(shape)
     d.AddFacesToRemove(lst)
-    d.SetRunParallel(False)
+    d.SetRunParallel(KERNEL_PARALLEL)
     d.SetToFillHistory(True)
     if fuzzy > 0:
         d.SetFuzzyValue(fuzzy)
@@ -55,7 +100,11 @@ def _remove_faces(brep: bytes, face_ids: list[int], fuzzy: float = 0.0, limits=N
         res, healed = res2, True
     if len(_occ.solids_of(res)) != len(_occ.solids_of(shape)):
         return {"ok": False, "error": "removal split or merged bodies"}
-    if len(_occ.faces_of(res)) >= len(faces):
+    # A real removal can leave the face count as it was (a neighbour may split), so judge by whether the
+    # asked-for faces are gone and the solid changed, not by counting faces.
+    gone = sum(1 for i in face_ids if d.IsDeleted(faces[i]))
+    moved = abs(_occ.volume(res) - _occ.volume(shape)) > 1e-9 * abs(_occ.volume(shape))
+    if len(_occ.faces_of(res)) >= len(faces) and not (gone == len(face_ids) and moved):
         return {"ok": False, "error": "kernel returned the part unchanged"}
     if limits is not None:
         v0 = abs(_occ.volume(shape))
@@ -65,7 +114,10 @@ def _remove_faces(brep: bytes, face_ids: list[int], fuzzy: float = 0.0, limits=N
         diag = _occ.norm(_occ.sub(a[3:], a[:3]))
         # tiny changes always pass: a deep slot or a sharp corner can beat the estimate and still be harmless
         if (dv > limits[0] and dv > TINY_VOLUME * v0) or (grow > limits[1] and grow > TINY_GROWTH * diag):
-            return {"ok": False, "error": "the kernel rebuilt far more material than the feature holds"}
+            # The size estimate is rough, so look at what really changed before rejecting: everything the
+            # kernel added or took away must lie around the faces that were asked for.
+            if not _change_is_local(shape, res, [faces[i] for i in face_ids], limits[1], diag):
+                return {"ok": False, "error": "the kernel rebuilt far more material than the feature holds"}
     fmap = None
     if not healed:
         out = _occ.indexed(res, TopAbs_FACE)
@@ -243,7 +295,16 @@ def _limits(face_ids, size, areas, slack):
     return VOLUME_LIMIT * sum(areas[i] for i in face_ids) * size + slack, GROWTH_LIMIT * size + slack
 
 
-def defeature(shape, features, decisions, progress=None, timeout=30.0, graph=None) -> ExecResult:
+def _merge_split_faces(res, w, timeout):
+    if not res.removed:
+        return
+    r = w.call("_unify", occ.to_brep_string(res.shape), timeout=timeout)
+    if r.get("ok"):
+        res.shape = occ.from_brep_string(r["brep"])
+
+
+def defeature(shape, features, decisions, progress=None, timeout=30.0, graph=None, budget=180.0) -> ExecResult:
+    """budget: seconds for the whole removal. Past it, features not reached yet stay on the part and are reported."""
     t0 = time.time()
     todo = [f for f in features if decisions[f.id].action == "remove"]
     todo.sort(key=lambda f: (ORDER.index(f.kind) if f.kind in ORDER else 99, f.size))
@@ -273,6 +334,7 @@ def defeature(shape, features, decisions, progress=None, timeout=30.0, graph=Non
         res.shape = occ.from_brep_string(r["brep"])
         res.removed = [f.id for f in todo]
         res.strategy = "single pass"
+        _merge_split_faces(res, w, timeout)
         res.seconds = time.time() - t0
         return res
 
@@ -304,34 +366,23 @@ def defeature(shape, features, decisions, progress=None, timeout=30.0, graph=Non
             idmap = {oid: mapping[order.index(cid)] for oid, cid in idmap.items() if order.index(cid) in mapping}
         cur, cur_brep = new, r["brep"]
 
-    for n, ft in enumerate(todo, 1):
-        if ft.id in done:
-            continue
-        say(f"[{n}/{len(todo)}] {ft.kind} #{ft.id}")
-        # attempts: the feature alone; then with its tangent blend neighbours; then with a fuzzy tolerance
-        attempts = [(set(ft.faces), 0.0)]
+    def alone(ft):
+        """One feature: by itself; then with its tangent blend neighbours. Retrying with a fuzzy tolerance was
+        measured and dropped: 83 retries on 300 parts, none succeeded, about 2 s each."""
+        attempts = [set(ft.faces)]
         if ft.kind in ("fillet", "chamfer") and graph is not None:
             grp = set(ft.faces) | _blend_neighbours(ft, graph, todo_by_face, owner_kind)
             if grp != set(ft.faces):
-                attempts.append((grp, 0.0))
-            attempts.append((grp, 1e-4 * diag))
-        else:
-            attempts.append((set(ft.faces), 1e-4 * diag))
+                attempts.append(grp)
         last = "kernel returned the part unchanged"
-        alive = [f for f in ft.faces if f in idmap]
-        if not alive and exact_history:
-            # every face was deleted by an earlier removal: the feature is already gone
-            done.add(ft.id)
-            res.removed.append(ft.id)
-            continue
-        for grp, fz in attempts:
+        for grp in attempts:
             grp = {f for f in grp if f in idmap} if exact_history else grp
             cur_ids = [idmap.get(f) for f in sorted(grp)]
             if not cur_ids or any(c is None for c in cur_ids):
                 last = "geometry changed by an earlier removal"
                 continue
             vol, grow = _limits(grp, ft.size, areas, 0)
-            r = w.call("_remove_faces", cur_brep, cur_ids, fz, (vol + vol_slack, grow + slack), timeout=timeout)
+            r = w.call("_remove_faces", cur_brep, cur_ids, 0.0, (vol + vol_slack, grow + slack), timeout=timeout)
             if r["ok"]:
                 apply(r)
                 done.add(ft.id)
@@ -342,10 +393,57 @@ def defeature(shape, features, decisions, progress=None, timeout=30.0, graph=Non
                     if other is not None and other.id not in done and all(x in grp or x not in idmap for x in other.faces):
                         done.add(other.id)
                         res.removed.append(other.id)
-                break
+                return
             last = r["error"]
-        else:
-            res.failed[ft.id] = last
+            if "timed out" in last or time.time() - t0 > budget:   # a hang won't clear with a larger tolerance
+                break
+        res.failed[ft.id] = last
+
+    def together(group):
+        """Asks the kernel for these features in one call: True, False, or "hang" if the call never came back."""
+        ids = sorted({f for ft in group for f in ft.faces if f in idmap})
+        cur_ids = [idmap[f] for f in ids]
+        if not cur_ids:
+            return False
+        lim = [_limits(ft.faces, ft.size, areas, 0) for ft in group]
+        r = w.call("_remove_faces", cur_brep, cur_ids, 0.0, (sum(x[0] for x in lim) + vol_slack, max(x[1] for x in lim) + slack), timeout=timeout / 2)
+        if not r["ok"]:   # half the time: a group that will finish nearly always does so quickly, 116 of 117 measured
+            return "hang" if "timed out" in r["error"] or "crashed" in r["error"] else False
+        apply(r)
+        for ft in group:
+            done.add(ft.id)
+            res.removed.append(ft.id)
+        return True
+
+    # Bisection: most features go in one call, and one bad feature costs a few calls instead of one per feature.
+    half = len(todo) // 2
+    work = [todo[:half], todo[half:]]
+    while work:
+        group = [ft for ft in work.pop(0) if ft.id not in done]
+        if not group:
+            continue
+        if time.time() - t0 > budget:
+            for ft in group:
+                res.failed[ft.id] = "kept: the part's time budget for removals ran out"
+            continue
+        gone = [ft for ft in group if exact_history and not any(f in idmap for f in ft.faces)]
+        for ft in gone:   # every face was deleted by an earlier removal: the feature is already gone
+            done.add(ft.id)
+            res.removed.append(ft.id)
+        group = [ft for ft in group if ft.id not in done]
+        if not group:
+            continue
+        say(f"Removing {len(group)} of {len(todo)} features together" if len(group) > 1 else f"{group[0].kind} #{group[0].id} on its own")
+        if len(group) == 1:
+            alone(group[0])
+            continue
+        took = together(group)
+        if took == "hang":     # says nothing about which one, and halving would hang again: one at a time
+            work[:0] = [[ft] for ft in group]
+        elif not took:
+            half = len(group) // 2
+            work[:0] = [group[:half], group[half:]]
     res.shape = cur
+    _merge_split_faces(res, w, timeout)
     res.seconds = time.time() - t0
     return res

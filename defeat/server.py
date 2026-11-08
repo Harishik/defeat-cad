@@ -63,10 +63,10 @@ def preview(name: str):
         raise HTTPException(404)
     from .decide import Policy, decide, default_h
     from .graph import build_graph
-    from .recognize import Recognizer
-    shape = occ.read_cad(p)
-    g = build_graph(shape, curvature=False)
-    feats = Recognizer(g).run()
+    from .recognize import recognize
+    shape = occ.heal(occ.read_cad(p))
+    g = build_graph(shape)
+    _, feats = recognize(shape, g)   # the same rules + network the session uses, so the card matches the run
     d = decide(feats, Policy("static", default_h(g.char_len)), g, occ.volume(shape))
     removable = sorted({fid for f in feats if d[f.id].action == "remove" for fid in f.faces})
     out = {"mesh": mesh_payload(shape), "removable": removable, "features": len(feats),
@@ -124,6 +124,7 @@ class PolicyIn(BaseModel):
     overrides: dict | None = None
     feature_overrides: dict | None = None
     protected_faces: list | None = None
+    boundary: dict | None = None
     merge: bool = True
 
 
@@ -132,7 +133,7 @@ def session_policy(sid: str, body: PolicyIn):
     s = get(sid)
     if body.preset and body.preset not in PRESETS:
         raise HTTPException(400, "unknown preset")
-    return s.set_policy(body.preset, body.h, body.overrides, body.feature_overrides, body.protected_faces, body.merge)
+    return s.set_policy(body.preset, body.h, body.overrides, body.feature_overrides, body.protected_faces, body.merge, boundary=body.boundary)
 
 
 @app.post("/api/session/{sid}/run")
@@ -320,11 +321,7 @@ def chat(body: ChatIn):
                 msgs += s.chat[-6:]
             msgs.append({"role": "user", "content": text})
             tools = agent.TOOLS if s else [t for t in agent.TOOLS if t["function"]["name"] == "create_part"]
-            m = agent.llm_chat(msgs, tools=tools, timeout=150)
-            calls = [{"name": tc["function"]["name"], "arguments": tc["function"].get("arguments", {})}
-                     for tc in (m.get("tool_calls") or [])]
-            reply = (m.get("content") or "").strip()
-            via = agent.CHAT_MODEL
+            calls, reply, via = agent.plan_calls(msgs, text, tools=tools)
         except Exception:
             calls = []
     if not calls and not reply:

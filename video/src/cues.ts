@@ -526,23 +526,23 @@ export const CUES: Record<'intro' | 'guide', { frames: number; lines: Record<str
    },
    "bench": {
     "s": 4605,
-    "e": 4934,
-    "text": "Every number is measured on held-out, real-world cad. Fillets found with an F1 of zero point eight seven. And a valid solid, on all five hundred test parts.",
+    "e": 4932,
+    "text": "Every number is measured on held-out, real-world cad. Fillets found with an F1 of zero point nine nine. And a valid solid, on all five hundred test parts.",
     "subs": [
      {
       "text": "Every number is measured on held-out, real-world cad.",
       "s": 4605,
-      "e": 4718
+      "e": 4719
      },
      {
-      "text": "Fillets found with an F1 of zero point eight seven.",
-      "s": 4718,
-      "e": 4828
+      "text": "Fillets found with an F1 of zero point nine nine.",
+      "s": 4719,
+      "e": 4824
      },
      {
       "text": "And a valid solid, on all five hundred test parts.",
-      "s": 4828,
-      "e": 4934
+      "s": 4824,
+      "e": 4932
      }
     ],
     "chapter": null

@@ -1,0 +1,87 @@
+{
+ "split": "test",
+ "parts": 6449,
+ "faces": 135788,
+ "models": {
+  "net_walks.pt": {
+   "as_stored": {
+    "accuracy": 0.9451,
+    "miou": 0.8032,
+    "fillet_f1": 0.9901,
+    "chamfer_f1": 0.953,
+    "cut_f1": 0.9166,
+    "ci95": {
+     "accuracy": [
+      0.9388,
+      0.9506
+     ],
+     "miou": [
+      0.7843,
+      0.823
+     ],
+     "fillet_f1": [
+      0.9853,
+      0.9934
+     ],
+     "chamfer_f1": [
+      0.9319,
+      0.9689
+     ],
+     "cut_f1": [
+      0.9015,
+      0.9289
+     ]
+    },
+    "iou": {
+     "ExtrudeSide": 0.923,
+     "ExtrudeEnd": 0.8686,
+     "CutSide": 0.8469,
+     "CutEnd": 0.7222,
+     "Fillet": 0.9803,
+     "Chamfer": 0.9103,
+     "RevolveSide": 0.8219,
+     "RevolveEnd": 0.3521
+    }
+   },
+   "rotated": {
+    "accuracy": 0.9451,
+    "miou": 0.8032,
+    "fillet_f1": 0.9901,
+    "chamfer_f1": 0.953,
+    "cut_f1": 0.9166,
+    "ci95": {
+     "accuracy": [
+      0.9388,
+      0.9506
+     ],
+     "miou": [
+      0.7843,
+      0.823
+     ],
+     "fillet_f1": [
+      0.9853,
+      0.9934
+     ],
+     "chamfer_f1": [
+      0.9319,
+      0.9689
+     ],
+     "cut_f1": [
+      0.9015,
+      0.9289
+     ]
+    },
+    "iou": {
+     "ExtrudeSide": 0.923,
+     "ExtrudeEnd": 0.8686,
+     "CutSide": 0.8469,
+     "CutEnd": 0.7222,
+     "Fillet": 0.9803,
+     "Chamfer": 0.9103,
+     "RevolveSide": 0.8219,
+     "RevolveEnd": 0.3521
+    }
+   }
+  }
+ }
+}

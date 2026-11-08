@@ -1,4 +1,4 @@
-"""MFCAD benchmark: face-level accuracy of the rule recognizer and the GNN on 15,488 labelled
+"""MFCAD benchmark: face-level accuracy of the rule recognizer and the network on 15,488 labelled
 machining-feature parts (Cao et al. 2020, https://github.com/hducg/MFCAD, MIT license).
 
     python -m bench.mfcad --n 2000
@@ -55,12 +55,12 @@ def evaluate_one(path):
     rule = [OURS_GROUP[k] for k in rule_face_labels(g, feats)]
     out = {"gt": [GT_GROUP[v] for v in y], "rule": rule, "faces": len(y)}
     try:
-        from defeat.gnn import predict_faces
+        from defeat.net import predict_part
         from defeat.datagen import LABELS
-        P = predict_faces(g)
-        out["gnn"] = [OURS_GROUP.get(LABELS[i], "base") for i in P.argmax(1)]
-        from defeat.recognize import FUSION, refine_with_gnn
-        out["fused"] = [OURS_GROUP[k] for k in rule_face_labels(g, refine_with_gnn(g, feats, P, LABELS, **FUSION))]
+        P, P8 = predict_part(g)
+        out["net"] = [OURS_GROUP.get(LABELS[i], "base") for i in P.argmax(1)]
+        from defeat.recognize import FUSION, refine_with_net
+        out["fused"] = [OURS_GROUP[k] for k in rule_face_labels(g, refine_with_net(g, feats, P, LABELS, P8=P8, **FUSION))]
     except Exception:
         pass
     return out
@@ -82,7 +82,7 @@ def main():
               "parts_attempted": len(files), "parts_ok": len(ok),
               "failures": [r for r in res if not r.get("ok")][:20],
               "seconds_per_part": round(sum(r["seconds"] for r in ok) / max(len(ok), 1), 3)}
-    for who in ("rule", "gnn", "fused"):
+    for who in ("rule", "net", "fused"):
         pairs = [(g, p) for r in ok if who in r for g, p in zip(r["gt"], r[who])]
         if not pairs:
             continue
@@ -93,7 +93,7 @@ def main():
                 sum(1 for g, p in pairs if g == "step" and p != "base") / max(1, sum(1 for g, _ in pairs if g == "step")), 4),
         }
     print(save(f"mfcad_{a.split}", report))
-    for who in ("rule", "gnn", "fused"):
+    for who in ("rule", "net", "fused"):
         if who in report:
             r = report[who]
             print(who, "feature-vs-stock", r["feature_vs_stock"], "\n   per-class", {k: v for k, v in r["per_class"].items() if k != "confusion"})

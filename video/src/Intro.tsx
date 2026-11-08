@@ -214,7 +214,7 @@ export const Intro: React.FC = () => {
       {/* ---------- 6. the montage, one cut per bar */}
       <Seg a={bar(22)} b={bar(23)}>{(t, dur) => (
         <>
-          <Stat at={4} dur={dur} value={<><Counter to={0.5} decimals={1} at={4} dur={20} /> s</>} label="in under a second" sub="MEDIAN PER PART · 500 REAL PARTS" />
+          <Stat at={4} dur={dur} value={<><Counter to={1.0} decimals={1} at={4} dur={20} /> s</>} label="for a typical part" sub="MEDIAN PER PART · 500 REAL PARTS" />
         </>
       )}</Seg>
       <Seg a={bar(23)} b={bar(24)}>{(t, dur) => (

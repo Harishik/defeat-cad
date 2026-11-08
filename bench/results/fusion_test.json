@@ -1,284 +1,377 @@
 {
  "dataset": "Fusion 360 Gallery segmentation, extended STEP (official test split)",
- "parts_attempted": 3000,
- "parts_ok": 3000,
- "faces": 63888,
+ "parts_attempted": 6454,
+ "parts_ok": 6454,
+ "faces": 139200,
  "failure_reasons": {},
- "seconds_per_part": 1.071,
+ "seconds_per_part": 1.787,
  "rule": {
   "fillet": {
-   "precision": 0.5627,
-   "recall": 0.8762,
-   "f1": 0.6853,
-   "support": 6722,
-   "accuracy": 0.9153,
+   "precision": 0.5991,
+   "recall": 0.8757,
+   "f1": 0.7115,
+   "support": 15938,
+   "accuracy": 0.9187,
    "f1_ci95": [
-    0.6378,
-    0.7288
+    0.6784,
+    0.7402
    ]
   },
   "chamfer": {
-   "precision": 0.6472,
-   "recall": 0.5166,
-   "f1": 0.5746,
-   "support": 1417,
-   "accuracy": 0.983,
+   "precision": 0.7078,
+   "recall": 0.5312,
+   "f1": 0.6069,
+   "support": 3530,
+   "accuracy": 0.9826,
    "f1_ci95": [
-    0.5046,
-    0.6434
+    0.5559,
+    0.651
    ]
   },
   "cut_indicative": {
-   "precision": 0.515,
-   "recall": 0.5988,
-   "f1": 0.5538,
-   "support": 12910,
-   "accuracy": 0.805
+   "precision": 0.4976,
+   "recall": 0.6064,
+   "f1": 0.5467,
+   "support": 27255,
+   "accuracy": 0.8031
   },
   "per_class": {
-   "faces": 63888,
-   "accuracy": 0.7297,
-   "macro_f1": 0.6548,
-   "miou": 0.4954,
+   "faces": 139200,
+   "accuracy": 0.732,
+   "macro_f1": 0.6678,
+   "miou": 0.5098,
    "per_class": {
     "base": {
-     "precision": 0.8656,
-     "recall": 0.7532,
-     "f1": 0.8055,
-     "support": 42839,
-     "iou": 0.6743
+     "precision": 0.8687,
+     "recall": 0.7519,
+     "f1": 0.8061,
+     "support": 92477,
+     "iou": 0.6752
     },
     "cut": {
-     "precision": 0.515,
-     "recall": 0.5988,
-     "f1": 0.5538,
-     "support": 12910,
-     "iou": 0.3829
+     "precision": 0.4976,
+     "recall": 0.6064,
+     "f1": 0.5467,
+     "support": 27255,
+     "iou": 0.3761
     },
     "fillet": {
-     "precision": 0.5627,
-     "recall": 0.8762,
-     "f1": 0.6853,
-     "support": 6722,
-     "iou": 0.5213
+     "precision": 0.5991,
+     "recall": 0.8757,
+     "f1": 0.7115,
+     "support": 15938,
+     "iou": 0.5522
     },
     "chamfer": {
-     "precision": 0.6472,
-     "recall": 0.5166,
-     "f1": 0.5746,
-     "support": 1417,
-     "iou": 0.4031
+     "precision": 0.7078,
+     "recall": 0.5312,
+     "f1": 0.6069,
+     "support": 3530,
+     "iou": 0.4356
     }
    },
    "confusion": {
     "base": {
-     "base": 32266,
-     "cut": 6920,
-     "fillet": 3321,
-     "chamfer": 332
+     "base": 69532,
+     "cut": 15804,
+     "chamfer": 660,
+     "fillet": 6481
     },
     "chamfer": {
-     "chamfer": 732,
-     "base": 412,
-     "fillet": 62,
-     "cut": 211
+     "chamfer": 1875,
+     "base": 1033,
+     "fillet": 167,
+     "cut": 455
     },
     "cut": {
-     "cut": 7731,
-     "base": 3918,
-     "fillet": 1194,
-     "chamfer": 67
+     "cut": 16528,
+     "base": 7924,
+     "fillet": 2691,
+     "chamfer": 112
     },
     "fillet": {
-     "fillet": 5890,
-     "base": 682,
-     "cut": 150
+     "fillet": 13957,
+     "base": 1553,
+     "cut": 426,
+     "chamfer": 2
     }
    }
   }
  },
- "gnn": {
+ "net": {
   "fillet": {
-   "precision": 0.8066,
-   "recall": 0.9573,
-   "f1": 0.8755,
-   "support": 6722,
-   "accuracy": 0.9714,
+   "precision": 0.9794,
+   "recall": 0.9946,
+   "f1": 0.9869,
+   "support": 15938,
+   "accuracy": 0.997,
    "f1_ci95": [
-    0.8517,
-    0.8939
+    0.9779,
+    0.9926
    ]
   },
   "chamfer": {
-   "precision": 0.7511,
-   "recall": 0.8687,
-   "f1": 0.8056,
-   "support": 1417,
-   "accuracy": 0.9907,
+   "precision": 0.9579,
+   "recall": 0.9725,
+   "f1": 0.9651,
+   "support": 3530,
+   "accuracy": 0.9982,
    "f1_ci95": [
-    0.7468,
-    0.8533
+    0.9512,
+    0.9756
    ]
   },
   "cut_indicative": {
-   "precision": 0.2759,
-   "recall": 0.4483,
-   "f1": 0.3415,
-   "support": 12910,
-   "accuracy": 0.6507
+   "precision": 0.3675,
+   "recall": 0.7415,
+   "f1": 0.4914,
+   "support": 26819,
+   "accuracy": 0.7032
   },
   "per_class": {
-   "faces": 63885,
-   "accuracy": 0.6201,
-   "macro_f1": 0.6775,
-   "miou": 0.5456,
+   "faces": 138709,
+   "accuracy": 0.6992,
+   "macro_f1": 0.7947,
+   "miou": 0.7035,
    "per_class": {
     "base": {
-     "precision": 0.7859,
-     "recall": 0.6107,
-     "f1": 0.6873,
-     "support": 42836,
-     "iou": 0.5236
+     "precision": 0.892,
+     "recall": 0.6256,
+     "f1": 0.7354,
+     "support": 92422,
+     "iou": 0.5816
     },
     "cut": {
-     "precision": 0.2759,
-     "recall": 0.4483,
-     "f1": 0.3415,
-     "support": 12910,
-     "iou": 0.2059
+     "precision": 0.3675,
+     "recall": 0.7415,
+     "f1": 0.4914,
+     "support": 26819,
+     "iou": 0.3257
     },
     "fillet": {
-     "precision": 0.8066,
-     "recall": 0.9573,
-     "f1": 0.8755,
-     "support": 6722,
-     "iou": 0.7786
+     "precision": 0.9794,
+     "recall": 0.9946,
+     "f1": 0.9869,
+     "support": 15938,
+     "iou": 0.9742
     },
     "chamfer": {
-     "precision": 0.7511,
-     "recall": 0.8687,
-     "f1": 0.8056,
-     "support": 1417,
-     "iou": 0.6745
+     "precision": 0.9579,
+     "recall": 0.9725,
+     "f1": 0.9651,
+     "support": 3530,
+     "iou": 0.9326
     }
    },
    "confusion": {
     "base": {
-     "cut": 15040,
-     "base": 26162,
-     "chamfer": 293,
-     "fillet": 1341
+     "base": 57821,
+     "cut": 34212,
+     "chamfer": 110,
+     "fillet": 279
     },
     "chamfer": {
-     "chamfer": 1231,
-     "base": 154,
-     "cut": 27,
-     "fillet": 5
+     "chamfer": 3433,
+     "base": 76,
+     "cut": 11,
+     "fillet": 10
     },
     "cut": {
-     "cut": 5787,
-     "base": 6812,
-     "fillet": 197,
-     "chamfer": 114
+     "cut": 19885,
+     "base": 6850,
+     "fillet": 45,
+     "chamfer": 39
     },
     "fillet": {
-     "fillet": 6435,
-     "cut": 124,
-     "base": 162,
-     "chamfer": 1
+     "fillet": 15852,
+     "base": 76,
+     "chamfer": 2,
+     "cut": 8
+    }
+   }
+  }
+ },
+ "head8": {
+  "fillet": {
+   "precision": 0.983,
+   "recall": 0.993,
+   "f1": 0.988,
+   "support": 15938,
+   "accuracy": 0.9972,
+   "f1_ci95": [
+    0.98,
+    0.9932
+   ]
+  },
+  "chamfer": {
+   "precision": 0.9494,
+   "recall": 0.9771,
+   "f1": 0.963,
+   "support": 3530,
+   "accuracy": 0.9981,
+   "f1_ci95": [
+    0.9484,
+    0.9741
+   ]
+  },
+  "cut_indicative": {
+   "precision": 0.9222,
+   "recall": 0.9169,
+   "f1": 0.9195,
+   "support": 26819,
+   "accuracy": 0.969
+  },
+  "per_class": {
+   "faces": 138709,
+   "accuracy": 0.9651,
+   "macro_f1": 0.9612,
+   "miou": 0.9265,
+   "per_class": {
+    "base": {
+     "precision": 0.975,
+     "recall": 0.9738,
+     "f1": 0.9744,
+     "support": 92422,
+     "iou": 0.9501
+    },
+    "cut": {
+     "precision": 0.9222,
+     "recall": 0.9169,
+     "f1": 0.9195,
+     "support": 26819,
+     "iou": 0.851
+    },
+    "fillet": {
+     "precision": 0.983,
+     "recall": 0.993,
+     "f1": 0.988,
+     "support": 15938,
+     "iou": 0.9763
+    },
+    "chamfer": {
+     "precision": 0.9494,
+     "recall": 0.9771,
+     "f1": 0.963,
+     "support": 3530,
+     "iou": 0.9286
+    }
+   },
+   "confusion": {
+    "base": {
+     "base": 90001,
+     "cut": 2055,
+     "fillet": 225,
+     "chamfer": 141
+    },
+    "chamfer": {
+     "chamfer": 3449,
+     "base": 70,
+     "cut": 3,
+     "fillet": 8
+    },
+    "cut": {
+     "cut": 24591,
+     "base": 2147,
+     "fillet": 40,
+     "chamfer": 41
+    },
+    "fillet": {
+     "fillet": 15827,
+     "base": 91,
+     "chamfer": 2,
+     "cut": 18
     }
    }
   }
  },
  "fused": {
   "fillet": {
-   "precision": 0.8537,
-   "recall": 0.8813,
-   "f1": 0.8673,
-   "support": 6722,
-   "accuracy": 0.9716,
+   "precision": 0.985,
+   "recall": 0.9908,
+   "f1": 0.9879,
+   "support": 15938,
+   "accuracy": 0.9972,
    "f1_ci95": [
-    0.8414,
-    0.8876
+    0.9786,
+    0.9937
    ]
   },
   "chamfer": {
-   "precision": 0.7808,
-   "recall": 0.8624,
-   "f1": 0.8196,
-   "support": 1417,
-   "accuracy": 0.9916,
+   "precision": 0.9926,
+   "recall": 0.947,
+   "f1": 0.9693,
+   "support": 3530,
+   "accuracy": 0.9985,
    "f1_ci95": [
-    0.7616,
-    0.866
+    0.9567,
+    0.9792
    ]
   },
   "cut_indicative": {
-   "precision": 0.4561,
-   "recall": 0.5864,
-   "f1": 0.5131,
-   "support": 12910,
-   "accuracy": 0.7751
+   "precision": 0.613,
+   "recall": 0.7987,
+   "f1": 0.6936,
+   "support": 26819,
+   "accuracy": 0.8636
   },
   "per_class": {
-   "faces": 63885,
-   "accuracy": 0.7429,
-   "macro_f1": 0.7506,
-   "miou": 0.6188,
+   "faces": 138709,
+   "accuracy": 0.8596,
+   "macro_f1": 0.8852,
+   "miou": 0.8124,
    "per_class": {
     "base": {
-     "precision": 0.8442,
-     "recall": 0.7644,
-     "f1": 0.8023,
-     "support": 42836,
-     "iou": 0.6699
+     "precision": 0.9327,
+     "recall": 0.8514,
+     "f1": 0.8902,
+     "support": 92422,
+     "iou": 0.8021
     },
     "cut": {
-     "precision": 0.4561,
-     "recall": 0.5864,
-     "f1": 0.5131,
-     "support": 12910,
-     "iou": 0.3451
+     "precision": 0.613,
+     "recall": 0.7987,
+     "f1": 0.6936,
+     "support": 26819,
+     "iou": 0.5309
     },
     "fillet": {
-     "precision": 0.8537,
-     "recall": 0.8813,
-     "f1": 0.8673,
-     "support": 6722,
-     "iou": 0.7657
+     "precision": 0.985,
+     "recall": 0.9908,
+     "f1": 0.9879,
+     "support": 15938,
+     "iou": 0.976
     },
     "chamfer": {
-     "precision": 0.7808,
-     "recall": 0.8624,
-     "f1": 0.8196,
-     "support": 1417,
-     "iou": 0.6943
+     "precision": 0.9926,
+     "recall": 0.947,
+     "f1": 0.9693,
+     "support": 3530,
+     "iou": 0.9404
     }
    },
    "confusion": {
     "base": {
-     "base": 32742,
-     "chamfer": 237,
-     "cut": 8985,
-     "fillet": 872
+     "base": 78686,
+     "cut": 13503,
+     "fillet": 209,
+     "chamfer": 24
     },
     "chamfer": {
-     "chamfer": 1222,
-     "base": 170,
-     "cut": 20,
-     "fillet": 5
+     "chamfer": 3343,
+     "base": 175,
+     "cut": 4,
+     "fillet": 8
     },
     "cut": {
-     "cut": 7570,
-     "base": 5097,
-     "fillet": 138,
-     "chamfer": 105
+     "cut": 21419,
+     "base": 5375,
+     "fillet": 24,
+     "chamfer": 1
     },
     "fillet": {
-     "base": 774,
-     "fillet": 5924,
-     "chamfer": 1,
-     "cut": 23
+     "fillet": 15791,
+     "base": 132,
+     "cut": 15
     }
    }
   }

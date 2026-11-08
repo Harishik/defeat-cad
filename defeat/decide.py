@@ -1,7 +1,7 @@
 """Keep / remove decisions. Thresholds are multiples of the target mesh size h, because a feature
-only hurts the mesh when it is small relative to the elements. On top of that sits a volume budget:
-on real parts the change in stiffness follows how much material moves, not how wide a feature is, so
-a preset removes the smallest features first and stops once it has used its share of the part."""
+only hurts the mesh when it is small relative to the elements. When a stress check runs, the guard
+decides from the physics which of them can really go. Without one (`verified=False`) a volume budget
+stands in for it: the smallest features go first and removal stops at the preset's share of the part."""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -118,6 +118,8 @@ class Policy:
     overrides: dict = field(default_factory=dict)        # class -> rule dict (from chat)
     feature_overrides: dict = field(default_factory=dict)  # feature id -> "keep"/"remove"
     protected_faces: set = field(default_factory=set)
+    boundary: dict = field(default_factory=dict)         # your supports and loads: {"fixed": [faces], "loaded": [faces], "force": [x, y, z]}
+    verified: bool = True    # a stress check will judge the result, so no volume budget is needed up front
 
     def rule_for(self, kind):
         r = dict(PRESETS[self.preset]["rules"].get(kind, {"remove": "never"}))
@@ -134,7 +136,7 @@ def _apply_budget(features, policy, out, graph, part_volume):
     """Smallest first; once the preset's share of the part is used, everything larger stays.
     Your own choices (per feature or per class) are never overridden."""
     pct = PRESETS[policy.preset].get("volume_budget_pct")
-    if not pct or not part_volume:
+    if policy.verified or not pct or not part_volume:
         return
     free = [f for f in features if out[f.id].action == "remove" and not out[f.id].locked and f.kind not in policy.overrides]
     used, limit = 0.0, pct / 100 * abs(part_volume)
@@ -147,12 +149,15 @@ def _apply_budget(features, policy, out, graph, part_volume):
 
 def decide(features, policy: Policy, graph=None, part_volume=None):
     out = {}
+    protected = policy.protected_faces | set(policy.boundary.get("fixed") or []) | set(policy.boundary.get("loaded") or [])
+    if graph is not None:   # a bolt hole in a support face belongs to that support, so what touches a chosen face stays too
+        protected = protected | {m for x in protected if x < len(graph.nodes) for m in graph.nodes[x].neighbors}
     for ft in features:
         if ft.id in policy.feature_overrides:
             a = policy.feature_overrides[ft.id]
             out[ft.id] = Decision(ft.id, a, f"Set by you: {a}", locked=True)
             continue
-        if policy.protected_faces & set(ft.faces):
+        if protected & set(ft.faces):
             out[ft.id] = Decision(ft.id, "keep", "Touches a protected (load / boundary) face")
             continue
         rule = policy.rule_for(ft.kind)

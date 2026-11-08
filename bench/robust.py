@@ -14,6 +14,7 @@ import json
 import os
 import random
 import statistics as st
+from collections import Counter
 
 from bench.common import DATA, bootstrap, pmap_hard, save, wilson
 
@@ -21,7 +22,7 @@ BASE = os.path.join(DATA, "fusion_ext", "s2.0.1_extended_step")
 
 
 def run_one(args):
-    """Full shipped pipeline via Session (rules + GNN, static preset, stress guard when meshing)."""
+    """Full shipped pipeline via Session (rules + network, static preset, stress guard when meshing)."""
     name, with_mesh = args
     import shutil
     from defeat import fea, occ
@@ -55,10 +56,15 @@ def run_one(args):
             out["tip_disp_delta_pct"] = fd["tip_disp_delta_pct"]
             out["stress_p99_delta_pct"] = fd["vm_p99_delta_pct"]
             out["worst_case_pct"] = fea.worst_case(fd)
+            out["stress_peak_delta_pct"] = fd.get("vm_peak_delta_pct")
             out["cases_pct"] = fd.get("cases_delta_pct")
+        if s.metrics.get("unchecked"):
+            out["unchecked"] = s.metrics.get("unchecked_why")
+        out["mesh_curvature"] = m.get("stat_curvature")
         gd = s.metrics.get("guard") or {}
         if gd.get("triggered"):
             out["guard_before_pct"] = gd.get("before_pct")
+            out["guard_stiffness_before_pct"] = gd.get("stiffness_before_pct")
             out["guard_accepted"] = bool(gd.get("accepted"))
             out["guard_restored"] = gd.get("restored", 0)
             out["guard_undone"] = bool(gd.get("undone"))
@@ -126,6 +132,9 @@ def report(res, items, timeout, tag="robustness"):
     within_worst = sum(1 for x in worst if x <= 5)
     before = [r.get("guard_before_pct") or r["worst_case_pct"] for r in ok if r.get("worst_case_pct") is not None]
     within_before = sum(1 for x in before if x <= 5)
+    # the same question the stiffness cases alone would answer, without the stress peak the guard also judges
+    stiff_before = [r.get("guard_stiffness_before_pct") or r["worst_case_pct"] for r in ok if r.get("worst_case_pct") is not None]
+    within_stiff = sum(1 for x in stiff_before if x <= 5)
     # the kernel's job is to remove what was asked; the stress guard may then put some back on purpose
     rm_pairs = [(r["to_remove"] - r.get("kept_by_kernel", 0), r["to_remove"]) for r in with_rm]
     restored = sum(r.get("guard_restored", 0) for r in with_rm if r.get("guard_accepted"))
@@ -138,6 +147,7 @@ def report(res, items, timeout, tag="robustness"):
         "share_within_5pct_worst_load_case": wilson(within_worst, len(worst)),
         "median_worst_load_case_pct": bootstrap(worst, st.median),
         "share_within_5pct_before_guard": wilson(within_before, len(before)),
+        "share_stiffness_within_5pct_before_guard": wilson(within_stiff, len(stiff_before)),
         "median_abs_deflection_change_pct": bootstrap(dd, st.median),
     }
     rep = {
@@ -154,16 +164,24 @@ def report(res, items, timeout, tag="robustness"):
         "features_kept_by_kernel": sum(r.get("kept_by_kernel", 0) for r in with_rm),
         "features_restored_by_stress_guard": restored,
         "features_removed_in_final_output": sum(r["removed"] for r in with_rm),
+        # with no stress comparison the run falls back to small removals, so the rest of what it targeted stays
+        "features_left_by_the_no_check_fallback": asked - sum(r.get("kept_by_kernel", 0) for r in with_rm) - restored - sum(r["removed"] for r in with_rm),
+        "parts_without_a_stress_comparison": {"total": sum(1 for r in with_rm if r.get("worst_case_pct") is None),
+                                              "shipped_unchanged": sum(1 for r in with_rm if r.get("worst_case_pct") is None and not r["removed"])},
         "median_faces": st.median([r["faces"] for r in ok]) if ok else None,
         "median_face_reduction_pct": st.median([100 * (1 - r["faces_after"] / r["faces"]) for r in with_rm if "faces_after" in r]) if with_rm else None,
         "median_volume_change_pct": st.median([abs(r["volume_delta_pct"]) for r in with_rm if "volume_delta_pct" in r]) if with_rm else None,
         "seconds_per_part": {"median": st.median(secs) if secs else None, "p90": pct(secs, 0.9)},
         "mesh_subset": {"n": len(tets), "median_tet_reduction_pct": st.median(tets) if tets else None,
                         "p10_tet_reduction_pct": pct(tets, 0.1), "p90_tet_reduction_pct": pct(tets, 0.9)},
+        "no_stress_check": {"parts": sum(1 for r in ok if r.get("unchecked")),
+                            "why": dict(Counter(r["unchecked"] for r in ok if r.get("unchecked")))},
+        "meshed_with_curvature_sizing_off": sum(1 for r in ok if r.get("mesh_curvature") == 0 and r.get("worst_case_pct") is not None),
         "stress_guard": {"triggered": sum(1 for r in ok if "guard_accepted" in r),
                          "accepted": sum(1 for r in ok if r.get("guard_accepted")),
                          "undone": sum(1 for r in ok if r.get("guard_undone")),
                          "share_within_5pct_before_guard": round(within_before / max(len(before), 1), 4) if before else None,
+                         "share_stiffness_within_5pct_before_guard": round(within_stiff / max(len(stiff_before), 1), 4) if stiff_before else None,
                          "median_features_restored": st.median([r["guard_restored"] for r in ok if r.get("guard_accepted")]) if any(r.get("guard_accepted") for r in ok) else None},
         "stress_subset": {"n": len(dd), "median_abs_deflection_change_pct": st.median(dd) if dd else None,
                           "p90_abs_deflection_change_pct": pct(dd, 0.9),

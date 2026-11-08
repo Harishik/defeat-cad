@@ -1,71 +1,37 @@
 {
  "tool_calling_dev": {
   "offline_parser": {
-   "commands": 24,
-   "exact_match": 0.9583,
+   "commands": 96,
+   "exact_match": 1.0,
    "exact_match_ci95": [
-    0.7976,
-    0.9926
+    0.9615,
+    1.0
    ],
-   "call_precision": 0.9706,
+   "call_precision": 1.0,
    "call_recall": 1.0,
-   "call_f1": 0.9851,
+   "call_f1": 1.0,
    "median_latency_s": 0.0,
-   "misses": [
-    {
-     "cmd": "Build a flow domain around the part",
-     "pred": [
-      "('make_fluid_domain',)",
-      "('set_analysis', 'cfd')"
-     ],
-     "gold": [
-      "('make_fluid_domain',)"
-     ]
-    }
-   ]
+   "misses": []
   },
   "qwen3.5:4b": {
-   "commands": 24,
-   "exact_match": 0.9167,
+   "commands": 96,
+   "exact_match": 0.9896,
    "exact_match_ci95": [
-    0.7415,
-    0.9768
+    0.9433,
+    0.9982
    ],
-   "call_precision": 0.7561,
-   "call_recall": 0.9394,
-   "call_f1": 0.8378,
-   "median_latency_s": 24.74,
+   "call_precision": 0.9921,
+   "call_recall": 0.9921,
+   "call_f1": 0.9921,
+   "median_latency_s": 26.08,
    "misses": [
     {
-     "cmd": "Remove the logo",
+     "cmd": "Fill in the slots",
      "pred": [
-      "('set_features', '10', 'remove')",
-      "('set_features', '8', 'remove')",
-      "('set_features', '9', 'remove')"
+      "('set_class_rule', 'slot', 'keep')"
      ],
      "gold": [
-      "('set_class_rule', 'emboss', 'remove')"
-     ]
-    },
-    {
-     "cmd": "Remove the logo and fillets, keep the holes, then run it",
-     "pred": [
-      "('run_defeaturing',)",
-      "('set_class_rule', 'emboss', 'remove')",
-      "('set_class_rule', 'fillet', 'remove')",
-      "('set_features', '0', 'keep')",
-      "('set_features', '1', 'keep')",
-      "('set_features', '3', 'keep')",
-      "('set_features', '4', 'keep')",
-      "('set_features', '5', 'keep')",
-      "('set_features', '6', 'keep')",
-      "('set_features', '7', 'keep')"
-     ],
-     "gold": [
-      "('run_defeaturing',)",
-      "('set_class_rule', 'emboss', 'remove')",
-      "('set_class_rule', 'fillet', 'remove')",
-      "('set_class_rule', 'hole', 'keep')"
+      "('set_class_rule', 'slot', 'remove')"
      ]
     }
    ]
@@ -73,154 +39,114 @@
  },
  "tool_calling_heldout": {
   "offline_parser": {
-   "commands": 72,
-   "exact_match": 0.6667,
+   "commands": 80,
+   "exact_match": 0.8,
    "exact_match_ci95": [
-    0.5518,
-    0.7647
+    0.6995,
+    0.873
    ],
-   "call_precision": 0.9706,
-   "call_recall": 0.7097,
-   "call_f1": 0.8199,
+   "call_precision": 0.9406,
+   "call_recall": 0.8636,
+   "call_f1": 0.9005,
    "median_latency_s": 0.0,
    "misses": [
     {
-     "cmd": "Lose the bevels",
-     "pred": [],
+     "cmd": "The engraving can go",
+     "pred": [
+      "('run_defeaturing',)",
+      "('set_class_rule', 'emboss', 'remove')"
+     ],
      "gold": [
-      "('set_class_rule', 'chamfer', 'remove')"
+      "('set_class_rule', 'emboss', 'remove')"
      ]
     },
     {
-     "cmd": "No fillets please",
+     "cmd": "Take the embossed lettering away",
      "pred": [],
+     "gold": [
+      "('set_class_rule', 'emboss', 'remove')"
+     ]
+    },
+    {
+     "cmd": "All the edge rounds can go",
+     "pred": [
+      "('run_defeaturing',)",
+      "('set_class_rule', 'fillet', 'remove')"
+     ],
      "gold": [
       "('set_class_rule', 'fillet', 'remove')"
      ]
     },
     {
-     "cmd": "Hang on to the bores",
+     "cmd": "We need the bolt holes kept",
      "pred": [],
      "gold": [
       "('set_class_rule', 'hole', 'keep')"
      ]
     },
     {
-     "cmd": "Make the elements 1.5 mm",
-     "pred": [],
+     "cmd": "Fillets out, ribs in",
+     "pred": [
+      "('set_class_rule', 'fillet', 'remove')",
+      "('set_class_rule', 'rib', 'remove')"
+     ],
      "gold": [
-      "('set_analysis', 'h=1.5')"
-     ]
-    },
-    {
-     "cmd": "Take off the engraved text",
-     "pred": [],
-     "gold": [
-      "('set_class_rule', 'emboss', 'remove')"
-     ]
-    },
-    {
-     "cmd": "Erase the logo from the part",
-     "pred": [],
-     "gold": [
-      "('set_class_rule', 'emboss', 'remove')"
-     ]
-    },
-    {
-     "cmd": "Don't touch the holes",
-     "pred": [],
-     "gold": [
-      "('set_class_rule', 'hole', 'keep')"
-     ]
-    },
-    {
-     "cmd": "Fill in the slots",
-     "pred": [],
-     "gold": [
-      "('set_class_rule', 'slot', 'remove')"
-     ]
-    },
-    {
-     "cmd": "The slots must stay",
-     "pred": [],
-     "gold": [
-      "('set_class_rule', 'slot', 'keep')"
-     ]
-    },
-    {
-     "cmd": "Ribs carry load, keep them",
-     "pred": [],
-     "gold": [
+      "('set_class_rule', 'fillet', 'remove')",
       "('set_class_rule', 'rib', 'keep')"
      ]
     },
     {
-     "cmd": "Protect the screw posts",
+     "cmd": "We're looking at natural frequencies",
      "pred": [],
      "gold": [
-      "('set_class_rule', 'boss', 'keep')"
-     ]
-    },
-    {
-     "cmd": "Remove the steps",
-     "pred": [],
-     "gold": [
-      "('set_class_rule', 'step', 'remove')"
-     ]
-    },
-    {
-     "cmd": "Keep the steps",
-     "pred": [],
-     "gold": [
-      "('set_class_rule', 'step', 'keep')"
-     ]
-    },
-    {
-     "cmd": "Delete the fillets, the chamfers and the logo",
-     "pred": [
-      "('set_class_rule', 'fillet', 'remove')"
-     ],
-     "gold": [
-      "('set_class_rule', 'chamfer', 'remove')",
-      "('set_class_rule', 'emboss', 'remove')",
-      "('set_class_rule', 'fillet', 'remove')"
-     ]
-    },
-    {
-     "cmd": "Defeature this part",
-     "pred": [],
-     "gold": [
-      "('run_defeaturing',)"
-     ]
-    },
-    {
-     "cmd": "Target element size is 0.5 mm",
-     "pred": [],
-     "gold": [
-      "('set_analysis', 'h=0.5')"
-     ]
-    },
-    {
-     "cmd": "Modal at 3 mm",
-     "pred": [
-      "('set_analysis', 'modal')"
-     ],
-     "gold": [
-      "('set_analysis', 'h=3')",
       "('set_analysis', 'modal')"
      ]
     },
     {
-     "cmd": "Save it as STEP",
+     "cmd": "Heat transfer study",
+     "pred": [],
+     "gold": [
+      "('set_analysis', 'thermal')"
+     ]
+    },
+    {
+     "cmd": "Elements should be 0.8 mm",
+     "pred": [],
+     "gold": [
+      "('set_analysis', 'h=0.8')"
+     ]
+    },
+    {
+     "cmd": "h = 3 mm",
+     "pred": [],
+     "gold": [
+      "('set_analysis', 'h=3')"
+     ]
+    },
+    {
+     "cmd": "Give me the simplified STEP",
      "pred": [],
      "gold": [
       "('export', 'step')"
      ]
     },
     {
-     "cmd": "Make the enclosure for CFD meshing",
+     "cmd": "Write the report",
+     "pred": [],
+     "gold": [
+      "('export', 'report')"
+     ]
+    },
+    {
+     "cmd": "I'd like the report as a download",
+     "pred": [],
+     "gold": [
+      "('export', 'report')"
+     ]
+    },
+    {
+     "cmd": "Wrap this in a CFD box",
      "pred": [
-      "('make_fluid_domain',)",
       "('set_analysis', 'cfd')"
      ],
      "gold": [
@@ -228,99 +154,71 @@
      ]
     },
     {
-     "cmd": "Extract the flow volume",
+     "cmd": "Features 5, 6 and 7 can go",
      "pred": [
-      "('set_analysis', 'cfd')"
+      "('run_defeaturing',)"
      ],
      "gold": [
-      "('make_fluid_domain',)"
-     ]
-    },
-    {
-     "cmd": "Feature 9 has to stay",
-     "pred": [],
-     "gold": [
-      "('set_features', '9', 'keep')"
-     ]
-    },
-    {
-     "cmd": "Delete feature number 15",
-     "pred": [],
-     "gold": [
-      "('set_features', '15', 'remove')"
-     ]
-    },
-    {
-     "cmd": "Remove #2, #5 and #8",
-     "pred": [
-      "('set_features', '2', 'remove')"
-     ],
-     "gold": [
-      "('set_features', '2', 'remove')",
       "('set_features', '5', 'remove')",
-      "('set_features', '8', 'remove')"
+      "('set_features', '6', 'remove')",
+      "('set_features', '7', 'remove')"
      ]
     },
     {
-     "cmd": "Take away the small rounds and the bevels, then process it",
+     "cmd": "Create a 20 mm cube",
      "pred": [],
      "gold": [
-      "('run_defeaturing',)",
-      "('set_class_rule', 'chamfer', 'remove')",
-      "('set_class_rule', 'fillet', 'remove')"
+      "('create_part',)"
+     ]
+    },
+    {
+     "cmd": "Strip the text and give me the STEP file",
+     "pred": [
+      "('export', 'step')",
+      "('set_class_rule', 'emboss', 'remove')",
+      "('set_class_rule', 'step', 'remove')"
+     ],
+     "gold": [
+      "('export', 'step')",
+      "('set_class_rule', 'emboss', 'remove')"
      ]
     }
    ]
   },
   "qwen3.5:4b": {
-   "commands": 72,
-   "exact_match": 0.875,
+   "commands": 80,
+   "exact_match": 0.9375,
    "exact_match_ci95": [
-    0.7792,
-    0.9328
+    0.8619,
+    0.973
    ],
-   "call_precision": 0.8447,
-   "call_recall": 0.9355,
-   "call_f1": 0.8878,
-   "median_latency_s": 24.92,
+   "call_precision": 0.9558,
+   "call_recall": 0.9818,
+   "call_f1": 0.9686,
+   "median_latency_s": 26.05,
    "misses": [
     {
-     "cmd": "Remove the standoffs",
-     "pred": [
-      "('set_features', '0', 'remove')"
-     ],
-     "gold": [
-      "('set_class_rule', 'boss', 'remove')"
-     ]
-    },
-    {
-     "cmd": "Get rid of the cutouts and run",
+     "cmd": "The engraving can go",
      "pred": [
       "('run_defeaturing',)",
-      "('set_class_rule', 'hole', 'remove')",
-      "('set_class_rule', 'pocket', 'remove')",
-      "('set_class_rule', 'protrusion', 'remove')",
-      "('set_class_rule', 'slot', 'remove')",
-      "('set_class_rule', 'step', 'remove')"
-     ],
-     "gold": [
-      "('run_defeaturing',)",
-      "('set_class_rule', 'pocket', 'remove')"
-     ]
-    },
-    {
-     "cmd": "Erase the logo from the part",
-     "pred": [
-      "('set_features', '10', 'remove')",
-      "('set_features', '8', 'remove')",
-      "('set_features', '9', 'remove')"
+      "('set_class_rule', 'emboss', 'remove')"
      ],
      "gold": [
       "('set_class_rule', 'emboss', 'remove')"
      ]
     },
     {
-     "cmd": "Fill in the slots",
+     "cmd": "All the edge rounds can go",
+     "pred": [
+      "('run_defeaturing',)",
+      "('set_class_rule', 'fillet', 'remove')"
+     ],
+     "gold": [
+      "('set_class_rule', 'fillet', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Close up the slots",
      "pred": [
       "('set_class_rule', 'slot', 'keep')"
      ],
@@ -329,82 +227,52 @@
      ]
     },
     {
-     "cmd": "Delete the ribs",
+     "cmd": "Fill the pockets",
      "pred": [
-      "('set_features', '11', 'remove')",
-      "('set_features', '12', 'remove')"
+      "('set_class_rule', 'pocket', 'keep')"
      ],
      "gold": [
-      "('set_class_rule', 'rib', 'remove')"
+      "('set_class_rule', 'pocket', 'remove')"
      ]
     },
     {
-     "cmd": "Set up for structural stress",
+     "cmd": "Features 5, 6 and 7 can go",
      "pred": [
-      "('set_analysis', 'h=4')",
-      "('set_analysis', 'static')"
+      "('run_defeaturing',)",
+      "('set_features', '5', 'remove')",
+      "('set_features', '6', 'remove')",
+      "('set_features', '7', 'remove')"
      ],
      "gold": [
-      "('set_analysis', 'static')"
-     ]
-    },
-    {
-     "cmd": "Target element size is 0.5 mm",
-     "pred": [
-      "('set_analysis', 'h=0.5')",
-      "('set_analysis', 'static')"
-     ],
-     "gold": [
-      "('set_analysis', 'h=0.5')"
-     ]
-    },
-    {
-     "cmd": "Remove the text, keep the gussets, and export Python",
-     "pred": [
-      "('export', 'python')",
-      "('set_class_rule', 'emboss', 'remove')",
-      "('set_features', '11', 'keep')",
-      "('set_features', '12', 'keep')"
-     ],
-     "gold": [
-      "('export', 'python')",
-      "('set_class_rule', 'emboss', 'remove')",
-      "('set_class_rule', 'rib', 'keep')"
-     ]
-    },
-    {
-     "cmd": "Clean up the bevelled edges",
-     "pred": [
-      "('set_class_rule', 'chamfer', 'keep')"
-     ],
-     "gold": [
-      "('set_class_rule', 'chamfer', 'remove')"
+      "('set_features', '5', 'remove')",
+      "('set_features', '6', 'remove')",
+      "('set_features', '7', 'remove')"
      ]
     }
    ]
   }
  },
- "text_to_cad": {
+ "text_to_cad_dev": {
   "model": "qwen3.5:4b",
   "prompts": 50,
-  "valid_solid_rate": 0.7,
+  "valid_solid_rate": 0.96,
   "valid_solid_ci95": [
-   0.5625,
-   0.809
+   0.8654,
+   0.989
   ],
   "dimension_match_ci95": [
-   0.3664,
-   0.6336
+   0.7381,
+   0.9305
   ],
   "first_try_rate": 0.5,
-  "dimension_match_rate": 0.5,
-  "median_seconds": 34.0,
+  "dimension_match_rate": 0.86,
+  "median_seconds": 49.6,
   "rows": [
    {
     "prompt": "A rectangular plate 100 x 60 x 5 mm with four 6 mm holes 8 mm from each corner",
     "valid": true,
-    "attempts": 2,
-    "t": 51.049607038497925,
+    "attempts": 5,
+    "t": 116.52595138549805,
     "bbox": [
      5.0,
      60.0,
@@ -416,7 +284,7 @@
     "prompt": "A 60 mm diameter flange, 10 mm thick, with a 20 mm bore and six 6 mm bolt holes on a 44 mm circle",
     "valid": true,
     "attempts": 1,
-    "t": 25.871423959732056,
+    "t": 48.68724513053894,
     "bbox": [
      10.0,
      60.0,
@@ -426,21 +294,33 @@
    },
    {
     "prompt": "An L-bracket: 80 x 40 x 5 mm base with a 50 mm tall, 5 mm thick wall on one long edge",
-    "valid": false,
-    "attempts": 4,
-    "t": 106.2074019908905
+    "valid": true,
+    "attempts": 7,
+    "t": 196.70971703529358,
+    "bbox": [
+     40.0,
+     55.0,
+     160.0
+    ],
+    "bbox_ok": false
    },
    {
     "prompt": "A cylinder 30 mm in diameter and 50 mm long with a 10 mm hole through its axis",
-    "valid": false,
+    "valid": true,
     "attempts": 4,
-    "t": 60.468343019485474
+    "t": 73.59666299819946,
+    "bbox": [
+     30.0,
+     30.0,
+     50.0
+    ],
+    "bbox_ok": true
    },
    {
     "prompt": "A 50 mm cube with 3 mm fillets on all edges",
     "valid": true,
-    "attempts": 2,
-    "t": 31.969022035598755,
+    "attempts": 1,
+    "t": 33.393040895462036,
     "bbox": [
      50.0,
      50.0,
@@ -451,8 +331,8 @@
    {
     "prompt": "A spacer ring: outer diameter 40 mm, inner diameter 25 mm, 8 mm thick",
     "valid": true,
-    "attempts": 2,
-    "t": 36.05709886550903,
+    "attempts": 1,
+    "t": 33.79079818725586,
     "bbox": [
      8.0,
      40.0,
@@ -463,26 +343,26 @@
    {
     "prompt": "A rectangular box 120 x 80 x 40 mm, hollowed out with 3 mm walls and an open top",
     "valid": true,
-    "attempts": 2,
-    "t": 38.29693102836609,
+    "attempts": 1,
+    "t": 34.08909893035889,
     "bbox": [
-     46.0,
-     86.0,
-     126.0
+     40.0,
+     80.0,
+     120.0
     ],
-    "bbox_ok": false
+    "bbox_ok": true
    },
    {
     "prompt": "A 70 x 70 x 6 mm plate with a 30 mm center hole and 2 mm chamfers on the outer edges",
     "valid": false,
-    "attempts": 4,
-    "t": 100.21451210975647
+    "attempts": 7,
+    "t": 352.8552589416504
    },
    {
     "prompt": "A stepped shaft: 20 mm diameter for 40 mm, then 12 mm diameter for 30 mm",
     "valid": true,
     "attempts": 1,
-    "t": 25.701621055603027,
+    "t": 34.57069206237793,
     "bbox": [
      20.0,
      20.0,
@@ -493,32 +373,32 @@
    {
     "prompt": "A 90 x 30 x 8 mm bar with a 60 x 10 mm slot through the middle",
     "valid": true,
-    "attempts": 1,
-    "t": 25.048821926116943,
+    "attempts": 3,
+    "t": 77.73368215560913,
     "bbox": [
      8.0,
-     30.0,
+     40.0,
      90.0
     ],
-    "bbox_ok": true
+    "bbox_ok": false
    },
    {
     "prompt": "A hex prism 24 mm across flats and 15 mm tall with an 8 mm hole",
     "valid": true,
-    "attempts": 1,
-    "t": 23.854679107666016,
+    "attempts": 6,
+    "t": 563.8889660835266,
     "bbox": [
      15.0,
      24.0,
-     24.0
+     27.71
     ],
-    "bbox_ok": false
+    "bbox_ok": true
    },
    {
     "prompt": "A 100 x 50 x 4 mm cover with two 30 x 8 mm rectangular vents and 2 mm rounded corners",
     "valid": true,
     "attempts": 1,
-    "t": 31.809160947799683,
+    "t": 42.81830310821533,
     "bbox": [
      4.0,
      50.0,
@@ -529,20 +409,20 @@
    {
     "prompt": "A solid cylinder 25 mm in diameter and 100 mm long",
     "valid": true,
-    "attempts": 4,
-    "t": 51.61728000640869,
+    "attempts": 1,
+    "t": 31.714486122131348,
     "bbox": [
-     12.5,
-     200.0,
-     200.0
+     25.0,
+     25.0,
+     100.0
     ],
-    "bbox_ok": false
+    "bbox_ok": true
    },
    {
     "prompt": "A 40 x 40 x 40 mm cube",
     "valid": true,
     "attempts": 1,
-    "t": 18.10470986366272,
+    "t": 29.079169034957886,
     "bbox": [
      40.0,
      40.0,
@@ -554,7 +434,7 @@
     "prompt": "A flat bar 200 x 20 x 3 mm",
     "valid": true,
     "attempts": 1,
-    "t": 17.588378190994263,
+    "t": 29.189927101135254,
     "bbox": [
      3.0,
      20.0,
@@ -566,7 +446,7 @@
     "prompt": "A disc 80 mm in diameter and 5 mm thick",
     "valid": true,
     "attempts": 1,
-    "t": 17.42509698867798,
+    "t": 31.234606981277466,
     "bbox": [
      5.0,
      80.0,
@@ -578,7 +458,7 @@
     "prompt": "A sphere 50 mm in diameter",
     "valid": true,
     "attempts": 1,
-    "t": 16.74156093597412,
+    "t": 30.19036293029785,
     "bbox": [
      50.0,
      50.0,
@@ -588,27 +468,45 @@
    },
    {
     "prompt": "A tube with 30 mm outer diameter, 24 mm inner diameter, 120 mm long",
-    "valid": false,
-    "attempts": 4,
-    "t": 54.65495204925537
+    "valid": true,
+    "attempts": 1,
+    "t": 32.65686798095703,
+    "bbox": [
+     30.0,
+     30.0,
+     120.0
+    ],
+    "bbox_ok": true
    },
    {
     "prompt": "A cone 40 mm in base diameter tapering to 20 mm at the top, 30 mm tall",
-    "valid": false,
+    "valid": true,
     "attempts": 4,
-    "t": 61.01485586166382
+    "t": 94.1062912940979,
+    "bbox": [
+     30.0,
+     40.0,
+     40.0
+    ],
+    "bbox_ok": true
    },
    {
     "prompt": "A square plate 50 x 50 x 10 mm with a 20 mm hole in the center",
-    "valid": false,
-    "attempts": 4,
-    "t": 72.07201218605042
+    "valid": true,
+    "attempts": 2,
+    "t": 50.5446457862854,
+    "bbox": [
+     10.0,
+     50.0,
+     50.0
+    ],
+    "bbox_ok": true
    },
    {
     "prompt": "A 150 x 100 x 10 mm plate with a 40 mm center hole",
     "valid": true,
-    "attempts": 1,
-    "t": 22.803968906402588,
+    "attempts": 5,
+    "t": 116.77520203590393,
     "bbox": [
      10.0,
      100.0,
@@ -619,8 +517,8 @@
    {
     "prompt": "A 60 x 40 x 20 mm block with a 10 mm through hole along the 20 mm direction",
     "valid": true,
-    "attempts": 2,
-    "t": 38.670449018478394,
+    "attempts": 4,
+    "t": 83.21317505836487,
     "bbox": [
      20.0,
      40.0,
@@ -632,7 +530,7 @@
     "prompt": "A 100 x 100 x 8 mm plate with four 10 mm holes on a 70 x 70 mm pattern",
     "valid": true,
     "attempts": 1,
-    "t": 22.95236611366272,
+    "t": 43.42474913597107,
     "bbox": [
      8.0,
      100.0,
@@ -642,15 +540,21 @@
    },
    {
     "prompt": "A 120 x 40 x 6 mm strip with five 5 mm holes equally spaced along its centerline",
-    "valid": false,
-    "attempts": 4,
-    "t": 87.47872996330261
+    "valid": true,
+    "attempts": 2,
+    "t": 56.88875699043274,
+    "bbox": [
+     6.0,
+     40.0,
+     120.0
+    ],
+    "bbox_ok": true
    },
    {
     "prompt": "A washer: 20 mm outer diameter, 10 mm hole, 2 mm thick",
     "valid": true,
     "attempts": 1,
-    "t": 22.13186812400818,
+    "t": 32.19299817085266,
     "bbox": [
      2.0,
      20.0,
@@ -661,8 +565,8 @@
    {
     "prompt": "A flange 100 mm in diameter and 12 mm thick with a 40 mm bore and eight 8 mm holes on a 75 mm bolt circle",
     "valid": true,
-    "attempts": 1,
-    "t": 29.170485019683838,
+    "attempts": 4,
+    "t": 157.78833675384521,
     "bbox": [
      12.0,
      100.0,
@@ -674,7 +578,7 @@
     "prompt": "A hub: 60 mm diameter disc 10 mm thick with a 30 mm diameter boss 20 mm tall on top",
     "valid": true,
     "attempts": 1,
-    "t": 22.41539216041565,
+    "t": 35.477210998535156,
     "bbox": [
      30.0,
      60.0,
@@ -686,19 +590,19 @@
     "prompt": "A shaft with a 30 mm diameter for 50 mm, then 20 mm diameter for 50 mm, then 10 mm diameter for 50 mm",
     "valid": true,
     "attempts": 1,
-    "t": 27.88943886756897,
+    "t": 36.97247314453125,
     "bbox": [
-     50.0,
-     60.0,
-     60.0
+     30.0,
+     30.0,
+     150.0
     ],
-    "bbox_ok": false
+    "bbox_ok": true
    },
    {
     "prompt": "A 50 x 50 x 50 mm cube with a 20 mm hole through the center",
     "valid": true,
     "attempts": 1,
-    "t": 22.751675128936768,
+    "t": 34.012723207473755,
     "bbox": [
      50.0,
      50.0,
@@ -710,7 +614,7 @@
     "prompt": "A 80 x 60 x 30 mm box with 5 mm fillets on the vertical edges",
     "valid": true,
     "attempts": 1,
-    "t": 19.6521577835083,
+    "t": 32.730135917663574,
     "bbox": [
      30.0,
      60.0,
@@ -721,14 +625,14 @@
    {
     "prompt": "A 100 x 60 x 10 mm plate with 3 mm chamfers on all top edges",
     "valid": false,
-    "attempts": 4,
-    "t": 91.49298095703125
+    "attempts": 7,
+    "t": 125.81398296356201
    },
    {
     "prompt": "A 40 x 40 x 10 mm plate with 5 mm rounded corners",
     "valid": true,
     "attempts": 2,
-    "t": 45.477936029434204,
+    "t": 52.68408226966858,
     "bbox": [
      10.0,
      40.0,
@@ -739,62 +643,80 @@
    {
     "prompt": "A T-section beam 100 mm long, flange 40 x 5 mm, web 30 x 5 mm",
     "valid": true,
-    "attempts": 1,
-    "t": 59.94082474708557,
+    "attempts": 4,
+    "t": 109.13800430297852,
     "bbox": [
+     5.0,
      40.0,
-     50.0,
-     105.0
+     100.0
     ],
     "bbox_ok": false
    },
    {
     "prompt": "An L-angle 100 mm long with 30 mm legs, 3 mm thick",
-    "valid": false,
+    "valid": true,
     "attempts": 4,
-    "t": 105.43911814689636
+    "t": 86.0585618019104,
+    "bbox": [
+     30.0,
+     30.0,
+     100.0
+    ],
+    "bbox_ok": true
    },
    {
     "prompt": "A U-channel 200 mm long, 50 mm wide, 25 mm tall, with 3 mm walls",
-    "valid": false,
-    "attempts": 4,
-    "t": 340.4637088775635
+    "valid": true,
+    "attempts": 1,
+    "t": 45.956400871276855,
+    "bbox": [
+     25.0,
+     50.0,
+     200.0
+    ],
+    "bbox_ok": true
    },
    {
     "prompt": "A 100 x 80 x 30 mm open-top tray with 2 mm walls",
-    "valid": false,
-    "attempts": 4,
-    "t": 94.12975716590881
+    "valid": true,
+    "attempts": 1,
+    "t": 32.26555299758911,
+    "bbox": [
+     30.0,
+     80.0,
+     100.0
+    ],
+    "bbox_ok": true
    },
    {
     "prompt": "A 60 x 60 x 40 mm box, hollow, 4 mm walls, open on top",
     "valid": true,
-    "attempts": 1,
-    "t": 20.333977699279785,
+    "attempts": 4,
+    "t": 68.63535976409912,
     "bbox": [
-     48.0,
-     68.0,
-     68.0
+     40.0,
+     60.0,
+     60.0
     ],
-    "bbox_ok": false
+    "bbox_ok": true
    },
    {
     "prompt": "A 100 x 50 x 20 mm block with a 60 x 30 x 10 mm pocket in the top face",
     "valid": true,
-    "attempts": 1,
-    "t": 26.05800199508667,
+    "attempts": 4,
+    "t": 82.7101047039032,
     "bbox": [
      20.0,
-     55.0,
-     120.0
+     50.0,
+     100.0
     ],
-    "bbox_ok": false
+    "bbox_ok": true
    },
    {
     "prompt": "A 80 x 80 x 15 mm plate with a 40 x 40 mm square through hole in the middle",
     "valid": true,
-    "attempts": 2,
-    "t": 38.97393798828125,
+    "attempts": 1,
+    "t": 39.078126192092896,
     "bbox": [
      15.0,
      80.0,
@@ -806,7 +728,7 @@
     "prompt": "A 120 x 30 x 10 mm bar with a 80 x 8 mm slot through it",
     "valid": true,
     "attempts": 1,
-    "t": 25.1615149974823,
+    "t": 39.15424394607544,
     "bbox": [
      10.0,
      30.0,
@@ -818,7 +740,7 @@
     "prompt": "A 100 x 100 x 5 mm plate with three parallel 60 x 5 mm slots",
     "valid": true,
     "attempts": 1,
-    "t": 27.849693059921265,
+    "t": 42.59181499481201,
     "bbox": [
      5.0,
      100.0,
@@ -830,7 +752,7 @@
     "prompt": "A 60 x 40 x 30 mm block with a 20 x 10 mm step cut along one long top edge",
     "valid": true,
     "attempts": 1,
-    "t": 25.694916248321533,
+    "t": 39.716063022613525,
     "bbox": [
      30.0,
      40.0,
@@ -841,20 +763,332 @@
    {
     "prompt": "A hexagonal prism 30 mm across flats and 50 mm long",
     "valid": true,
-    "attempts": 1,
-    "t": 17.55677103996277,
+    "attempts": 4,
+    "t": 145.0935080051422,
     "bbox": [
      30.0,
-     30.0,
+     34.64,
      50.0
     ],
-    "bbox_ok": false
+    "bbox_ok": true
    },
    {
     "prompt": "An octagonal plate 60 mm across flats, 8 mm thick",
     "valid": true,
+    "attempts": 4,
+    "t": 147.31193208694458,
+    "bbox": [
+     8.0,
+     64.94,
+     64.94
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A triangular prism with a 40 mm equilateral base, 60 mm long",
+    "valid": true,
+    "attempts": 5,
+    "t": 109.27716493606567,
+    "bbox": [
+     34.64,
+     40.0,
+     60.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 120 x 60 x 8 mm base plate with a 40 mm tall, 8 mm thick rib along its centerline",
+    "valid": true,
+    "attempts": 4,
+    "t": 95.2426528930664,
+    "bbox": [
+     40.0,
+     60.0,
+     120.0
+    ],
+    "bbox_ok": false
+   },
+   {
+    "prompt": "A bracket: 60 x 60 x 6 mm base and a 60 x 40 x 6 mm upright wall at one edge",
+    "valid": true,
+    "attempts": 4,
+    "t": 354.23369097709656,
+    "bbox": [
+     12.0,
+     60.0,
+     60.0
+    ],
+    "bbox_ok": false
+   },
+   {
+    "prompt": "A spool: 40 mm diameter end discs 5 mm thick, joined by a 20 mm diameter core 30 mm long",
+    "valid": true,
+    "attempts": 7,
+    "t": 196.7337510585785,
+    "bbox": [
+     40.0,
+     40.0,
+     40.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A cylinder 40 mm in diameter and 60 mm long with a 25 mm diameter blind hole 40 mm deep",
+    "valid": true,
+    "attempts": 4,
+    "t": 74.07268977165222,
+    "bbox": [
+     40.0,
+     40.0,
+     60.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A cylinder 50 mm in diameter and 20 mm long with 2 mm chamfers on both ends",
+    "valid": true,
     "attempts": 1,
-    "t": 17.566913604736328,
+    "t": 34.181410789489746,
+    "bbox": [
+     20.0,
+     50.0,
+     50.0
+    ],
+    "bbox_ok": true
+   }
+  ]
+ },
+ "text_to_cad": {
+  "model": "qwen3.5:4b",
+  "prompts": 50,
+  "valid_solid_rate": 0.96,
+  "valid_solid_ci95": [
+   0.8654,
+   0.989
+  ],
+  "dimension_match_ci95": [
+   0.692,
+   0.9023
+  ],
+  "first_try_rate": 0.44,
+  "dimension_match_rate": 0.82,
+  "median_seconds": 61.8,
+  "rows": [
+   {
+    "prompt": "A plate 140 x 90 x 6 mm with four 8 mm holes near the corners",
+    "valid": true,
+    "attempts": 4,
+    "t": 91.19035983085632,
+    "bbox": [
+     6.0,
+     90.0,
+     140.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A round plate 120 mm in diameter and 8 mm thick",
+    "valid": true,
+    "attempts": 1,
+    "t": 32.13693976402283,
+    "bbox": [
+     8.0,
+     120.0,
+     120.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A cylinder 35 mm in diameter and 80 mm long",
+    "valid": true,
+    "attempts": 1,
+    "t": 31.425563097000122,
+    "bbox": [
+     35.0,
+     35.0,
+     80.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 30 x 30 x 90 mm square bar",
+    "valid": true,
+    "attempts": 1,
+    "t": 30.75166893005371,
+    "bbox": [
+     30.0,
+     30.0,
+     90.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 70 mm diameter sphere",
+    "valid": true,
+    "attempts": 1,
+    "t": 29.638293981552124,
+    "bbox": [
+     70.0,
+     70.0,
+     70.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A pipe 60 mm outer diameter, 50 mm inner diameter, 200 mm long",
+    "valid": true,
+    "attempts": 1,
+    "t": 31.272665977478027,
+    "bbox": [
+     60.0,
+     60.0,
+     200.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A truncated cone, 60 mm diameter at the base, 30 mm at the top, 50 mm tall",
+    "valid": true,
+    "attempts": 1,
+    "t": 32.24827599525452,
+    "bbox": [
+     50.0,
+     60.0,
+     60.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A ring 90 mm outer diameter, 70 mm inner diameter, 15 mm tall",
+    "valid": true,
+    "attempts": 4,
+    "t": 71.81823825836182,
+    "bbox": [
+     15.0,
+     90.0,
+     90.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 110 x 110 x 12 mm plate with a 50 mm hole in the middle",
+    "valid": true,
+    "attempts": 5,
+    "t": 98.26449513435364,
+    "bbox": [
+     12.0,
+     110.0,
+     110.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "An 80 x 50 x 25 mm block with a 12 mm hole through its 25 mm thickness",
+    "valid": true,
+    "attempts": 1,
+    "t": 34.51503396034241,
+    "bbox": [
+     25.0,
+     50.0,
+     80.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A flange 140 mm in diameter, 14 mm thick, with a 60 mm bore and twelve 10 mm holes on a 110 mm circle",
+    "valid": true,
+    "attempts": 1,
+    "t": 53.02002286911011,
+    "bbox": [
+     14.0,
+     140.0,
+     140.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 200 x 40 x 5 mm strip with eight 6 mm holes along its centerline",
+    "valid": true,
+    "attempts": 2,
+    "t": 61.23516082763672,
+    "bbox": [
+     5.0,
+     40.0,
+     200.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A hub with a 80 mm diameter disc 12 mm thick and a 40 mm diameter boss 30 mm tall on top",
+    "valid": true,
+    "attempts": 1,
+    "t": 34.15923023223877,
+    "bbox": [
+     42.0,
+     80.0,
+     80.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A shaft 40 mm diameter for 60 mm, then 25 mm diameter for 80 mm",
+    "valid": true,
+    "attempts": 1,
+    "t": 33.06706523895264,
+    "bbox": [
+     40.0,
+     40.0,
+     140.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A shaft with three sections: 50 mm diameter for 40 mm, 35 mm diameter for 60 mm, 20 mm diameter for 40 mm",
+    "valid": true,
+    "attempts": 1,
+    "t": 38.073230266571045,
+    "bbox": [
+     50.0,
+     50.0,
+     140.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 70 x 70 x 70 mm cube with a 30 mm through hole",
+    "valid": true,
+    "attempts": 1,
+    "t": 35.40263390541077,
+    "bbox": [
+     70.0,
+     70.0,
+     70.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 120 x 80 x 40 mm block with 6 mm fillets on the vertical edges",
+    "valid": true,
+    "attempts": 1,
+    "t": 34.09752297401428,
+    "bbox": [
+     40.0,
+     80.0,
+     120.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 90 x 60 x 12 mm plate with 2 mm chamfers on the top edges",
+    "valid": false,
+    "attempts": 7,
+    "t": 136.86832308769226
+   },
+   {
+    "prompt": "A 60 x 60 x 8 mm plate with 10 mm rounded corners",
+    "valid": true,
+    "attempts": 3,
+    "t": 183.42920017242432,
     "bbox": [
      8.0,
      60.0,
@@ -863,52 +1097,370 @@
     "bbox_ok": true
    },
    {
-    "prompt": "A triangular prism with a 40 mm equilateral base, 60 mm long",
+    "prompt": "A T-section 150 mm long with a 60 x 6 mm flange and a 40 x 6 mm web",
     "valid": true,
-    "attempts": 3,
-    "t": 50.64682126045227,
+    "attempts": 4,
+    "t": 165.24983716011047,
+    "bbox": [
+     6.0,
+     36.0,
+     60.0
+    ],
+    "bbox_ok": false
+   },
+   {
+    "prompt": "An L-angle 150 mm long with 40 mm legs, 4 mm thick",
+    "valid": true,
+    "attempts": 4,
+    "t": 107.0821681022644,
+    "bbox": [
+     40.0,
+     100.0,
+     150.0
+    ],
+    "bbox_ok": false
+   },
+   {
+    "prompt": "A U-channel 300 mm long, 60 mm wide, 30 mm tall, with 4 mm walls",
+    "valid": true,
+    "attempts": 1,
+    "t": 41.714619874954224,
+    "bbox": [
+     30.0,
+     60.0,
+     300.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "An I-beam 200 mm long, 50 mm wide, 80 mm tall, with 6 mm flanges and a 6 mm web",
+    "valid": true,
+    "attempts": 6,
+    "t": 478.56424617767334,
+    "bbox": [
+     50.0,
+     108.0,
+     200.0
+    ],
+    "bbox_ok": false
+   },
+   {
+    "prompt": "A 150 x 100 x 50 mm open-top box with 3 mm walls",
+    "valid": true,
+    "attempts": 2,
+    "t": 47.44700574874878,
+    "bbox": [
+     50.0,
+     100.0,
+     150.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 80 x 80 x 60 mm hollow box, 5 mm walls, open on top",
+    "valid": true,
+    "attempts": 5,
+    "t": 82.08169603347778,
+    "bbox": [
+     60.0,
+     80.0,
+     80.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A closed hollow box 100 x 60 x 40 mm with 4 mm walls",
+    "valid": true,
+    "attempts": 1,
+    "t": 35.23710513114929,
+    "bbox": [
+     40.0,
+     60.0,
+     100.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 140 x 70 x 30 mm block with a 80 x 40 x 15 mm pocket in the top face",
+    "valid": true,
+    "attempts": 1,
+    "t": 36.04294037818909,
+    "bbox": [
+     30.0,
+     70.0,
+     140.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 120 x 120 x 20 mm plate with a 60 x 60 mm square through hole",
+    "valid": true,
+    "attempts": 4,
+    "t": 83.0224392414093,
+    "bbox": [
+     20.0,
+     120.0,
+     120.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 160 x 40 x 12 mm bar with a 100 x 12 mm slot through it",
+    "valid": true,
+    "attempts": 2,
+    "t": 55.333536863327026,
+    "bbox": [
+     12.0,
+     40.0,
+     160.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 130 x 130 x 6 mm plate with four parallel 80 x 6 mm slots",
+    "valid": true,
+    "attempts": 1,
+    "t": 39.88924193382263,
+    "bbox": [
+     6.0,
+     130.0,
+     130.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 80 x 50 x 40 mm block with a 30 x 15 mm step cut along one long top edge",
+    "valid": true,
+    "attempts": 7,
+    "t": 148.30420923233032,
+    "bbox": [
+     40.0,
+     50.0,
+     80.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A hexagonal bar 40 mm across flats and 100 mm long",
+    "valid": true,
+    "attempts": 4,
+    "t": 130.18009877204895,
+    "bbox": [
+     40.0,
+     46.19,
+     100.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A hexagonal nut blank 19 mm across flats, 10 mm thick, with a 10 mm hole",
+    "valid": false,
+    "attempts": 7,
+    "t": 193.26473879814148
+   },
+   {
+    "prompt": "A pentagon plate 80 mm across corners and 10 mm thick",
+    "valid": true,
+    "attempts": 4,
+    "t": 117.64527106285095,
+    "bbox": [
+     10.0,
+     89.44,
+     94.05
+    ],
+    "bbox_ok": false
+   },
+   {
+    "prompt": "A triangular prism with a 60 mm equilateral base, 40 mm long",
+    "valid": true,
+    "attempts": 4,
+    "t": 97.90700078010559,
+    "bbox": [
+     40.0,
+     51.96,
+     60.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 150 x 80 x 10 mm base with a 50 mm tall, 10 mm thick rib along its centerline",
+    "valid": true,
+    "attempts": 4,
+    "t": 96.19988298416138,
+    "bbox": [
+     50.0,
+     80.0,
+     150.0
+    ],
+    "bbox_ok": false
+   },
+   {
+    "prompt": "A 100 x 100 x 8 mm base plate with a 100 x 60 x 8 mm upright wall on one edge",
+    "valid": true,
+    "attempts": 2,
+    "t": 69.54749274253845,
+    "bbox": [
+     16.0,
+     100.0,
+     100.0
+    ],
+    "bbox_ok": false
+   },
+   {
+    "prompt": "A bobbin: 60 mm diameter end flanges 6 mm thick, joined by a 30 mm diameter core 50 mm long",
+    "valid": true,
+    "attempts": 4,
+    "t": 103.90782713890076,
+    "bbox": [
+     60.0,
+     60.0,
+     62.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 60 mm diameter, 80 mm long cylinder with a 30 mm diameter blind hole 50 mm deep",
+    "valid": true,
+    "attempts": 1,
+    "t": 33.91283679008484,
+    "bbox": [
+     60.0,
+     60.0,
+     80.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 70 mm diameter, 25 mm long cylinder with 3 mm chamfers on both ends",
+    "valid": true,
+    "attempts": 4,
+    "t": 72.83622813224792,
+    "bbox": [
+     25.0,
+     70.0,
+     70.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 40 mm diameter, 60 mm long cylinder with 4 mm fillets on both ends",
+    "valid": true,
+    "attempts": 7,
+    "t": 122.3624541759491,
     "bbox": [
      40.0,
      40.0,
+     60.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A cover plate 180 x 120 x 3 mm with six 4 mm holes and 5 mm rounded corners",
+    "valid": true,
+    "attempts": 4,
+    "t": 116.21269202232361,
+    "bbox": [
+     3.0,
+     120.0,
+     180.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 100 x 100 x 10 mm plate with nine 6 mm holes in a 3 x 3 grid",
+    "valid": true,
+    "attempts": 1,
+    "t": 62.33417296409607,
+    "bbox": [
+     10.0,
+     100.0,
+     100.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 90 mm diameter disc, 6 mm thick, with four 20 mm holes on a 55 mm circle",
+    "valid": true,
+    "attempts": 1,
+    "t": 36.33527207374573,
+    "bbox": [
+     6.0,
+     90.0,
+     90.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A cross-shaped plate made of two 100 x 30 mm bars at right angles, 8 mm thick",
+    "valid": true,
+    "attempts": 1,
+    "t": 36.471843004226685,
+    "bbox": [
+     8.0,
+     100.0,
+     100.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A Z-profile 120 mm long, with 30 mm top and bottom flanges, a 50 mm web, all 5 mm thick",
+    "valid": true,
+    "attempts": 5,
+    "t": 373.3843581676483,
+    "bbox": [
+     10.0,
+     52.5,
      120.0
     ],
     "bbox_ok": false
    },
    {
-    "prompt": "A 120 x 60 x 8 mm base plate with a 40 mm tall, 8 mm thick rib along its centerline",
-    "valid": false,
-    "attempts": 4,
-    "t": 81.31185173988342
-   },
-   {
-    "prompt": "A bracket: 60 x 60 x 6 mm base and a 60 x 40 x 6 mm upright wall at one edge",
-    "valid": false,
-    "attempts": 4,
-    "t": 77.29272699356079
-   },
-   {
-    "prompt": "A spool: 40 mm diameter end discs 5 mm thick, joined by a 20 mm diameter core 30 mm long",
+    "prompt": "A 50 x 50 x 100 mm post with a 30 x 30 mm square hole through its length",
     "valid": true,
     "attempts": 4,
-    "t": 175.4023780822754,
+    "t": 87.88125109672546,
     "bbox": [
-     30.0,
-     40.0,
-     40.0
+     50.0,
+     50.0,
+     100.0
     ],
-    "bbox_ok": false
+    "bbox_ok": true
    },
    {
-    "prompt": "A cylinder 40 mm in diameter and 60 mm long with a 25 mm diameter blind hole 40 mm deep",
-    "valid": false,
+    "prompt": "A 200 x 100 x 8 mm base with two 80 mm tall, 8 mm thick walls along its long edges",
+    "valid": true,
     "attempts": 4,
-    "t": 81.99546909332275
+    "t": 98.14848303794861,
+    "bbox": [
+     84.0,
+     100.0,
+     200.0
+    ],
+    "bbox_ok": true
    },
    {
-    "prompt": "A cylinder 50 mm in diameter and 20 mm long with 2 mm chamfers on both ends",
-    "valid": false,
-    "attempts": 4,
-    "t": 60.49366497993469
+    "prompt": "A 60 x 40 x 10 mm plate with a 30 mm tall, 20 mm diameter boss in the center",
+    "valid": true,
+    "attempts": 2,
+    "t": 50.741281032562256,
+    "bbox": [
+     40.0,
+     40.0,
+     60.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A tube 40 mm outer diameter, 3 mm wall, 150 mm long",
+    "valid": true,
+    "attempts": 1,
+    "t": 30.683537244796753,
+    "bbox": [
+     40.0,
+     40.0,
+     150.0
+    ],
+    "bbox_ok": true
    }
   ]
  }

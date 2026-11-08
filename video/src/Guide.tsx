@@ -169,8 +169,8 @@ export const Guide: React.FC = () => {
       <Seg a={CH[7].s + 16} b={L.batch.s + sec(4.2)}>{(dur, off) => (
         <Terminal dur={dur} title="Batch mode" lines={[
           { c: '$ python -m defeat.cli parts/*.step --preset static --out out/', t: rel(L.batch, 0.3, off) - 16 },
-          { o: 'l_bracket.step        16/25 removed   faces 84→36    tets −26%', t: rel(L.batch, 1.9, off) },
-          { o: 'printer_chassis.step  11/31 removed   faces 261→168  tets −29%', t: rel(L.batch, 2.4, off) },
+          { o: 'l_bracket.step        22/27 removed   faces 84→32    tets −50%', t: rel(L.batch, 1.9, off) },
+          { o: 'printer_chassis.step  21/31 removed   faces 261→105  tets −54%', t: rel(L.batch, 2.4, off) },
           { o: '✓ STEP · report · Python · C++ for every part', t: rel(L.batch, 2.9, off), ok: true },
         ]} />
       )}</Seg>
@@ -349,7 +349,7 @@ const FreeCad: React.FC<{ dur: number }> = ({ dur }) => {
                 background: i ? 'rgba(251,86,7,0.14)' : 'transparent', border: i ? '1px solid rgba(251,86,7,0.4)' : '1px solid transparent' }}>{t}</div></Fade>
             ))}
             <Fade at={50}><div style={{ marginTop: 26, fontFamily: MONO, fontSize: 17, lineHeight: 1.6, color: C.ink3 }}>
-              DeFeat: 16 features removed<br />faces 84 → 36<br />mesh elements −26%<br /><span style={{ color: C.green }}>valid solid ✓</span>
+              DeFeat: 22 features removed<br />faces 84 → 32<br />mesh elements −50%<br /><span style={{ color: C.green }}>valid solid ✓</span>
             </div></Fade>
           </div>
           <div style={{ flex: 1, position: 'relative', background: '#1e1e1e' }}>
@@ -366,8 +366,8 @@ const Bars: React.FC<{ dur: number; off: number }> = ({ dur, off }) => {
   const f = useCurrentFrame()
   const s = L.bench.s - off
   const rows = [
-    { l: 'Fillets found · F1 on 3,000 real designer parts', a: 0.69, b: NUM.filletF1 },
-    { l: 'Chamfers found · F1', a: 0.58, b: NUM.chamferF1 },
+    { l: 'Fillets found · F1 on 6,454 real designer parts', a: 0.71, b: NUM.filletF1 },
+    { l: 'Chamfers found · F1', a: 0.61, b: NUM.chamferF1 },
     { l: 'Feature vs body · F1 on 3,122 MFCAD parts', a: 0.95, b: NUM.mfcadF1 },
     { l: `Valid solids out · ${NUM.parts} real parts`, a: 1.0, b: NUM.valid / 100 },
   ]

@@ -1,0 +1,247 @@
+{
+ "split": "test",
+ "parts": 6449,
+ "faces": 135788,
+ "models": {
+  "recognizer_1.pt": {
+   "as_stored": {
+    "accuracy": 0.9443,
+    "miou": 0.7995,
+    "fillet_f1": 0.9883,
+    "chamfer_f1": 0.959,
+    "cut_f1": 0.9087,
+    "ci95": {
+     "accuracy": [
+      0.937,
+      0.9509
+     ],
+     "miou": [
+      0.7799,
+      0.8239
+     ],
+     "fillet_f1": [
+      0.9791,
+      0.9937
+     ],
+     "chamfer_f1": [
+      0.9414,
+      0.9713
+     ],
+     "cut_f1": [
+      0.8929,
+      0.9223
+     ]
+    },
+    "iou": {
+     "ExtrudeSide": 0.9204,
+     "ExtrudeEnd": 0.8719,
+     "CutSide": 0.83,
+     "CutEnd": 0.7209,
+     "Fillet": 0.9769,
+     "Chamfer": 0.9212,
+     "RevolveSide": 0.8645,
+     "RevolveEnd": 0.2901
+    }
+   },
+   "rotated": {
+    "accuracy": 0.9447,
+    "miou": 0.8008,
+    "fillet_f1": 0.9882,
+    "chamfer_f1": 0.9591,
+    "cut_f1": 0.9095,
+    "ci95": {
+     "accuracy": [
+      0.9375,
+      0.9512
+     ],
+     "miou": [
+      0.7817,
+      0.8257
+     ],
+     "fillet_f1": [
+      0.9791,
+      0.9935
+     ],
+     "chamfer_f1": [
+      0.9414,
+      0.9717
+     ],
+     "cut_f1": [
+      0.8938,
+      0.923
+     ]
+    },
+    "iou": {
+     "ExtrudeSide": 0.9209,
+     "ExtrudeEnd": 0.8723,
+     "CutSide": 0.8316,
+     "CutEnd": 0.7247,
+     "Fillet": 0.9767,
+     "Chamfer": 0.9215,
+     "RevolveSide": 0.8667,
+     "RevolveEnd": 0.2923
+    }
+   }
+  },
+  "recognizer_2.pt": {
+   "as_stored": {
+    "accuracy": 0.9472,
+    "miou": 0.8126,
+    "fillet_f1": 0.9909,
+    "chamfer_f1": 0.961,
+    "cut_f1": 0.9181,
+    "ci95": {
+     "accuracy": [
+      0.9427,
+      0.9517
+     ],
+     "miou": [
+      0.7941,
+      0.8335
+     ],
+     "fillet_f1": [
+      0.988,
+      0.9933
+     ],
+     "chamfer_f1": [
+      0.9497,
+      0.9701
+     ],
+     "cut_f1": [
+      0.9056,
+      0.9289
+     ]
+    },
+    "iou": {
+     "ExtrudeSide": 0.9239,
+     "ExtrudeEnd": 0.8784,
+     "CutSide": 0.8425,
+     "CutEnd": 0.7342,
+     "Fillet": 0.982,
+     "Chamfer": 0.9249,
+     "RevolveSide": 0.8508,
+     "RevolveEnd": 0.3641
+    }
+   },
+   "rotated": {
+    "accuracy": 0.9472,
+    "miou": 0.8126,
+    "fillet_f1": 0.9909,
+    "chamfer_f1": 0.961,
+    "cut_f1": 0.9181,
+    "ci95": {
+     "accuracy": [
+      0.9427,
+      0.9517
+     ],
+     "miou": [
+      0.7941,
+      0.8335
+     ],
+     "fillet_f1": [
+      0.988,
+      0.9933
+     ],
+     "chamfer_f1": [
+      0.9497,
+      0.9701
+     ],
+     "cut_f1": [
+      0.9056,
+      0.9289
+     ]
+    },
+    "iou": {
+     "ExtrudeSide": 0.9239,
+     "ExtrudeEnd": 0.8784,
+     "CutSide": 0.8425,
+     "CutEnd": 0.7342,
+     "Fillet": 0.982,
+     "Chamfer": 0.9249,
+     "RevolveSide": 0.8508,
+     "RevolveEnd": 0.3641
+    }
+   }
+  }
+ },
+ "ensemble": {
+  "as_stored": {
+   "accuracy": 0.9495,
+   "miou": 0.8123,
+   "fillet_f1": 0.9891,
+   "chamfer_f1": 0.963,
+   "cut_f1": 0.921,
+   "ci95": {
+    "accuracy": [
+     0.9439,
+     0.9546
+    ],
+    "miou": [
+     0.7935,
+     0.8383
+    ],
+    "fillet_f1": [
+     0.9814,
+     0.9938
+    ],
+    "chamfer_f1": [
+     0.946,
+     0.9753
+    ],
+    "cut_f1": [
+     0.9087,
+     0.9318
+    ]
+   },
+   "iou": {
+    "ExtrudeSide": 0.9274,
+    "ExtrudeEnd": 0.88,
+    "CutSide": 0.8504,
+    "CutEnd": 0.7426,
+    "Fillet": 0.9785,
+    "Chamfer": 0.9286,
+    "RevolveSide": 0.868,
+    "RevolveEnd": 0.3233
+   }
+  },
+  "rotated": {
+   "accuracy": 0.9498,
+   "miou": 0.8134,
+   "fillet_f1": 0.9885,
+   "chamfer_f1": 0.9634,
+   "cut_f1": 0.9216,
+   "ci95": {
+    "accuracy": [
+     0.9444,
+     0.955
+    ],
+    "miou": [
+     0.7948,
+     0.8394
+    ],
+    "fillet_f1": [
+     0.9795,
+     0.9937
+    ],
+    "chamfer_f1": [
+     0.9466,
+     0.9754
+    ],
+    "cut_f1": [
+     0.9096,
+     0.9323
+    ]
+   },
+   "iou": {
+    "ExtrudeSide": 0.9279,
+    "ExtrudeEnd": 0.8809,
+    "CutSide": 0.8517,
+    "CutEnd": 0.7452,
+    "Fillet": 0.9772,
+    "Chamfer": 0.9294,
+    "RevolveSide": 0.869,
+    "RevolveEnd": 0.3262
+   }
+  }
+ }
+}

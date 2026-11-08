@@ -1,7 +1,7 @@
 """Procedural mold-part generator with face labels taken from how each part was built.
 
 Labels come from the generator's own construction parameters (hole radii, boss axes, rib
-boxes, text region, fillet radius...), NOT from the rule recognizer, so the GNN learns an
+boxes, text region, fillet radius...), NOT from the rule recognizer, so the network learns an
 independent opinion that we can compare against the rules.
 """
 from __future__ import annotations
@@ -182,7 +182,7 @@ def label_faces(shape, spec, g=None):
     return g, labels
 
 
-# ---------------------------------------------------------------- features for the GNN
+# ---------------------------------------------------------------- features for the network
 SURF = ["plane", "cylinder", "cone", "sphere", "torus", "bspline", "revolution", "extrusion", "other"]
 
 

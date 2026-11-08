@@ -195,10 +195,7 @@ def tool_calling(cmds, tag):
         for cmd, gold in cmds:
             t = time.time()
             try:
-                m = agent.llm_chat([{"role": "system", "content": sysmsg}, {"role": "user", "content": cmd}],
-                                   tools=agent.TOOLS, timeout=180)
-                calls = [{"name": c["function"]["name"], "arguments": c["function"].get("arguments", {})}
-                         for c in (m.get("tool_calls") or [])]
+                calls = agent.plan_calls([{"role": "system", "content": sysmsg}, {"role": "user", "content": cmd}], cmd, timeout=180)[0]
             except Exception:
                 calls = []
             rows.append({"cmd": cmd, "gold": gold, "pred": normalize(calls), "t": time.time() - t})
@@ -262,12 +259,13 @@ PARTS = [
 ]
 
 
-def text_to_cad():
+def text_to_cad(parts=None):
     from defeat import agent, occ
     if not agent.ollama_available():
         return None
+    parts = parts or PARTS
     rows = []
-    for desc, dims in PARTS:
+    for desc, dims in parts:
         out = os.path.join(tempfile.mkdtemp(), "p.step")
         t = time.time()
         try:
@@ -282,7 +280,7 @@ def text_to_cad():
             row["bbox"] = [round(v, 2) for v in got]
             row["bbox_ok"] = all(abs(gv - wv) <= 0.1 * wv + 0.5 for gv, wv in zip(got, want))
         rows.append(row)
-        print(f"  cad {len(rows)}/{len(PARTS)} valid={row['valid']} bbox_ok={row.get('bbox_ok')}", flush=True)
+        print(f"  cad {len(rows)}/{len(parts)} valid={row['valid']} bbox_ok={row.get('bbox_ok')}", flush=True)
     n = len(rows)
     return {"model": agent.CHAT_MODEL, "prompts": n,
             "valid_solid_rate": round(sum(r["valid"] for r in rows) / n, 4),
@@ -294,15 +292,32 @@ def text_to_cad():
 
 
 def main():
-    rep = {"tool_calling_dev": tool_calling(COMMANDS, "dev"), "tool_calling_heldout": tool_calling(HELDOUT + HELDOUT_2, "heldout")}
-    rep["text_to_cad"] = text_to_cad()
-    print(save("assistant", rep))
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--dev", action="store_true", help="development sets only; the fresh held-out sets stay unseen")
+    ap.add_argument("--no-cad", action="store_true")
+    a = ap.parse_args()
+    from bench.heldout_v3 import COMMANDS_V3, PARTS_V3
+    rep = {"tool_calling_dev": tool_calling(COMMANDS + HELDOUT + HELDOUT_2, "dev")}
+    if not a.dev:
+        rep["tool_calling_heldout"] = tool_calling(COMMANDS_V3, "heldout")
+    if not a.no_cad:
+        rep["text_to_cad_dev"] = text_to_cad(PARTS)
+        if not a.dev:
+            rep["text_to_cad"] = text_to_cad(PARTS_V3)
+    print(save("assistant_dev" if a.dev else "assistant", rep))
     for split in ("tool_calling_dev", "tool_calling_heldout"):
-        for k, v in rep[split].items():
+        for k, v in rep.get(split, {}).items():
             print(split, k, {x: v[x] for x in ("exact_match", "call_precision", "call_recall", "call_f1", "median_latency_s")})
-    if rep["text_to_cad"]:
-        t = rep["text_to_cad"]
-        print("text-to-cad", {x: t[x] for x in ("valid_solid_rate", "first_try_rate", "dimension_match_rate", "median_seconds")})
+            for miss in v["misses"][:40]:
+                print("   miss", miss)
+    for split in ("text_to_cad_dev", "text_to_cad"):
+        t = rep.get(split)
+        if t:
+            print(split, {x: t[x] for x in ("valid_solid_rate", "first_try_rate", "dimension_match_rate", "median_seconds")})
+            for r in t["rows"]:
+                if not r.get("bbox_ok"):
+                    print("   miss", r["prompt"][:70], r.get("bbox"), r.get("attempts"))
 
 
 if __name__ == "__main__":

@@ -441,7 +441,7 @@ class Recognizer:
         return self.features
 
 
-def _machined_with_gnn(g: FaceGraph, feats, P, labels, t):
+def _machined_with_net(g: FaceGraph, feats, P, labels, t):
     """Steps and cut-outs: the network reads these far better than the rules. Drop a rule step it
     rejects, rename a rule cut-out it calls a step, and add confident groups of faces the rules left
     as body. A group holding a large share of the part is a body, whatever the network thinks."""
@@ -472,9 +472,9 @@ def _machined_with_gnn(g: FaceGraph, feats, P, labels, t):
                 continue
             L = max(g.edges[e].length for x in faces for es in g.nodes[x].neighbors.values() for e in es)
             w = area / max(L, 1e-9)
-            keep.append(Feature(0, kind, faces, params={"width": round(w, 3)}, size=w, source="gnn",
+            keep.append(Feature(0, kind, faces, params={"width": round(w, 3)}, size=w, source="net",
                                 confidence=round(float(sum(P[x][idx] for x in faces) / len(faces)), 3),
-                                note=f"{kind}, width {w:.2f} (found by GNN)"))
+                                note=f"{kind}, width {w:.2f} (found by the network)"))
             owned |= comp
     return keep
 
@@ -482,19 +482,55 @@ def _machined_with_gnn(g: FaceGraph, feats, P, labels, t):
 MAX_MACHINED_AREA = 0.25
 
 
-def refine_with_gnn(g: FaceGraph, feats, P, labels, veto=0.4, add=0.5, override=1.01, machined=1.01):
-    """Rules + GNN (thresholds tuned on held-out validation parts, see bench/tune_fusion.py): drop a
-    rule fillet/chamfer the GNN finds unlikely, add blends the GNN is confident about, let a very
+def _cuts_from_history(g: FaceGraph, feats, P, P8, labels, cut, step_veto):
+    """The eight-label head has seen how real parts were modelled, so it tells design cuts from extrudes
+    better than any other cue. Drop a rule step it doesn't see as a cut, and add confident groups of cut
+    faces the rules left as body. A group holding a large share of the part is a body, not a feature."""
+    pcut = P8[:, 2] + P8[:, 3]
+    si, pi, hi = labels.index("step"), labels.index("pocket"), labels.index("hole")
+    # the eight-label head has only seen design histories, the other head has seen machined steps: both must reject one
+    keep = [f for f in feats if not (f.kind == "step" and sum(max(pcut[x], P[x][si]) for x in f.faces) / len(f.faces) < step_veto)]
+    owned = {x for f in keep for x in f.faces}
+    cand = {n.id for n in g.nodes if n.id not in owned and pcut[n.id] > cut}
+    while cand:
+        s = cand.pop()
+        comp, q = {s}, deque([s])
+        while q:
+            for m in g.nodes[q.popleft()].neighbors:
+                if m in cand:
+                    cand.discard(m)
+                    comp.add(m)
+                    q.append(m)
+        faces = sorted(comp)
+        area = sum(g.nodes[x].area for x in faces)
+        if area > MAX_MACHINED_AREA * g.total_area:
+            continue
+        L = max(g.edges[e].length for x in faces for es in g.nodes[x].neighbors.values() for e in es)
+        w = area / max(L, 1e-9)
+        votes = {k: sum(P[x][i] for x in faces) for k, i in (("step", si), ("pocket", pi), ("hole", hi))}
+        kind = max(votes, key=votes.get)
+        keep.append(Feature(0, kind, faces, params={"width": round(w, 3)}, size=w, source="net",
+                            confidence=round(float(sum(pcut[x] for x in faces) / len(faces)), 3),
+                            note=f"{kind}, width {w:.2f} (found by the network)"))
+    return keep
+
+
+def refine_with_net(g: FaceGraph, feats, P, labels, veto=0.4, add=0.5, override=1.01, machined=1.01, P8=None, cut=1.01, step_veto=0.0):
+    """Rules + network (thresholds tuned on held-out validation parts, see bench/tune_net.py): drop any
+    face of a rule fillet/chamfer the network finds unlikely, add blends the network is confident about, let a very
     confident blend call (> override) take a face back from a non-blend rule feature, and above
     `machined` let it settle steps and cut-outs."""
     fi, ci = labels.index("fillet"), labels.index("chamfer")
     keep = []
     for f in feats:
         if f.kind in ("fillet", "chamfer"):
-            p = sum(P[x][fi if f.kind == "fillet" else ci] for x in f.faces) / len(f.faces)
-            if p < veto:
+            # judged face by face: one wrong face shouldn't ride along with good neighbours in a chain
+            idx = fi if f.kind == "fillet" else ci
+            mine = [x for x in f.faces if P[x][idx] >= veto]
+            if not mine:
                 continue
-            f.confidence = round(float(p), 3)
+            f.faces = mine
+            f.confidence = round(float(sum(P[x][idx] for x in mine) / len(mine)), 3)
         elif override <= 1:
             mine = [x for x in f.faces if max(P[x][fi], P[x][ci]) <= override]
             if not mine:
@@ -518,43 +554,44 @@ def refine_with_gnn(g: FaceGraph, feats, P, labels, veto=0.4, add=0.5, override=
                         q.append(m)
             faces = sorted(comp)
             if cls == "fillet":
+                # no size limit here: whether a large fillet goes is the analysis's decision, not recognition's
                 r = min(R.blend_radius(x) for x in faces)
-                if r > 0.08 * g.char_len:
-                    continue
-                ft = Feature(0, "fillet", faces, params={"radius": round(r, 3)}, size=r, source="gnn",
+                ft = Feature(0, "fillet", faces, params={"radius": round(r, 3)}, size=r, source="net",
                              confidence=round(float(sum(P[x][idx] for x in faces) / len(faces)), 3),
-                             note=f"fillet R{r:.2f} (found by GNN)")
+                             note=f"fillet R{r:.2f} (found by the network)")
             else:
                 L = max(g.edges[e].length for x in faces for es in g.nodes[x].neighbors.values() for e in es)
                 w = sum(g.nodes[x].area for x in faces) / max(L, 1e-9)
-                ft = Feature(0, "chamfer", faces, params={"width": round(w, 3)}, size=w, source="gnn",
+                ft = Feature(0, "chamfer", faces, params={"width": round(w, 3)}, size=w, source="net",
                              confidence=round(float(sum(P[x][idx] for x in faces) / len(faces)), 3),
-                             note=f"chamfer, width {w:.2f} (found by GNN)")
+                             note=f"chamfer, width {w:.2f} (found by the network)")
             keep.append(ft)
             for x in faces:
                 R.owner[x] = -1
     if machined <= 1:
-        keep = _machined_with_gnn(g, keep, P, labels, machined)
+        keep = _machined_with_net(g, keep, P, labels, machined)
+    if P8 is not None and (cut <= 1 or step_veto > 0):
+        keep = _cuts_from_history(g, keep, P, P8, labels, cut, step_veto)
     for i, f in enumerate(keep):
         f.id = i
     return keep
 
 
-# rules + GNN thresholds: blends tuned on the validation parts by bench/tune_fusion.py, `machined` on
-# unused MFCAD train-split parts, choosing the setting that adds least on real parts for the same score
-FUSION = {"veto": 0.9, "add": 0.6, "override": 0.5, "machined": 0.99}
+# rules + network thresholds, tuned by bench/tune_net.py on 1,500 Fusion parts the network never trained on,
+# and `machined` also on 500 unused MFCAD train-split parts
+FUSION = {"veto": 0.5, "add": 0.8, "override": 0.5, "machined": 0.99, "cut": 0.5, "step_veto": 0.7}
 
 
-def recognize(shape, g: FaceGraph | None = None, use_gnn=True):
+def recognize(shape, g: FaceGraph | None = None, use_net=True):
     g = g or build_graph(shape)
     feats = Recognizer(g).run()
-    if use_gnn:
+    if use_net:
         try:
             from .datagen import LABELS
-            from .gnn import MODEL_PATH, predict_faces
-            import os
-            if os.path.exists(MODEL_PATH):
-                feats = refine_with_gnn(g, feats, predict_faces(g), LABELS, **FUSION)
+            from .net import predict_part
+            pp = predict_part(g)
+            if pp is not None:
+                feats = refine_with_net(g, feats, pp[0], LABELS, P8=pp[1], **FUSION)
         except Exception:
             pass
     return g, feats

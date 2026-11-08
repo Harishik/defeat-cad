@@ -1,0 +1,27 @@
+{
+ "parts": 40,
+ "solver": "CalculiX This is Version 2.23",
+ "median_abs_diff_pct": 3.000545698443806e-07,
+ "max_abs_diff_pct": 5.5676368068852635e-06,
+ "beam_theory": {
+  "ours": {
+   "bend_thin": 54.85688275417665,
+   "bend_wide": 13.848835210244612,
+   "tension": 0.03977217288038139
+  },
+  "theory": {
+   "bend_thin": 55.00815308195807,
+   "bend_wide": 13.849490578430851,
+   "tension": 0.039808433485043274
+  },
+  "diff_pct": {
+   "bend_thin": -0.27499619475686937,
+   "bend_wide": -0.0047320743136904314,
+   "tension": -0.09108774570471366
+  }
+ },
+ "errors": [
+  "skip: too large",
+  "timeout"
+ ]
+}

@@ -81,8 +81,8 @@ def main():
     for name, t in THEMES.items():
         # Fusion 360: fillets / chamfers, F1
         f, ax = fig(t)
-        series = ["Rules only", "GNN only", "DeFeat (rules + GNN)"]
-        keys = ["rule", "gnn", "fused"]
+        series = ["Rules only", "Network only", "DeFeat (rules + network)"]
+        keys = ["rule", "net", "fused"]
         vals = [[fu[k]["fillet"]["f1"], fu[k]["chamfer"]["f1"]] for k in keys]
         cis = [[fu[k]["fillet"].get("f1_ci95"), fu[k]["chamfer"].get("f1_ci95")] for k in keys]
         grouped(ax, t, ["Fillets", "Chamfers"], series, vals, cis=cis)
@@ -94,11 +94,11 @@ def main():
 
         # MFCAD
         f, ax = fig(t)
-        series = ["Rules only", "GNN only", "DeFeat (rules + GNN)"]
+        series = ["Rules only", "Network only", "DeFeat (rules + network)"]
 
         def row(p):
             return [p["feature_vs_stock"]["f1"], p["per_class"]["per_class"]["cut"]["f1"], p["per_class"]["per_class"]["step"]["f1"]]
-        vals = [row(mf["rule"]), row(mf["gnn"]), row(mf["fused"])]
+        vals = [row(mf["rule"]), row(mf["net"]), row(mf["fused"])]
         grouped(ax, t, ["Feature vs. body", "Cut-outs", "Steps"], series, vals)
         title(f, t, "Machining-feature recognition (F1)",
               f"MFCAD held-out split — {mf['parts_ok']:,} parts, {mf['rule']['per_class']['faces']:,} faces")

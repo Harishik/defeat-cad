@@ -2,66 +2,66 @@
  "parts": 400,
  "failed": 1,
  "skipped": {
-  "nothing to remove": 237,
-  "nothing removed": 19,
+  "nothing to remove": 212,
+  "nothing removed": 42,
   "too big for the fine mesh": 74
  },
- "errors": 4,
- "parts_compared": 53,
- "median_tets_fine": 12927,
+ "errors": 3,
+ "parts_compared": 55,
+ "median_tets_fine": 13726,
  "noise_same_part_h_vs_0.9h_pct": {
-  "n": 65,
-  "median": 0.787,
-  "p90": 4.146,
-  "within_1pct": 0.585,
+  "n": 68,
+  "median": 0.851,
+  "p90": 3.773,
+  "within_1pct": 0.544,
   "median_ci95": [
-   0.6268,
-   1.038
+   0.7291,
+   1.1339
   ]
  },
  "absolute_result_shift_h_vs_fine_pct": {
-  "n": 53,
-  "median": 1.705,
-  "p90": 5.531,
-  "within_1pct": 0.208,
+  "n": 55,
+  "median": 1.795,
+  "p90": 5.295,
+  "within_1pct": 0.2,
   "median_ci95": [
-   1.2402,
+   1.3818,
    2.2326
   ]
  },
  "worst_change_at_h_pct": {
-  "n": 53,
-  "median": 1.618,
-  "p90": 6.667,
-  "within_1pct": 0.283,
+  "n": 55,
+  "median": 2.398,
+  "p90": 15.089,
+  "within_1pct": 0.218,
   "median_ci95": [
-   1.2225,
-   2.3977
+   1.6158,
+   3.3644
   ]
  },
  "worst_change_at_fine_pct": {
-  "n": 53,
-  "median": 1.206,
-  "p90": 7.258,
-  "within_1pct": 0.358,
+  "n": 55,
+  "median": 1.604,
+  "p90": 14.804,
+  "within_1pct": 0.236,
   "median_ci95": [
-   1.0068,
-   1.8495
+   1.1757,
+   3.1177
   ]
  },
  "error_in_change_h_vs_fine_points": {
-  "n": 53,
-  "median": 0.781,
-  "p90": 4.963,
-  "within_1pct": 0.623,
+  "n": 55,
+  "median": 0.778,
+  "p90": 3.396,
+  "within_1pct": 0.618,
   "median_ci95": [
-   0.4613,
-   1.1348
+   0.4663,
+   1.0179
   ]
  },
- "same_within_5pct_verdict": 0.9245,
+ "same_within_5pct_verdict": 0.9273,
  "same_within_5pct_verdict_ci95": [
-  0.8214,
-  0.9703
+  0.8274,
+  0.9714
  ]
 }

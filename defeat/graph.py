@@ -1,7 +1,7 @@
 """Attributed face-adjacency graph of a B-Rep solid.
 
 Nodes are faces, links are shared edges labelled convex / concave / smooth.
-Everything is pose-invariant so the same graph feeds the rule recognizer and the GNN.
+Everything is pose-invariant so the same graph feeds the rule recognizer and the network.
 """
 from __future__ import annotations
 
@@ -57,6 +57,8 @@ class FaceGraph:
     char_len: float
     total_area: float
     inner_wires: dict  # fid -> list[list[edge ids]]
+    emap: object = None         # indexed edge -> faces map of the shape
+    edge_index: dict = field(default_factory=dict)  # emap key (1-based) -> EdgeLink id
 
     def link(self, a, b):
         return [self.edges[e] for e in self.nodes[a].neighbors.get(b, [])]
@@ -182,4 +184,4 @@ def build_graph(shape, curvature=True) -> FaceGraph:
         inner_wires[i] = loops
 
     total_area = sum(n.area for n in nodes)
-    return FaceGraph(shape, faces, nodes, edges, char_len, total_area, inner_wires)
+    return FaceGraph(shape, faces, nodes, edges, char_len, total_area, inner_wires, emap, edge_index)

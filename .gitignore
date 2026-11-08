@@ -8,7 +8,6 @@ runs/
 out/
 models/dataset.pkl
 .DS_Store
-.claude/
 *.log
 PLAN.md
 models/dataset_real.pkl
@@ -24,3 +23,4 @@ video/.tts/
 video/tts_models/
 video/tts_setup.log
 video/public/vo/
+models/net_*.pt

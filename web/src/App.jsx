@@ -47,10 +47,10 @@ function Pressable({ className = '', children, ...p }) {
 
 // ------------------------------------------------------------------ welcome
 const STATS = [
-  { v: '0.87', l: 'fillet F1 on 3,000 real designer parts' },
-  { v: '500', l: 'random real-world parts run end to end' },
+  { v: '0.988', l: 'fillet F1 on 6,454 real designer parts' },
+  { v: '500', l: 'fresh real-world parts run end to end' },
   { v: '100%', l: 'valid solids out on those 500 parts' },
-  { v: '−26%', l: 'mesh elements on the sample bracket' },
+  { v: '−50%', l: 'mesh elements on the sample bracket' },
 ]
 
 function usePreview(name) {
@@ -132,7 +132,7 @@ function Welcome({ onOpen, onUpload, onCreate, busy, llm, dark }) {
               <Pressable className="send" type="submit" disabled={!prompt.trim()}>{I.send}</Pressable>
             </form>
           </motion.div>
-          <motion.div className="fine mono" {...rise(0.28)}>Nothing leaves this machine · OpenCASCADE · gmsh · PyTorch Geometric · Ollama</motion.div>
+          <motion.div className="fine mono" {...rise(0.28)}>Nothing leaves this machine · OpenCASCADE · gmsh · PyTorch · Ollama</motion.div>
         </div>
 
         <motion.div className="whero-art" initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ ...spring, duration: 1, delay: 0.15 }}>
@@ -252,9 +252,9 @@ function FeaturePanel({ sum, selected, setSelected, hovered, setHovered, onToggl
                   <div className="frow-main">
                     <div className="frow-title">{f.note}<span className="fid">#{f.id}</span></div>
                     <div className="frow-why">{f.decision.reason}</div>
-                    {f.gnn && (
-                      <div className={`ai ${f.gnn.agree ? 'yes' : 'no'}`} title={Object.entries(f.gnn.probs).map(([k, v]) => `${k} ${(v * 100).toFixed(0)}%`).join(' · ')}>
-                        {I.sparkle}{f.gnn.agree ? `GNN agrees · ${(f.gnn.agree_p * 100).toFixed(0)}%` : `GNN says ${f.gnn.label} · ${(f.gnn.p * 100).toFixed(0)}% — review`}
+                    {f.net && (
+                      <div className={`ai ${f.net.agree ? 'yes' : 'no'}`} title={Object.entries(f.net.probs).map(([k, v]) => `${k} ${(v * 100).toFixed(0)}%`).join(' · ')}>
+                        {I.sparkle}{f.net.agree ? `Network agrees · ${(f.net.agree_p * 100).toFixed(0)}%` : `Network says ${f.net.label} · ${(f.net.p * 100).toFixed(0)}% — review`}
                       </div>
                     )}
                   </div>
@@ -348,6 +348,37 @@ function ChatPanel({ sid, messages, setMessages, onResult, llm, queued, clearQue
 }
 
 // ------------------------------------------------------------------ results sheet
+const CHECKS = {
+  static: { title: 'Static stress check', noun: 'load cases', sub: 'two bending directions, tension, torsion' },
+  modal: { title: 'Natural frequency check', noun: 'modes', sub: 'first three natural frequencies' },
+  thermal: { title: 'Heat path check', noun: 'heat paths', sub: 'conduction along each axis' },
+  cfd: { title: 'Flow area check', noun: 'areas', sub: 'frontal area along each axis, wetted area' },
+}
+const CASE_LABEL = (k) => ({ bend_thin: 'Bending, thin way', bend_wide: 'Bending, wide way', tension: 'Tension', torsion: 'Torsion', your_load: 'Your load', your_heat_path: 'Your heat path',
+  mode_1: 'Mode 1', mode_2: 'Mode 2', mode_3: 'Mode 3', conduction_x: 'Conduction, X', conduction_y: 'Conduction, Y', conduction_z: 'Conduction, Z',
+  frontal_x: 'Frontal area, X', frontal_y: 'Frontal area, Y', frontal_z: 'Frontal area, Z', wetted: 'Wetted area' }[k] || k)
+
+function BoundaryCard({ boundary, mode, setMode, onChange, onClose }) {
+  const b = { fixed: [], loaded: [], force: [0, 0, -100], ...boundary }
+  const setF = (i, v) => { const force = [...b.force]; force[i] = +v || 0; onChange({ ...b, force }) }
+  return (
+    <motion.div className="bcard glass" initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 12, opacity: 0 }} transition={spring}>
+      <div className="bcard-head"><b>Supports &amp; loads</b><button className="icon-btn" onClick={onClose} aria-label="Close">{I.close}</button></div>
+      <div className="seg small">
+        <button className={mode === 'fixed' ? 'on' : ''} onClick={() => setMode('fixed')}><span className="dot-fixed" />Support · {b.fixed.length}</button>
+        <button className={mode === 'loaded' ? 'on' : ''} onClick={() => setMode('loaded')}><span className="dot-load" />Load · {b.loaded.length}</button>
+      </div>
+      <p className="bcard-hint">Click faces on the part. Features touching them are kept, and the check uses these instead of the automatic ones.</p>
+      {mode === 'loaded' && (
+        <div className="bcard-force">
+          {['Fx', 'Fy', 'Fz'].map((l, i) => <label key={l}>{l}<input type="number" value={b.force[i]} onChange={(e) => setF(i, e.target.value)} /><span>N</span></label>)}
+        </div>
+      )}
+      {(b.fixed.length > 0 || b.loaded.length > 0) && <button className="link" onClick={() => onChange({ fixed: [], loaded: [], force: b.force })}>Clear and use automatic</button>}
+    </motion.div>
+  )
+}
+
 function Stat({ label, value, sub, accent }) {
   return (
     <div className="stat">
@@ -365,6 +396,9 @@ function Results({ sid, res, onClose }) {
   const failed = Object.keys(res.metrics.failed || {}).length
   const worst = fea?.delta?.cases_delta_pct ? Math.max(...Object.values(fea.delta.cases_delta_pct).map(Math.abs)) : null
   const guard = res.metrics.guard
+  const analysis = res.summary?.policy?.preset || 'static'
+  const check = CHECKS[analysis] || CHECKS.static
+  const nCases = Object.keys(fea?.delta?.cases_delta_pct || {}).length
   const guardOutside = guard?.triggered && (!guard.accepted || (guard.within_tol === false))
   const unchanged = res.metrics.removed.length === 0
   const solveSpeedup = fea?.original && fea?.defeatured ? fea.original.seconds / Math.max(fea.defeatured.seconds, 0.01) : null
@@ -389,14 +423,15 @@ function Results({ sid, res, onClose }) {
       {fea?.delta && (
         <div className="fea">
           <div className="fea-head">
-            <div className="fea-title">Static stress check</div>
+            <div className="fea-title">{check.title}</div>
             <div className="fea-sub">{fea.load_case}</div>
           </div>
-          {res.metrics.guard_message && <div className={`fea-guard${guardOutside ? ' warn' : ''}`}><b>Stress guard.</b> {res.metrics.guard_message}</div>}
+          {res.metrics.guard_message && <div className={`fea-guard${guardOutside ? ' warn' : ''}`}><b>{analysis === 'static' ? 'Stress guard.' : 'Guard.'}</b> {res.metrics.guard_message}</div>}
           <div className="stats">
-            {worst != null && <Stat label="Worst of 4 load cases" value={`${fmt(worst, 2)}%`} sub="two bending directions, tension, torsion" accent={worst <= 5 ? 'var(--green)' : '#ff9f0a'} />}
-            <Stat label="Tip deflection" value={`${fea.delta.tip_disp_delta_pct >= 0 ? '+' : ''}${fmt(fea.delta.tip_disp_delta_pct, 2)}%`} sub={`${fmt(fea.original.tip_disp, 4)} → ${fmt(fea.defeatured.tip_disp, 4)} mm`} accent={Math.abs(fea.delta.tip_disp_delta_pct) < 5 ? 'var(--green)' : '#ff9f0a'} />
-            <Stat label="Peak stress (p99)" value={`${fea.delta.vm_p99_delta_pct >= 0 ? '+' : ''}${fmt(fea.delta.vm_p99_delta_pct, 2)}%`} sub={`${fmt(fea.original.vm_p99, 2)} → ${fmt(fea.defeatured.vm_p99, 2)} MPa`} accent={Math.abs(fea.delta.vm_p99_delta_pct) < 5 ? 'var(--green)' : '#ff9f0a'} />
+            {worst != null && <Stat label={nCases > 1 ? `Worst of ${nCases} ${check.noun}` : 'Your case'} value={`${fmt(worst, 2)}%`} sub={nCases > 1 ? check.sub : 'with your supports and loads'} accent={worst <= 5 ? 'var(--green)' : '#ff9f0a'} />}
+            {analysis !== 'static' && Object.entries(fea.delta.cases_delta_pct || {}).map(([k, v]) => <Stat key={k} label={CASE_LABEL(k)} value={`${v >= 0 ? '+' : ''}${fmt(v, 2)}%`} sub={`${fmt(fea.original.cases[k], k.startsWith('mode') ? 0 : 3)} → ${fmt(fea.defeatured.cases[k], k.startsWith('mode') ? 0 : 3)}${k.startsWith('mode') ? ' Hz' : ''}`} />)}
+            {analysis === 'static' && <Stat label="Tip deflection" value={`${fea.delta.tip_disp_delta_pct >= 0 ? '+' : ''}${fmt(fea.delta.tip_disp_delta_pct, 2)}%`} sub={`${fmt(fea.original.tip_disp, 4)} → ${fmt(fea.defeatured.tip_disp, 4)} mm`} accent={Math.abs(fea.delta.tip_disp_delta_pct) < 5 ? 'var(--green)' : '#ff9f0a'} />}
+            {analysis === 'static' && <Stat label="Peak stress (p99)" value={`${fea.delta.vm_p99_delta_pct >= 0 ? '+' : ''}${fmt(fea.delta.vm_p99_delta_pct, 2)}%`} sub={`${fmt(fea.original.vm_p99, 2)} → ${fmt(fea.defeatured.vm_p99, 2)} MPa`} accent={Math.abs(fea.delta.vm_p99_delta_pct) < 5 ? 'var(--green)' : '#ff9f0a'} />}
             {!unchanged && solveSpeedup >= 1.1 && <Stat label="Solve time" value={`${fmt(solveSpeedup, 1)}× faster`} sub={`${fmt(fea.original.dofs, 0)} → ${fmt(fea.defeatured.dofs, 0)} DOFs`} />}
           </div>
         </div>
@@ -482,6 +517,7 @@ function Workspace({ initial, onExit, dark, llm }) {
   const [showRes, setShowRes] = useState(false)
   const [mode, setMode] = useState('original')
   const [wipe, setWipe] = useState(0.5)
+  const wipeApi = useRef(null)
   const [tab, setTab] = useState('features')
   const [selected, setSelected] = useState(null)
   const [hovered, setHovered] = useState(null)
@@ -490,6 +526,7 @@ function Workspace({ initial, onExit, dark, llm }) {
   const [isolate, setIsolate] = useState(null)
   const [palette, setPalette] = useState(false)
   const [queued, setQueued] = useState(null)
+  const [faceMode, setFaceMode] = useState(null)
   const sid = sum.id
 
   useEffect(() => {
@@ -503,7 +540,22 @@ function Workspace({ initial, onExit, dark, llm }) {
 
   useEffect(() => { api.mesh(sid, 'original').then(setOrig) }, [sid])
 
-  const applyPolicy = useCallback(async (body) => setSum(await api.policy(sid, body)), [sid])
+  // Policy changes go to the server one at a time and in order, so a quick second click can't overtake the first.
+  const chain = useRef(Promise.resolve())
+  const latestB = useRef(null)   // supports & loads as the user last set them, ahead of the server's reply
+  const applyPolicy = useCallback((body) => {
+    if (body.boundary) {
+      latestB.current = body.boundary
+      setSum((s) => ({ ...s, policy: { ...s.policy, boundary: body.boundary } }))   // show the pick at once
+    }
+    const job = chain.current.then(() => api.policy(sid, body)).then((r) => {
+      if (body.boundary && latestB.current === body.boundary) latestB.current = null
+      // a pick made since this request left stays on screen until its own reply arrives
+      setSum(latestB.current ? { ...r, policy: { ...r.policy, boundary: latestB.current } } : r)
+    })
+    chain.current = job.catch(() => {})
+    return job
+  }, [sid])
 
   const poll = useCallback(async () => {
     setRun({ steps: ['Starting'], progress: 0.02 })
@@ -553,6 +605,13 @@ function Workspace({ initial, onExit, dark, llm }) {
     }
   }
 
+  const boundary = sum.policy.boundary || {}
+  const toggleFace = (fid) => {
+    const b = { fixed: [], loaded: [], force: [0, 0, -100], ...(latestB.current || boundary) }
+    const other = faceMode === 'fixed' ? 'loaded' : 'fixed'
+    const mine = b[faceMode].includes(fid) ? b[faceMode].filter((x) => x !== fid) : [...b[faceMode], fid]
+    applyPolicy({ boundary: { ...b, [faceMode]: mine, [other]: b[other].filter((x) => x !== fid) } })
+  }
   const rmCount = sum.features.filter((f) => f.decision.action === 'remove').length
   const preset = sum.policy.preset
   const dl = (kind) => () => window.open(api.download(sid, kind))
@@ -576,12 +635,28 @@ function Workspace({ initial, onExit, dark, llm }) {
     <motion.div className="workspace" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
       <div className="aura" aria-hidden />
       <div className="ws-grid" aria-hidden />
-      <Viewer original={orig} result={resMesh} features={viewFeatures} mode={mode} wipe={wipe} dark={dark}
+      <Viewer original={orig} result={resMesh} features={viewFeatures} mode={mode} wipe={wipe} dark={dark} wipeApi={wipeApi}
+        boundary={boundary} faceMode={faceMode} onFace={toggleFace}
         selected={selected} hovered={hovered} onPick={(id) => { setSelected(id); if (id != null) setTab('features') }} onHover={setHovered} />
       {mode === 'compare' && resMesh && (
         <>
-          <div className="wipe-line"><span>Original</span><span>Simplified</span></div>
-          <input className="wipe" type="range" min="0.02" max="0.98" step="0.001" value={wipe} onChange={(e) => setWipe(+e.target.value)} />
+          <div className="wipe-line"><span>Original</span><span>Simplified</span>
+            {!faceMode && (
+              <button className="wipe-grip" role="slider" aria-label="Compare position" aria-valuemin={2} aria-valuemax={98} aria-valuenow={Math.round(wipe * 100)}
+                onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId) }}
+                onPointerMove={(e) => {
+                  if (!e.currentTarget.hasPointerCapture(e.pointerId)) return
+                  const w = wipeApi.current?.xToWipe(e.clientX)
+                  if (w != null) setWipe(w)
+                }}
+                onKeyDown={(e) => {
+                  const d = e.key === 'ArrowLeft' ? -0.02 : e.key === 'ArrowRight' ? 0.02 : 0
+                  if (d) { e.preventDefault(); setWipe((w) => Math.min(0.98, Math.max(0.02, w + d))) }
+                }}>
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden><path d="M9 6l-6 6 6 6M15 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </button>
+            )}
+          </div>
         </>
       )}
 
@@ -630,7 +705,11 @@ function Workspace({ initial, onExit, dark, llm }) {
         </motion.div>
       )}
 
-      {/* legend */}
+      {/* legend, with the supports card stacked above it so the two never overlap */}
+      <div className="legend-stack">
+      <AnimatePresence>
+        {faceMode && <BoundaryCard boundary={boundary} mode={faceMode} setMode={setFaceMode} onChange={(b) => applyPolicy({ boundary: b })} onClose={() => setFaceMode(null)} />}
+      </AnimatePresence>
       <div className="legend">
         {Object.entries(sum.feature_counts).map(([k, n]) => (
           <motion.button className={`chip ${isolate === k ? 'on' : ''} ${isolate && isolate !== k ? 'off' : ''}`} key={k} whileTap={{ scale: 0.95 }}
@@ -638,7 +717,11 @@ function Workspace({ initial, onExit, dark, llm }) {
             <span className="swatch" style={{ background: (CLASS_META[k] || CLASS_META.protrusion).color }} />{(CLASS_META[k] || {}).label || k} <b className="mono">{n}</b>
           </motion.button>
         ))}
+        <motion.button className={`chip ${faceMode ? 'on' : ''}`} whileTap={{ scale: 0.95 }} onClick={() => { setFaceMode(faceMode ? null : 'fixed'); if (!faceMode) setMode('original') }}>
+          <span className="swatch" style={{ background: '#0A84FF' }} />Supports &amp; loads{(boundary.fixed?.length || 0) > 0 && <b className="mono">{boundary.fixed.length + (boundary.loaded?.length || 0)}</b>}
+        </motion.button>
         <span className="chip muted">{isolate ? 'Esc to show all' : 'Bright = removed · faded = kept · click to isolate'}</span>
+      </div>
       </div>
 
       {/* side panel */}

@@ -38,12 +38,13 @@ def evaluate_one(name):
     out = {"gt": [GT[v] for v in seg], "rule": [OURS_GROUP[k] for k in rule_face_labels(g, feats)]}
     try:
         from defeat.datagen import LABELS
-        from defeat.gnn import predict_faces
-        P = predict_faces(g)
-        out["gnn"] = [OURS_GROUP.get(LABELS[i], "base") for i in P.argmax(1)]
-        # exactly what the app ships: defeat.recognize.refine_with_gnn with the tuned thresholds
-        from defeat.recognize import FUSION, refine_with_gnn
-        out["fused"] = [OURS_GROUP[k] for k in rule_face_labels(g, refine_with_gnn(g, feats, P, LABELS, **FUSION))]
+        from defeat.net import predict_part
+        P, P8 = predict_part(g)
+        out["net"] = [OURS_GROUP.get(LABELS[i], "base") for i in P.argmax(1)]
+        out["head8"] = [GT[int(i)] for i in P8.argmax(1)]
+        # exactly what the app ships: defeat.recognize.refine_with_net with the tuned thresholds
+        from defeat.recognize import FUSION, refine_with_net
+        out["fused"] = [OURS_GROUP[k] for k in rule_face_labels(g, refine_with_net(g, feats, P, LABELS, P8=P8, **FUSION))]
     except Exception:
         pass
     return out
@@ -61,7 +62,7 @@ def _counts(ok, who, cls):
 
 def summarize(ok):
     rep = {}
-    for who in ("rule", "gnn", "fused"):
+    for who in ("rule", "net", "head8", "fused"):
         pairs = [(gt, pr) for r in ok if who in r for gt, pr in zip(r["gt"], r[who])]
         if not pairs:
             continue
@@ -99,7 +100,7 @@ def main():
             report["failure_reasons"][k] = report["failure_reasons"].get(k, 0) + 1
     report.update(summarize(ok))
     print(save(a.out, report))
-    for who in ("rule", "gnn", "fused"):
+    for who in ("rule", "net", "head8", "fused"):
         if who in report:
             print(who, {k: report[who][k] for k in ("fillet", "chamfer", "cut_indicative")})
 

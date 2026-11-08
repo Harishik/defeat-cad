@@ -4,7 +4,7 @@
  "parts_attempted": 3122,
  "parts_ok": 3122,
  "failures": [],
- "seconds_per_part": 1.075,
+ "seconds_per_part": 1.483,
  "rule": {
   "feature_vs_stock": {
    "precision": 0.9822,
@@ -53,17 +53,17 @@
      "base": 19884,
      "protrusion": 826
     },
-    "step": {
-     "step": 4316,
-     "base": 2612,
-     "protrusion": 661,
-     "cut": 5347
-    },
     "cut": {
-     "cut": 28424,
      "step": 4026,
      "base": 1759,
+     "cut": 28424,
      "protrusion": 373
+    },
+    "step": {
+     "base": 2612,
+     "step": 4316,
+     "cut": 5347,
+     "protrusion": 661
     },
     "chamfer": {
      "step": 2299,
@@ -74,40 +74,40 @@
   },
   "step_faces_flagged_as_feature": 0.7981
  },
- "gnn": {
+ "net": {
   "feature_vs_stock": {
-   "precision": 0.9999,
-   "recall": 0.9999,
-   "f1": 0.9999,
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
    "support": 50140,
-   "accuracy": 0.9999
+   "accuracy": 1.0
   },
   "per_class": {
    "faces": 70850,
-   "accuracy": 0.9627,
-   "macro_f1": 0.7305,
-   "miou": 0.7131,
+   "accuracy": 0.963,
+   "macro_f1": 0.7347,
+   "miou": 0.7203,
    "per_class": {
     "base": {
-     "precision": 0.9998,
-     "recall": 0.9999,
-     "f1": 0.9998,
+     "precision": 0.9999,
+     "recall": 1.0,
+     "f1": 1.0,
      "support": 20710,
-     "iou": 0.9996
+     "iou": 0.9999
     },
     "cut": {
-     "precision": 0.9772,
-     "recall": 0.9996,
-     "f1": 0.9883,
+     "precision": 0.9565,
+     "recall": 0.9999,
+     "f1": 0.9777,
      "support": 34582,
-     "iou": 0.9768
+     "iou": 0.9564
     },
     "step": {
-     "precision": 0.8764,
-     "recall": 0.9995,
-     "f1": 0.9339,
+     "precision": 0.925,
+     "recall": 1.0,
+     "f1": 0.961,
      "support": 12936,
-     "iou": 0.8761
+     "iou": 0.925
     },
     "chamfer": {
      "precision": 0.0,
@@ -119,23 +119,18 @@
    },
    "confusion": {
     "base": {
-     "base": 20707,
-     "cut": 1,
-     "chamfer": 2
-    },
-    "step": {
-     "step": 12930,
-     "cut": 6
+     "base": 20710
     },
     "cut": {
-     "cut": 34567,
-     "protrusion": 2,
-     "base": 5,
-     "chamfer": 8
+     "cut": 34580,
+     "base": 2
+    },
+    "step": {
+     "step": 12936
     },
     "chamfer": {
-     "cut": 799,
-     "step": 1823
+     "cut": 1573,
+     "step": 1049
     }
    }
   },
@@ -143,38 +138,38 @@
  },
  "fused": {
   "feature_vs_stock": {
-   "precision": 0.9836,
-   "recall": 0.9886,
-   "f1": 0.9861,
+   "precision": 0.9828,
+   "recall": 0.9434,
+   "f1": 0.9627,
    "support": 50140,
-   "accuracy": 0.9802
+   "accuracy": 0.9483
   },
   "per_class": {
    "faces": 70850,
-   "accuracy": 0.9289,
-   "macro_f1": 0.7108,
-   "miou": 0.6775,
+   "accuracy": 0.9302,
+   "macro_f1": 0.7175,
+   "miou": 0.6889,
    "per_class": {
     "base": {
-     "precision": 0.972,
-     "recall": 0.96,
-     "f1": 0.966,
+     "precision": 0.875,
+     "recall": 0.9601,
+     "f1": 0.9156,
      "support": 20710,
-     "iou": 0.9342
+     "iou": 0.8443
     },
     "cut": {
-     "precision": 0.987,
-     "recall": 0.9807,
-     "f1": 0.9838,
+     "precision": 0.9996,
+     "recall": 0.9832,
+     "f1": 0.9913,
      "support": 34582,
-     "iou": 0.9682
+     "iou": 0.9828
     },
     "step": {
-     "precision": 0.8611,
-     "recall": 0.9287,
-     "f1": 0.8936,
+     "precision": 0.999,
+     "recall": 0.9294,
+     "f1": 0.963,
      "support": 12936,
-     "iou": 0.8077
+     "iou": 0.9286
     },
     "chamfer": {
      "precision": 0.0,
@@ -186,32 +181,28 @@
    },
    "confusion": {
     "base": {
-     "base": 19882,
-     "protrusion": 826,
-     "cut": 1,
-     "chamfer": 1
-    },
-    "step": {
-     "step": 12014,
-     "protrusion": 661,
-     "base": 250,
-     "cut": 11
+     "base": 19884,
+     "protrusion": 826
     },
     "cut": {
-     "cut": 33914,
-     "protrusion": 373,
-     "base": 283,
-     "chamfer": 5,
-     "step": 7
+     "cut": 34001,
+     "base": 208,
+     "protrusion": 373
+    },
+    "step": {
+     "step": 12023,
+     "protrusion": 661,
+     "base": 249,
+     "cut": 3
     },
     "chamfer": {
-     "cut": 434,
+     "base": 2383,
      "protrusion": 217,
-     "step": 1931,
-     "base": 40
+     "cut": 10,
+     "step": 12
     }
    }
   },
-  "step_faces_flagged_as_feature": 0.9807
+  "step_faces_flagged_as_feature": 0.9808
  }
 }

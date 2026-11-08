@@ -14,7 +14,7 @@ sys.path.insert(0, ROOT)
 DATA = os.environ.get("DEFEAT_DATA", os.path.expanduser("~/defeat-data"))
 RESULTS = os.path.join(ROOT, "bench", "results")
 
-# our rule / GNN classes -> evaluation group
+# our rule / network classes -> evaluation group
 OURS_GROUP = {"hole": "cut", "slot": "cut", "pocket": "cut", "step": "step", "chamfer": "chamfer", "fillet": "fillet",
               "boss": "protrusion", "rib": "protrusion", "emboss": "protrusion", "protrusion": "protrusion",
               "base": "base"}
@@ -29,7 +29,7 @@ def rule_face_labels(g, feats):
 
 
 def fuse(rule_groups, P, labels, veto=0.4, add=0.5):
-    """Rules first; the GNN may veto a rule fillet/chamfer it finds very unlikely, or add one it is
+    """Rules first; the network may veto a rule fillet/chamfer it finds very unlikely, or add one it is
     very sure about on a face the rules left as body."""
     fi, ci = labels.index("fillet"), labels.index("chamfer")
     out = []
