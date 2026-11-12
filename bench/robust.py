@@ -61,6 +61,9 @@ def run_one(args):
         if s.metrics.get("unchecked"):
             out["unchecked"] = s.metrics.get("unchecked_why")
         out["mesh_curvature"] = m.get("stat_curvature")
+        out["mesh_route"] = m.get("mesh_route")
+        fo = (m.get("fea") or {}).get("original") or {}
+        out["solver"], out["tets_fea"] = fo.get("solver"), fo.get("tets_fea")
         gd = s.metrics.get("guard") or {}
         if gd.get("triggered"):
             out["guard_before_pct"] = gd.get("before_pct")
@@ -89,6 +92,7 @@ def main():
     ap.add_argument("--skip", type=int, default=0, help="start this far into the shuffled test split (for parts not scored before)")
     ap.add_argument("--retry", type=int, default=0,
                     help="re-run only the parts that timed out in the saved rows, with this per-part timeout")
+    ap.add_argument("--tag", default="", help="results file name, so a new run doesn't overwrite an earlier one")
     a = ap.parse_args()
     split = json.load(open(os.path.join(BASE, "train_test.json")))
     if a.val:
@@ -99,7 +103,7 @@ def main():
         test = split["test"]
         random.Random(1).shuffle(test)
         names = test[a.skip: a.skip + a.n]
-    tag = "robust_val" if a.val else "robustness"
+    tag = a.tag or ("robust_val" if a.val else "robustness")
     items = [(n, i < a.mesh) for i, n in enumerate(names)]
     if a.retry:
         from bench.common import RESULTS

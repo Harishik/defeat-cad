@@ -1,0 +1,834 @@
+{
+ "tool_calling": {
+  "offline_parser": {
+   "commands": 80,
+   "exact_match": 0.8,
+   "exact_match_ci95": [
+    0.6995,
+    0.873
+   ],
+   "call_precision": 0.902,
+   "call_recall": 0.8762,
+   "call_f1": 0.8889,
+   "median_latency_s": 0.0,
+   "misses": [
+    {
+     "cmd": "Scrub the part number text",
+     "pred": [],
+     "gold": [
+      "('set_class_rule', 'emboss', 'remove')"
+     ]
+    },
+    {
+     "cmd": "I need the fillets preserved",
+     "pred": [],
+     "gold": [
+      "('set_class_rule', 'fillet', 'keep')"
+     ]
+    },
+    {
+     "cmd": "Do not fill the holes",
+     "pred": [
+      "('set_class_rule', 'hole', 'remove')"
+     ],
+     "gold": [
+      "('set_class_rule', 'hole', 'keep')"
+     ]
+    },
+    {
+     "cmd": "Take the chamfers off",
+     "pred": [],
+     "gold": [
+      "('set_class_rule', 'chamfer', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Don't close the slots",
+     "pred": [],
+     "gold": [
+      "('set_class_rule', 'slot', 'keep')"
+     ]
+    },
+    {
+     "cmd": "Close the cutouts",
+     "pred": [],
+     "gold": [
+      "('set_class_rule', 'pocket', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Fillets go, holes stay",
+     "pred": [
+      "('run_defeaturing',)",
+      "('set_class_rule', 'hole', 'keep')"
+     ],
+     "gold": [
+      "('set_class_rule', 'fillet', 'remove')",
+      "('set_class_rule', 'hole', 'keep')"
+     ]
+    },
+    {
+     "cmd": "Remove everything small except the holes: fillets, chamfers and text",
+     "pred": [
+      "('set_class_rule', 'chamfer', 'remove')",
+      "('set_class_rule', 'emboss', 'remove')",
+      "('set_class_rule', 'fillet', 'remove')",
+      "('set_class_rule', 'hole', 'remove')"
+     ],
+     "gold": [
+      "('set_class_rule', 'chamfer', 'remove')",
+      "('set_class_rule', 'emboss', 'remove')",
+      "('set_class_rule', 'fillet', 'remove')",
+      "('set_class_rule', 'hole', 'keep')"
+     ]
+    },
+    {
+     "cmd": "Heat transfer analysis please",
+     "pred": [],
+     "gold": [
+      "('set_analysis', 'thermal')"
+     ]
+    },
+    {
+     "cmd": "I'll run a stress analysis on it",
+     "pred": [
+      "('run_defeaturing',)",
+      "('set_analysis', 'static')"
+     ],
+     "gold": [
+      "('set_analysis', 'static')"
+     ]
+    },
+    {
+     "cmd": "Plug the holes and export the STEP",
+     "pred": [
+      "('export', 'step')",
+      "('set_class_rule', 'hole', 'remove')",
+      "('set_class_rule', 'step', 'remove')"
+     ],
+     "gold": [
+      "('export', 'step')",
+      "('set_class_rule', 'hole', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Is the stress check reliable?",
+     "pred": [
+      "('set_analysis', 'static')"
+     ],
+     "gold": []
+    },
+    {
+     "cmd": "Never remove the bosses",
+     "pred": [
+      "('set_class_rule', 'boss', 'remove')"
+     ],
+     "gold": [
+      "('set_class_rule', 'boss', 'keep')"
+     ]
+    },
+    {
+     "cmd": "No need to keep the fillets",
+     "pred": [
+      "('set_class_rule', 'fillet', 'keep')"
+     ],
+     "gold": [
+      "('set_class_rule', 'fillet', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Holes matter, don't plug them",
+     "pred": [
+      "('set_class_rule', 'hole', 'remove')"
+     ],
+     "gold": [
+      "('set_class_rule', 'hole', 'keep')"
+     ]
+    },
+    {
+     "cmd": "Don't fill the pockets",
+     "pred": [
+      "('set_class_rule', 'pocket', 'remove')"
+     ],
+     "gold": [
+      "('set_class_rule', 'pocket', 'keep')"
+     ]
+    }
+   ]
+  },
+  "qwen3.5:4b": {
+   "commands": 80,
+   "exact_match": 0.775,
+   "exact_match_ci95": [
+    0.6721,
+    0.8527
+   ],
+   "call_precision": 0.8571,
+   "call_recall": 0.8571,
+   "call_f1": 0.8571,
+   "median_latency_s": 54.27,
+   "misses": [
+    {
+     "cmd": "Scrub the part number text",
+     "pred": [],
+     "gold": [
+      "('set_class_rule', 'emboss', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Fill in the bores",
+     "pred": [
+      "('set_class_rule', 'hole', 'keep')"
+     ],
+     "gold": [
+      "('set_class_rule', 'hole', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Plug the drill holes please",
+     "pred": [
+      "('set_class_rule', 'hole', 'keep')"
+     ],
+     "gold": [
+      "('set_class_rule', 'hole', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Fill the slots",
+     "pred": [
+      "('set_class_rule', 'slot', 'keep')"
+     ],
+     "gold": [
+      "('set_class_rule', 'slot', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Fill up every pocket",
+     "pred": [
+      "('set_class_rule', 'pocket', 'keep')"
+     ],
+     "gold": [
+      "('set_class_rule', 'pocket', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Close the cutouts",
+     "pred": [
+      "('set_class_rule', 'pocket', 'keep')"
+     ],
+     "gold": [
+      "('set_class_rule', 'pocket', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Fill the vents in",
+     "pred": [
+      "('set_class_rule', 'pocket', 'keep')"
+     ],
+     "gold": [
+      "('set_class_rule', 'pocket', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Fill the pockets and keep the holes",
+     "pred": [
+      "('set_class_rule', 'hole', 'keep')",
+      "('set_class_rule', 'pocket', 'keep')"
+     ],
+     "gold": [
+      "('set_class_rule', 'hole', 'keep')",
+      "('set_class_rule', 'pocket', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Keep the logo, fill the slots",
+     "pred": [
+      "('set_class_rule', 'emboss', 'keep')",
+      "('set_class_rule', 'slot', 'keep')"
+     ],
+     "gold": [
+      "('set_class_rule', 'emboss', 'keep')",
+      "('set_class_rule', 'slot', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Plug the holes, lose the text",
+     "pred": [
+      "('set_class_rule', 'emboss', 'remove')",
+      "('set_class_rule', 'hole', 'keep')"
+     ],
+     "gold": [
+      "('set_class_rule', 'emboss', 'remove')",
+      "('set_class_rule', 'hole', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Fillets go, holes stay",
+     "pred": [
+      "('run_defeaturing',)",
+      "('set_class_rule', 'fillet', 'remove')",
+      "('set_class_rule', 'hole', 'keep')"
+     ],
+     "gold": [
+      "('set_class_rule', 'fillet', 'remove')",
+      "('set_class_rule', 'hole', 'keep')"
+     ]
+    },
+    {
+     "cmd": "Preserve the chamfers and remove the logo",
+     "pred": [
+      "('set_class_rule', 'chamfer', 'keep')"
+     ],
+     "gold": [
+      "('set_class_rule', 'chamfer', 'keep')",
+      "('set_class_rule', 'emboss', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Remove everything small except the holes: fillets, chamfers and text",
+     "pred": [
+      "('set_class_rule', 'chamfer', 'remove')",
+      "('set_class_rule', 'emboss', 'remove')",
+      "('set_class_rule', 'fillet', 'remove')"
+     ],
+     "gold": [
+      "('set_class_rule', 'chamfer', 'remove')",
+      "('set_class_rule', 'emboss', 'remove')",
+      "('set_class_rule', 'fillet', 'remove')",
+      "('set_class_rule', 'hole', 'keep')"
+     ]
+    },
+    {
+     "cmd": "I'll run a stress analysis on it",
+     "pred": [
+      "('run_defeaturing',)",
+      "('set_analysis', 'static')"
+     ],
+     "gold": [
+      "('set_analysis', 'static')"
+     ]
+    },
+    {
+     "cmd": "Fill the pockets, then run it",
+     "pred": [
+      "('run_defeaturing',)",
+      "('set_class_rule', 'pocket', 'keep')"
+     ],
+     "gold": [
+      "('run_defeaturing',)",
+      "('set_class_rule', 'pocket', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Plug the holes and export the STEP",
+     "pred": [
+      "('export', 'step')",
+      "('set_class_rule', 'hole', 'keep')"
+     ],
+     "gold": [
+      "('export', 'step')",
+      "('set_class_rule', 'hole', 'remove')"
+     ]
+    },
+    {
+     "cmd": "CFD prep: fill the slots and make a flow domain",
+     "pred": [
+      "('make_fluid_domain',)",
+      "('set_class_rule', 'slot', 'keep')"
+     ],
+     "gold": [
+      "('make_fluid_domain',)",
+      "('set_class_rule', 'slot', 'remove')"
+     ]
+    },
+    {
+     "cmd": "Is the stress check reliable?",
+     "pred": [
+      "('set_analysis', 'static')"
+     ],
+     "gold": []
+    }
+   ]
+  }
+ },
+ "text_to_cad": {
+  "model": "qwen3.5:4b",
+  "prompts": 40,
+  "valid_solid_rate": 0.925,
+  "valid_solid_ci95": [
+   0.8014,
+   0.9742
+  ],
+  "dimension_match_ci95": [
+   0.7695,
+   0.9604
+  ],
+  "first_try_rate": 0.5,
+  "dimension_match_rate": 0.9,
+  "median_seconds": 107.0,
+  "rows": [
+   {
+    "prompt": "A 70 x 50 x 8 mm plate",
+    "valid": true,
+    "attempts": 1,
+    "t": 59.33333873748779,
+    "bbox": [
+     8.0,
+     50.0,
+     70.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A cylinder 18 mm in diameter and 45 mm long",
+    "valid": true,
+    "attempts": 1,
+    "t": 55.811768770217896,
+    "bbox": [
+     18.0,
+     18.0,
+     45.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 30 x 30 x 30 mm cube with a 12 mm hole straight through it",
+    "valid": true,
+    "attempts": 1,
+    "t": 58.90579628944397,
+    "bbox": [
+     30.0,
+     30.0,
+     30.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A ring 50 mm outer diameter, 34 mm inner diameter, 6 mm thick",
+    "valid": true,
+    "attempts": 1,
+    "t": 58.13214921951294,
+    "bbox": [
+     6.0,
+     50.0,
+     50.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 140 x 25 x 5 mm bar with three 6 mm holes along its length",
+    "valid": true,
+    "attempts": 4,
+    "t": 316.37610697746277,
+    "bbox": [
+     5.0,
+     25.0,
+     140.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 90 x 90 x 12 mm plate with a 50 mm hole in the center",
+    "valid": true,
+    "attempts": 4,
+    "t": 269.02438616752625,
+    "bbox": [
+     12.0,
+     90.0,
+     90.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A flange 70 mm across, 8 mm thick, with a 25 mm bore and four 7 mm holes on a 52 mm circle",
+    "valid": true,
+    "attempts": 1,
+    "t": 83.67536425590515,
+    "bbox": [
+     8.0,
+     70.0,
+     70.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A tube 16 mm outside diameter, 12 mm inside diameter, 80 mm long",
+    "valid": true,
+    "attempts": 1,
+    "t": 73.20286083221436,
+    "bbox": [
+     16.0,
+     16.0,
+     80.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 60 x 30 x 15 mm block with 2 mm fillets on every edge",
+    "valid": true,
+    "attempts": 1,
+    "t": 69.51938509941101,
+    "bbox": [
+     15.0,
+     30.0,
+     60.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 110 x 70 x 6 mm plate with four 8 mm holes, one near each corner",
+    "valid": true,
+    "attempts": 5,
+    "t": 258.3342170715332,
+    "bbox": [
+     6.0,
+     70.0,
+     110.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 45 x 45 x 20 mm block with a 25 x 25 x 10 mm pocket in the top",
+    "valid": true,
+    "attempts": 4,
+    "t": 186.68925786018372,
+    "bbox": [
+     20.0,
+     45.0,
+     45.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "An L-bracket with a 60 x 30 x 4 mm base and a 40 mm tall, 4 mm thick upright on one end",
+    "valid": false,
+    "attempts": 7,
+    "t": 558.2141859531403
+   },
+   {
+    "prompt": "A stepped pin: 16 mm diameter for 20 mm, then 10 mm diameter for 25 mm",
+    "valid": true,
+    "attempts": 1,
+    "t": 58.878511905670166,
+    "bbox": [
+     16.0,
+     16.0,
+     45.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A disc 120 mm in diameter and 3 mm thick",
+    "valid": true,
+    "attempts": 1,
+    "t": 56.60584306716919,
+    "bbox": [
+     3.0,
+     120.0,
+     120.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 100 x 20 x 20 mm square bar with 1 mm chamfers on its long edges",
+    "valid": false,
+    "attempts": 7,
+    "t": 283.54046607017517
+   },
+   {
+    "prompt": "A hex nut blank 19 mm across flats, 8 mm thick, with a 10 mm hole",
+    "valid": true,
+    "attempts": 7,
+    "t": 205.8960418701172,
+    "bbox": [
+     8.0,
+     19.0,
+     21.94
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 80 x 40 x 25 mm open-top box with 3 mm walls",
+    "valid": true,
+    "attempts": 1,
+    "t": 58.64921593666077,
+    "bbox": [
+     25.0,
+     40.0,
+     80.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 75 x 75 x 5 mm plate with a 30 x 30 mm square cutout in the middle",
+    "valid": true,
+    "attempts": 1,
+    "t": 105.01870512962341,
+    "bbox": [
+     5.0,
+     75.0,
+     75.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 130 x 40 x 10 mm bar with a 90 x 12 mm slot through it",
+    "valid": true,
+    "attempts": 1,
+    "t": 117.35875463485718,
+    "bbox": [
+     10.0,
+     40.0,
+     130.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A cylinder 60 mm in diameter and 15 mm tall with a 20 mm diameter, 25 mm tall boss on top",
+    "valid": true,
+    "attempts": 1,
+    "t": 318.9312345981598,
+    "bbox": [
+     40.0,
+     60.0,
+     60.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 50 mm diameter sphere",
+    "valid": true,
+    "attempts": 1,
+    "t": 92.00459814071655,
+    "bbox": [
+     50.0,
+     50.0,
+     50.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A cone 30 mm base diameter, 10 mm top diameter, 40 mm tall",
+    "valid": true,
+    "attempts": 4,
+    "t": 375.55561089515686,
+    "bbox": [
+     30.0,
+     30.0,
+     40.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 200 x 30 x 30 mm U-channel with 4 mm walls",
+    "valid": true,
+    "attempts": 4,
+    "t": 314.77307510375977,
+    "bbox": [
+     30.0,
+     30.0,
+     200.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A T-bar 80 mm long with a 30 x 4 mm flange and a 20 x 4 mm web",
+    "valid": true,
+    "attempts": 4,
+    "t": 360.18757915496826,
+    "bbox": [
+     24.0,
+     30.0,
+     80.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 66 x 44 x 22 mm block",
+    "valid": true,
+    "attempts": 1,
+    "t": 93.52299809455872,
+    "bbox": [
+     22.0,
+     44.0,
+     66.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A shaft 12 mm in diameter and 150 mm long with 1 mm chamfers on both ends",
+    "valid": true,
+    "attempts": 1,
+    "t": 66.60578083992004,
+    "bbox": [
+     12.0,
+     12.0,
+     150.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 100 x 100 x 3 mm sheet with a 2 mm fillet on each corner",
+    "valid": true,
+    "attempts": 2,
+    "t": 96.59237384796143,
+    "bbox": [
+     3.0,
+     100.0,
+     100.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A spacer 25 mm outer diameter, 13 mm bore, 30 mm long",
+    "valid": true,
+    "attempts": 3,
+    "t": 100.63508605957031,
+    "bbox": [
+     25.0,
+     25.0,
+     30.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 50 x 30 x 30 mm block with a 10 mm hole through its 50 mm length",
+    "valid": true,
+    "attempts": 5,
+    "t": 188.35143780708313,
+    "bbox": [
+     30.0,
+     30.0,
+     50.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 160 x 80 x 10 mm base plate with a 60 mm tall, 10 mm thick rib down the middle",
+    "valid": true,
+    "attempts": 4,
+    "t": 167.96158385276794,
+    "bbox": [
+     70.0,
+     110.0,
+     160.0
+    ],
+    "bbox_ok": false
+   },
+   {
+    "prompt": "A 40 x 20 x 10 mm block with a 5 mm step along one long top edge, 10 mm wide",
+    "valid": false,
+    "attempts": 7,
+    "t": 185.81063389778137
+   },
+   {
+    "prompt": "A pentagonal plate 50 mm across corners and 6 mm thick",
+    "valid": true,
+    "attempts": 5,
+    "t": 468.715304851532,
+    "bbox": [
+     6.0,
+     45.23,
+     47.55
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 35 mm cube with 4 mm chamfers on all edges",
+    "valid": true,
+    "attempts": 1,
+    "t": 48.612537145614624,
+    "bbox": [
+     35.0,
+     35.0,
+     35.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 90 x 60 x 40 mm hollow box, 5 mm walls, closed on all sides",
+    "valid": true,
+    "attempts": 4,
+    "t": 171.85399675369263,
+    "bbox": [
+     40.0,
+     60.0,
+     90.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A cylinder 22 mm in diameter and 70 mm long with a 10 mm blind hole 30 mm deep in one end",
+    "valid": true,
+    "attempts": 1,
+    "t": 38.2727837562561,
+    "bbox": [
+     22.0,
+     22.0,
+     70.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 120 x 120 x 8 mm plate with nine 6 mm holes on a 3 x 3 grid",
+    "valid": true,
+    "attempts": 1,
+    "t": 175.4110610485077,
+    "bbox": [
+     8.0,
+     120.0,
+     120.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A rod 8 mm in diameter and 250 mm long",
+    "valid": true,
+    "attempts": 1,
+    "t": 36.93310022354126,
+    "bbox": [
+     8.0,
+     8.0,
+     250.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 70 x 35 x 12 mm block with two 8 mm holes 40 mm apart",
+    "valid": true,
+    "attempts": 4,
+    "t": 109.03355717658997,
+    "bbox": [
+     12.0,
+     35.0,
+     70.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A flat washer 30 mm outside diameter, 16 mm hole, 2.5 mm thick",
+    "valid": true,
+    "attempts": 2,
+    "t": 52.95016002655029,
+    "bbox": [
+     2.5,
+     30.0,
+     30.0
+    ],
+    "bbox_ok": true
+   },
+   {
+    "prompt": "A 55 x 55 x 55 mm cube with a 30 x 30 mm square hole through it",
+    "valid": true,
+    "attempts": 6,
+    "t": 160.960382938385,
+    "bbox": [
+     55.0,
+     55.0,
+     55.0
+    ],
+    "bbox_ok": true
+   }
+  ]
+ }
+}

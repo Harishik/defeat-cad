@@ -77,7 +77,7 @@ def title(f, t, a, b):
 def main():
     os.makedirs(OUT, exist_ok=True)
     fu, mf = load("fusion_test.json"), load("mfcad_test.json")
-    rob = load("robustness.json")
+    rob = load("robustness_v11.json")
     for name, t in THEMES.items():
         # Fusion 360: fillets / chamfers, F1
         f, ax = fig(t)

@@ -448,3 +448,76 @@ def test_when_curvature_sizing_hangs_the_mesh_retries_without_it(monkeypatch):
     out = validate.mesh_compare(shape, shape, 3.0, budget=200.0)
     assert seen[0] == 12 and 0 in seen
     assert out["stat_curvature"] == 0 and out["fea"]["delta"]["cases_delta_pct"]
+
+
+def test_multigrid_and_direct_solvers_agree():
+    """Above DIRECT_DOFS the stress check switches to multigrid-preconditioned CG: same answers, linear memory."""
+    from defeat import fea, occ
+    from defeat.validate import mesh_stats, step_bytes
+    shape = occ.read_cad(BRACKET)
+    st = mesh_stats(step_bytes(shape), 6.0, keep_mesh=True)
+    bc = fea.load_case(occ.bbox(shape))
+    old = fea.DIRECT_DOFS
+    try:
+        fea.DIRECT_DOFS = 10 ** 9
+        a = fea.solve(st["mesh"]["p"], st["mesh"]["t"], bc)
+        fea.DIRECT_DOFS = 0
+        b = fea.solve(st["mesh"]["p"], st["mesh"]["t"], bc)
+    finally:
+        fea.DIRECT_DOFS = old
+    assert a["solver"] == "direct" and b["solver"] == "multigrid"
+    for k in a["cases"]:
+        assert abs(a["cases"][k] - b["cases"][k]) <= 1e-6 * abs(a["cases"][k])
+
+
+def test_the_triangulation_route_meshes_a_part():
+    """The fallback mesher works from OpenCASCADE's watertight triangulation, not the CAD surfaces."""
+    from defeat import occ
+    from defeat.validate import mesh_stats, step_bytes
+    r = mesh_stats(step_bytes(occ.read_cad(BRACKET)), 4.0, route="stl")
+    assert r["ok"] and r["route"] == "stl" and r["tets"] > 1000
+
+
+def test_mesh_rounds_try_the_triangulation_route_after_the_cad_route():
+    from defeat.validate import _mesh_rounds
+    routes = [r[2] for r in _mesh_rounds(2.0, 100.0)]
+    assert routes[0] == "cad" and routes[1] == "stl"
+
+
+def test_negation_and_fill_words_are_read_right():
+    from defeat import agent
+    assert agent.polarity("fill the pockets") == "remove"
+    assert agent.polarity("don't fill the pockets") == "keep"
+    assert agent.polarity("no need to keep the fillets") == "remove"
+    assert agent.polarity("never remove the bosses") == "keep"
+    assert agent.stated_actions("Fill the pockets and keep the holes") == {"pocket": "remove", "hole": "keep"}
+    assert agent.is_question("How many holes are there?") and not agent.is_question("Can you remove the logo?")
+
+
+def test_verification_overrides_a_flipped_action_and_drops_unmentioned_classes():
+    from defeat import agent
+    llm = [{"name": "set_class_rule", "arguments": {"feature_class": "pocket", "action": "keep"}},
+           {"name": "set_class_rule", "arguments": {"feature_class": "fillet", "action": "remove"}}]
+    out = agent.verify_calls(llm, "Fill the pockets")
+    assert out == [{"name": "set_class_rule", "arguments": {"feature_class": "pocket", "action": "remove"}}]
+    assert agent.verify_calls(llm, "What features does this part have?") == []
+
+
+def test_consensus_picks_the_candidate_the_pool_agrees_with():
+    from defeat import agent
+    c = [{"m": {"dims": [10, 20, 30], "volume": 6000}}, {"m": {"dims": [10, 20, 31], "volume": 6100}},
+         {"m": {"dims": [40, 80, 90], "volume": 90000}}]
+    assert agent._consensus(c) in (0, 1)
+
+
+def test_upload_limit_and_session_cap(monkeypatch, tmp_path):
+    from fastapi.testclient import TestClient
+    from defeat import server, session
+    c = TestClient(server.app)
+    monkeypatch.setattr(server, "MAX_UPLOAD_MB", 0.001)
+    r = c.post("/api/upload", files={"file": ("big.step", b"x" * 5000)})
+    assert r.status_code == 413
+    monkeypatch.setattr(session, "MAX_SESSIONS", 2)
+    for _ in range(3):
+        session.new_session(BRACKET)
+    assert len(session.SESSIONS) <= 2

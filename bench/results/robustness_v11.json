@@ -1,0 +1,101 @@
+{
+ "dataset": "Fusion 360 Gallery extended STEP, official test split (real designer models)",
+ "parts": 500,
+ "completed": 500,
+ "completion_rate": 1.0,
+ "failure_reasons": {},
+ "failed_items": [],
+ "output_valid_rate": 1.0,
+ "invalid_inputs": 0,
+ "parts_with_features_to_remove": 206,
+ "timeout_seconds_per_part": 2400,
+ "feature_removal_success_rate": 0.896,
+ "features_targeted": 1327,
+ "features_kept_by_kernel": 138,
+ "features_restored_by_stress_guard": 356,
+ "features_removed_in_final_output": 618,
+ "features_left_by_the_no_check_fallback": 215,
+ "parts_without_a_stress_comparison": {
+  "total": 9,
+  "shipped_unchanged": 1
+ },
+ "median_faces": 10.0,
+ "median_face_reduction_pct": 8.40395480225989,
+ "median_volume_change_pct": 0.09890632148675843,
+ "seconds_per_part": {
+  "median": 1.741,
+  "p90": 188.297
+ },
+ "mesh_subset": {
+  "n": 197,
+  "median_tet_reduction_pct": 1.158669574700109,
+  "p10_tet_reduction_pct": 0.0,
+  "p90_tet_reduction_pct": 41.375406820433
+ },
+ "no_stress_check": {
+  "parts": 8,
+  "why": {
+   "The mesher could not build a volume mesh of this part, so it has no stress check.": 7,
+   "This part was too heavy to stress-check here.": 1
+  }
+ },
+ "meshed_with_curvature_sizing_off": 67,
+ "stress_guard": {
+  "triggered": 103,
+  "accepted": 103,
+  "undone": 44,
+  "share_within_5pct_before_guard": 0.4772,
+  "share_stiffness_within_5pct_before_guard": 0.5127,
+  "median_features_restored": 2
+ },
+ "stress_subset": {
+  "n": 197,
+  "median_abs_deflection_change_pct": 0.15672871104961728,
+  "p90_abs_deflection_change_pct": 1.920344897826336,
+  "median_abs_peak_stress_change_pct": 0.19117591877407686,
+  "p90_abs_peak_stress_change_pct": 2.150164530979651,
+  "share_within_5pct_deflection": 1.0,
+  "share_within_5pct_worst_load_case": 1.0,
+  "median_worst_load_case_pct": 0.6891799395714567,
+  "p90_worst_load_case_pct": 3.156683051218859
+ },
+ "ci95": {
+  "completion_rate": [
+   0.9924,
+   1.0
+  ],
+  "output_valid_rate": [
+   0.9924,
+   1.0
+  ],
+  "feature_removal_success_rate": [
+   0.8347,
+   0.9433
+  ],
+  "share_within_5pct_deflection": [
+   0.9809,
+   1.0
+  ],
+  "share_within_5pct_worst_load_case": [
+   0.9809,
+   1.0
+  ],
+  "median_worst_load_case_pct": [
+   0.4004,
+   0.8297
+  ],
+  "share_within_5pct_before_guard": [
+   0.4085,
+   0.5467
+  ],
+  "share_stiffness_within_5pct_before_guard": [
+   0.4433,
+   0.5816
+  ],
+  "median_abs_deflection_change_pct": [
+   0.0566,
+   0.3331
+  ]
+ },
+ "ci_method": "Wilson score interval for rates; 2000-sample part-level bootstrap for the removal rate and medians"
+}

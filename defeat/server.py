@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import agent, occ
+from . import __version__, agent, occ
 from .decide import PRESETS
 from .session import ROOT, SESSIONS, mesh_payload, new_session
 
@@ -21,8 +21,13 @@ HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SAMPLES = os.path.join(HERE, "samples")
 WEB = os.path.join(HERE, "web", "dist")
 
-app = FastAPI(title="DeFeat")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app = FastAPI(title="DeFeat", version=__version__)
+# The app is served from the same origin it talks to. Set DEFEAT_CORS to a comma-separated list of origins
+# only when another site must call this API.
+_CORS = [o.strip() for o in os.environ.get("DEFEAT_CORS", "").split(",") if o.strip()]
+if _CORS:
+    app.add_middleware(CORSMiddleware, allow_origins=_CORS, allow_methods=["*"], allow_headers=["*"])
+MAX_UPLOAD_MB = float(os.environ.get("DEFEAT_MAX_UPLOAD_MB", "200"))
 
 
 def get(sid):
@@ -35,7 +40,7 @@ def get(sid):
 # ---------------------------------------------------------------- parts
 @app.get("/api/health")
 def health():
-    return {"ok": True, "llm": agent.ollama_available(), "models": agent.ollama_models(),
+    return {"ok": True, "version": app.version, "llm": agent.ollama_available(), "models": agent.ollama_models(),
             "chat_model": agent.CHAT_MODEL, "cad_model": agent.CAD_MODEL}
 
 
@@ -90,8 +95,14 @@ async def upload(file: UploadFile = File(...)):
         raise HTTPException(400, "Please upload a STEP, IGES or BREP file")
     d = tempfile.mkdtemp()
     p = os.path.join(d, name)
+    size, limit = 0, MAX_UPLOAD_MB * 1024 * 1024
     with open(p, "wb") as fh:
-        shutil.copyfileobj(file.file, fh)
+        while chunk := file.file.read(1 << 20):
+            size += len(chunk)
+            if size > limit:
+                shutil.rmtree(d, ignore_errors=True)
+                raise HTTPException(413, f"The file is larger than {MAX_UPLOAD_MB:g} MB")
+            fh.write(chunk)
     try:
         s = new_session(p, name)
     except Exception as e:  # noqa

@@ -119,7 +119,7 @@ PARTS_V3 = [
     ("A 80 x 50 x 40 mm block with a 30 x 15 mm step cut along one long top edge", (40, 50, 80)),
     ("A hexagonal bar 40 mm across flats and 100 mm long", (40, 46.2, 100)),
     ("A hexagonal nut blank 19 mm across flats, 10 mm thick, with a 10 mm hole", (10, 19, 21.9)),
-    ("A pentagon plate 80 mm across corners and 10 mm thick", (10, 76.1, 80)),
+    ("A pentagon plate 80 mm across corners and 10 mm thick", (10, 72.4, 76.1)),
     ("A triangular prism with a 60 mm equilateral base, 40 mm long", (40, 52, 60)),
     ("A 150 x 80 x 10 mm base with a 50 mm tall, 10 mm thick rib along its centerline", (60, 80, 150)),
     ("A 100 x 100 x 8 mm base plate with a 100 x 60 x 8 mm upright wall on one edge", (68, 100, 100)),

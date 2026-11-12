@@ -18,7 +18,9 @@ import numpy as np
 # default: PC/ABS, typical injection-molded housing material (mm, N, MPa)
 MATERIAL = {"name": "PC/ABS", "E": 2300.0, "nu": 0.36, "rho": 1.1e-9}  # rho in t/mm3
 FORCE_N = 100.0
-MAX_TETS = 17000         # about 80k quadratic dofs, what a laptop factorizes in well under a minute
+MAX_TETS = 45000         # about 230k quadratic dofs: one LU factorization, under a minute on a laptop
+DIRECT_DOFS = 250000     # LU up to here (220k unknowns: 47 s, 3.4 GB, then every load case is nearly free); multigrid above
+SOLVE_TOL = 1e-9         # relative residual for the iterative solver, far below the 5% the guard judges
 COARSE_CURVATURE = 8
 END_SHARE = 0.05         # share of the part's volume clamped at one end and loaded at the other
 
@@ -74,11 +76,58 @@ def _end_regions(p, t, ax, share=END_SHARE):
     return float(x[o][np.searchsorted(cum, share)]), float(x[o][min(np.searchsorted(cum, 1 - share), len(o) - 1)])
 
 
+class _Solver:
+    """One linear system, solved for many right-hand sides. Small systems get a sparse LU factorization.
+    Large ones get conjugate gradients preconditioned by smoothed-aggregation algebraic multigrid, built
+    from the six rigid-body modes of the free degrees of freedom. Its memory grows linearly with the
+    mesh where a factorization grows much faster, which is what lets fine meshes and heavy parts fit.
+    On thin-walled parts multigrid needs a few hundred iterations per load case, so up to DIRECT_DOFS
+    one factorization shared by every load case is faster."""
+
+    def __init__(self, A, near_null=None, direct_limit=None):
+        from scipy.sparse.linalg import splu
+        self.n = A.shape[0]
+        self.iterative = self.n > (direct_limit or DIRECT_DOFS)
+        if not self.iterative:
+            self.lu = splu(A.tocsc(), permc_spec="MMD_AT_PLUS_A", options={"SymmetricMode": True}, diag_pivot_thresh=0.0)
+            return
+        import pyamg
+        self.ml = pyamg.smoothed_aggregation_solver(A.tocsr(), B=near_null, strength=("symmetric", {"theta": 0.0}),
+                                                    smooth="energy", max_coarse=500)
+        self.iterations = 0
+
+    def solve(self, b):
+        if not self.iterative:
+            return self.lu.solve(b)
+        res = []
+        x = self.ml.solve(b, tol=SOLVE_TOL, accel="cg", maxiter=600, residuals=res)
+        self.iterations = max(self.iterations, len(res))
+        if len(res) and res[-1] > 1e3 * SOLVE_TOL * max(res[0], 1e-300):
+            raise RuntimeError("the iterative solver did not converge")
+        return x
+
+
+def _rigid_modes(ib):
+    """Translations and rotations of every vector degree of freedom: the near-null space multigrid needs."""
+    comp = np.zeros(ib.N, int)
+    for c in range(3):
+        comp[np.asarray(ib.nodal_dofs[c]).ravel()] = c
+        if getattr(ib, "edge_dofs", None) is not None and len(ib.edge_dofs):
+            comp[np.asarray(ib.edge_dofs[c]).ravel()] = c
+    X = ib.doflocs
+    B = np.zeros((ib.N, 6))
+    for c in range(3):
+        B[comp == c, c] = 1.0
+    B[comp == 0, 3], B[comp == 1, 3] = -X[1, comp == 0], X[0, comp == 1]
+    B[comp == 1, 4], B[comp == 2, 4] = -X[2, comp == 1], X[1, comp == 2]
+    B[comp == 2, 5], B[comp == 0, 5] = X[0, comp == 2], -X[2, comp == 0]
+    return B
+
+
 def solve(p, t, bc, order=2):
     """Quadratic tetrahedra by default. The load is spread through the loaded material by volume and
     deflection is its work-conjugate (volume-weighted) displacement, so neither depends on where the
     mesh happens to put its nodes. Four load cases share one factorization."""
-    from scipy.sparse.linalg import splu
     from skfem import Basis, ElementTetP1, ElementTetP2, ElementVector, FacetBasis, LinearForm, MeshTet, asm
     from skfem.models.elasticity import lame_parameters, linear_elasticity
 
@@ -148,7 +197,10 @@ def solve(p, t, bc, order=2):
                  "tension": asm(directed(ax, 1), lb, inside=inside), "torsion": asm(tors, lb, r1=r[a1], r2=r[a2])}
     primary = next(iter(forms))
     I = np.setdiff1d(np.arange(ib.N), D)
-    lu = splu(K[I][:, I].tocsc(), permc_spec="MMD_AT_PLUS_A", options={"SymmetricMode": True}, diag_pivot_thresh=0.0)
+    Kii = K[I][:, I]
+    # an eigen-solve needs dozens of solves: a factorization pays for itself up to a much larger size
+    limit = 2 * DIRECT_DOFS if bc.get("analysis") == "modal" else DIRECT_DOFS
+    lu = _Solver(Kii, near_null=_rigid_modes(ib)[I] if len(I) > limit else None, direct_limit=limit)
     U, cases = {}, {}
     for name, f in forms.items():
         u = np.zeros(ib.N)
@@ -213,7 +265,7 @@ def solve(p, t, bc, order=2):
     if bc.get("want_system"):   # the discrete problem, so an outside solver can be handed exactly the same one
         export = {"p": p, "t": t, "edges": m.t2e.T, "edge_nodes": m.edges.T, "nodal": ib.nodal_dofs, "edge": ib.edge_dofs,
                   "fixed": D, "forms": forms}
-    return {"ok": True, "field": field, "system": export, "dofs": int(ib.N), "order": order, "max_disp": float(np.abs(u).max()), "tip_disp": tip,
+    return {"ok": True, "field": field, "system": export, "dofs": int(ib.N), "order": order, "solver": "multigrid" if lu.iterative else "direct", "max_disp": float(np.abs(u).max()), "tip_disp": tip,
             "stiffness": F / tip, "cases": cases,
             "vm_p99": float(vm[o][np.searchsorted(cum, 0.99)]), "vm_p95": float(vm[o][np.searchsorted(cum, 0.95)]),
             "vm_max": float(vm.max()), "vm_peak": vm_peak, "vm_mean": float((vm * w).sum() / w.sum()),
@@ -252,7 +304,7 @@ def _modes(K, I, lu, ib, U, n=3):
     M = asm(BilinearForm(lambda u, v, w: rho * (u.value[0] * v.value[0] + u.value[1] * v.value[1] + u.value[2] * v.value[2])), ib).tocsc()
     Kii, Mii = K[I][:, I], M[I][:, I]
     op = LinearOperator(Kii.shape, matvec=lu.solve, dtype=float)
-    vals, vecs = eigsh(Kii, k=n, M=Mii, sigma=0.0, which="LM", OPinv=op, tol=1e-6, v0=np.ones(len(I)))
+    vals, vecs = eigsh(Kii, k=n, M=Mii, sigma=0.0, which="LM", OPinv=op, tol=1e-6, v0=np.ones(len(I)))   # lu: a _Solver
     o = np.argsort(vals)
     out, modes = {}, {"_static": next(iter(U.values()))}
     for k, j in enumerate(o, 1):
@@ -266,7 +318,6 @@ def _modes(K, I, lu, ib, U, n=3):
 def _conduction(m, p, t, bc):
     """Steady conduction along each axis: a volume source at one end, the other held cold. The result is
     the mean temperature rise in the heated region, which is the thermal resistance up to a constant."""
-    from scipy.sparse.linalg import splu
     from skfem import Basis, ElementTetP2, LinearForm, asm
     from skfem.models.poisson import laplace
     sb = Basis(m, ElementTetP2(), intorder=2)
@@ -282,7 +333,7 @@ def _conduction(m, p, t, bc):
         f = asm(LinearForm(lambda v, w: v.value / area), fb)
         I = np.setdiff1d(np.arange(sb.N), D)
         x = np.zeros(sb.N)
-        x[I] = splu(K[I][:, I].tocsc(), permc_spec="MMD_AT_PLUS_A", options={"SymmetricMode": True}, diag_pivot_thresh=0.0).solve(f[I])
+        x[I] = _Solver(K[I][:, I], near_null=np.ones((len(I), 1))).solve(f[I])
         return {"your_heat_path": float(f @ x)}, {"ends_all": None}, {"your_heat_path": (sb, x)}
     for a, (lo, hi) in enumerate(ends):
         D = np.nonzero(sb.doflocs[a] <= lo)[0]
@@ -295,7 +346,7 @@ def _conduction(m, p, t, bc):
         f = asm(LinearForm(lambda v, w: w.inside * v.value / size), hb, inside=inside)
         I = np.setdiff1d(np.arange(sb.N), D)
         x = np.zeros(sb.N)
-        x[I] = splu(K[I][:, I].tocsc(), permc_spec="MMD_AT_PLUS_A", options={"SymmetricMode": True}, diag_pivot_thresh=0.0).solve(f[I])
+        x[I] = _Solver(K[I][:, I], near_null=np.ones((len(I), 1))).solve(f[I])
         name = f"conduction_{'xyz'[a]}"
         cases[name] = float(f @ x)
         temps[name] = (sb, x)
@@ -329,11 +380,11 @@ def solve_mesh(step_bytes: bytes, st: dict, h: float, bc: dict):
     mesh = st
     coarse = COARSE_CURVATURE if bc.get("stat_curvature", 12) else 0   # a round with it off stays off: it hangs
     if hf != h:
-        mesh = mesh_stats(step_bytes, hf, keep_mesh=True, curvature=coarse)
+        mesh = mesh_stats(step_bytes, hf, keep_mesh=True, curvature=coarse, route=bc.get("mesh_route", "cad"))
     elif not bc.get("h_fea"):
         while mesh.get("ok") and mesh["tets"] > MAX_TETS:
             hf *= max(1.2, min(2.5, 1.05 * (mesh["tets"] / MAX_TETS) ** (1 / 3)))   # elements go as 1/h^3
-            mesh = mesh_stats(step_bytes, hf, keep_mesh=True, curvature=coarse)
+            mesh = mesh_stats(step_bytes, hf, keep_mesh=True, curvature=coarse, route=bc.get("mesh_route", "cad"))
     if not mesh.get("ok"):
         return {"ok": False, "error": "mesh: " + str(mesh.get("error"))[:100]}
     r = solve(mesh["mesh"]["p"], mesh["mesh"]["t"], bc)
@@ -345,7 +396,7 @@ def solve_mesh(step_bytes: bytes, st: dict, h: float, bc: dict):
 def mesh_and_solve(step_bytes: bytes, h: float, bc: dict):
     """Worker entry point: gmsh mesh + mesh stats + static solve (mesh data never leaves the worker)."""
     from .validate import mesh_stats
-    st = mesh_stats(step_bytes, h, keep_mesh=True, curvature=bc.get("stat_curvature", 12))
+    st = mesh_stats(step_bytes, h, keep_mesh=True, curvature=bc.get("stat_curvature", 12), route=bc.get("mesh_route", "cad"))
     if not st.get("ok"):
         return st
     if bc.get("max_tets") and st["tets"] > bc["max_tets"]:

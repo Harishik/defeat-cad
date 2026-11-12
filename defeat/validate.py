@@ -55,42 +55,99 @@ def geometry_report(orig, new):
 MESHERS = (1, 10, 4)   # Delaunay first (deterministic); HXT and frontal when it fails on a surface mesh
 
 
-def mesh_stats(step_bytes: bytes, h: float, order: int = 1, keep_mesh: bool = False, curvature: int = 12):
+def _stl_surface(step_path, h, stl_path):
+    """OpenCASCADE's own watertight triangulation of the solid, written as STL. Its edges are shared by
+    the faces on both sides, so the surface is closed even where the CAD surfaces are hard to parametrize."""
+    from OCP.BRepMesh import BRepMesh_IncrementalMesh
+    from OCP.StlAPI import StlAPI_Writer
+    shape = occ.heal(occ.read_cad(step_path))
+    box = occ.bbox(shape)
+    diag = occ.norm(occ.sub(box[3:], box[:3]))
+    BRepMesh_IncrementalMesh(shape, min(h / 8, diag / 400), False, 0.3, True)
+    w = StlAPI_Writer()
+    w.ASCIIMode = False
+    if not w.Write(shape, stl_path):
+        raise RuntimeError("could not triangulate the part")
+
+
+def _volume_from_stl(gmsh, stl_path, h, remesh):
+    """Volume mesh inside a closed triangulation. remesh: rebuild smooth patches from the triangles and
+    remesh them at size h, so the elements match the CAD route's; otherwise keep the triangles as they are."""
+    import math
+    gmsh.model.add("stl")
+    gmsh.merge(stl_path)
+    gmsh.model.mesh.removeDuplicateNodes()
+    if remesh:
+        gmsh.model.mesh.classifySurfaces(40 * math.pi / 180, True, True, math.pi)
+        gmsh.model.mesh.createGeometry()
+    surfaces = [e[1] for e in gmsh.model.getEntities(2)]
+    loop = gmsh.model.geo.addSurfaceLoop(surfaces)
+    gmsh.model.geo.addVolume([loop])
+    gmsh.model.geo.synchronize()
+    gmsh.option.setNumber("Mesh.MeshSizeMax", h)
+    gmsh.option.setNumber("Mesh.MeshSizeMin", h * 0.05)
+    gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", 0)
+    for algorithm in MESHERS:
+        gmsh.option.setNumber("Mesh.Algorithm3D", algorithm)
+        try:
+            gmsh.model.mesh.generate(3)
+            if len(gmsh.model.mesh.getElementsByType(4)[0]):
+                return
+        except Exception:
+            pass
+        gmsh.model.mesh.clear()
+    raise RuntimeError("the mesher produced no volume elements")
+
+
+def mesh_stats(step_bytes: bytes, h: float, order: int = 1, keep_mesh: bool = False, curvature: int = 12, route: str = "cad"):
+    """route 'cad': gmsh meshes the CAD surfaces directly (best quality, follows fillets by curvature).
+    route 'stl': gmsh works from OpenCASCADE's watertight triangulation instead, remeshed at size h, or kept
+    as it is if remeshing fails. It needs no surface parametrization, so it gets through the periodic
+    surfaces, slivers and gaps that make the CAD route give up or hang."""
     import gmsh
     fd, path = tempfile.mkstemp(suffix=".step")
     os.write(fd, step_bytes)
     os.close(fd)
+    stl = path[:-5] + ".stl"
     out = {"ok": False}
     try:
         gmsh.initialize(["-noenv"])
         gmsh.option.setNumber("General.Terminal", 0)
         gmsh.option.setNumber("General.NumThreads", 1)   # deterministic meshes, run to run
-        gmsh.model.add("m")
-        gmsh.model.occ.importShapes(path)
-        gmsh.model.occ.synchronize()
-        gmsh.option.setNumber("Mesh.MeshSizeMax", h)
-        gmsh.option.setNumber("Mesh.MeshSizeMin", h * 0.05)
-        gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", curvature)
         gmsh.option.setNumber("Mesh.Optimize", 1)         # remove sliver tetrahedra
         gmsh.option.setNumber("Mesh.OptimizeNetgen", 1)
         t = time.time()
-        for algorithm in MESHERS:
-            gmsh.option.setNumber("Mesh.Algorithm3D", algorithm)
+        if route == "stl":
+            _stl_surface(path, h, stl)
             try:
-                gmsh.model.mesh.generate(3)
-                if not len(gmsh.model.mesh.getElementsByType(4)[0]):
-                    raise RuntimeError("the mesher produced no volume elements")
-                break
+                _volume_from_stl(gmsh, stl, h, remesh=True)
             except Exception:
-                if algorithm == MESHERS[-1]:
-                    raise
-                gmsh.model.mesh.clear()
+                gmsh.model.remove()
+                _volume_from_stl(gmsh, stl, h, remesh=False)
+        else:
+            gmsh.model.add("m")
+            gmsh.model.occ.importShapes(path)
+            gmsh.model.occ.synchronize()
+            gmsh.option.setNumber("Mesh.MeshSizeMax", h)
+            gmsh.option.setNumber("Mesh.MeshSizeMin", h * 0.05)
+            gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", curvature)
+            for algorithm in MESHERS:
+                gmsh.option.setNumber("Mesh.Algorithm3D", algorithm)
+                try:
+                    gmsh.model.mesh.generate(3)
+                    if not len(gmsh.model.mesh.getElementsByType(4)[0]):
+                        raise RuntimeError("the mesher produced no volume elements")
+                    break
+                except Exception:
+                    if algorithm == MESHERS[-1]:
+                        raise
+                    gmsh.model.mesh.clear()
         dt = time.time() - t
         types, tags, nodes = gmsh.model.mesh.getElements(3)
         tets = np.concatenate([tg for ty, tg in zip(types, tags) if ty in (4, 11)]) if len(types) else np.array([])
         q = np.asarray(gmsh.model.mesh.getElementQualities(tets.tolist(), "minSICN")) if len(tets) else np.array([0.0])
         ntags, coords, _ = gmsh.model.mesh.getNodes()
-        out = {"ok": True, "tets": int(len(tets)), "nodes": int(len(ntags)), "seconds": dt,
+        out = {"ok": True, "tets": int(len(tets)), "nodes": int(len(ntags)), "seconds": dt, "route": route,
                "q_min": float(q.min()), "q_mean": float(q.mean()),
                "q_poor_pct": float(100 * (q < 0.2).mean()),
                "q_hist": np.histogram(q, bins=10, range=(0, 1))[0].tolist()}
@@ -101,13 +158,15 @@ def mesh_stats(step_bytes: bytes, h: float, order: int = 1, keep_mesh: bool = Fa
             conn = np.vectorize(idx.get)(np.asarray(en).reshape(-1, 4))
             out["mesh"] = {"p": coords.reshape(-1, 3).tolist(), "t": conn.tolist()}
     except Exception as e:  # noqa
-        out = {"ok": False, "error": str(e)}
+        out = {"ok": False, "error": str(e), "route": route}
     finally:
         try:
             gmsh.finalize()
         except Exception:
             pass
         os.unlink(path)
+        if os.path.exists(stl):
+            os.unlink(stl)
     return out
 
 
@@ -125,8 +184,11 @@ def _mesh_rounds(h, diag):
     that still follows its rounds. Curvature sizing is what hangs: on parts that timed out in every round
     it was the cause, and with it off they mesh in about a second. So the last rounds switch it off and
     size elements from the part itself, in case h is tiny for this part. They come last because a mesh
-    that ignores curvature does not refine around fillets, so it understates what removing them saves."""
-    return ((h, 12, 0.35), (2 * h, 6, 0.4), (max(h, diag / 20), 0, 0.6), (max(2 * h, diag / 10), 0, 1.0))
+    that ignores curvature does not refine around fillets, so it understates what removing them saves.
+    The 'stl' rounds mesh from OpenCASCADE's own watertight triangulation instead of the CAD surfaces, which
+    gets through the periodic surfaces and gaps that make the CAD route give up."""
+    return ((h, 12, "cad", 0.45), (h, 0, "stl", 0.35), (2 * h, 6, "cad", 0.4), (max(h, diag / 20), 0, "stl", 0.6),
+            (max(2 * h, diag / 10), 0, "cad", 1.0))
 
 
 def mesh_compare(orig, new, h, timeout=300.0, with_fea=True, want_field=False, analysis="static", boundary=None, budget=300.0):
@@ -137,34 +199,42 @@ def mesh_compare(orig, new, h, timeout=300.0, with_fea=True, want_field=False, a
     if with_fea:
         import time
         b = {"ok": False, "error": "the original could not be meshed"}
-        curvature = 12
+        curvature, route = 12, "cad"
         end = time.time() + budget
         box = occ.bbox(orig)
         rounds = _mesh_rounds(h, occ.norm(occ.sub(box[3:], box[:3])))
-        for size, curve, share in rounds:
+        timed_out_at = 0.0
+        for size, curve, rt, share in rounds:
             left = end - time.time()
             if left < 5:
                 break
+            if size <= timed_out_at:
+                continue   # a round at the same size would time out again: go straight to a coarser mesh
             timeout = left * share / 2
             bc = fea.load_case(occ.bbox(orig), analysis)
             if boundary and boundary.get("fixed"):
                 fea.user_case(occ.faces_of(orig), boundary, bc)
             bc["want_field"] = want_field
             bc["stat_curvature"] = curve
+            bc["mesh_route"] = rt
             a = w.call("defeat.fea:mesh_and_solve", step_bytes(orig), size, bc, timeout=timeout)
+            if "timed out" in str(a.get("error", "")):
+                timed_out_at = size
             if not (a.get("fea") or {}).get("ok"):
                 continue
             bc["want_field"] = False
             fea.lock(bc, a.get("fea"))   # same mesh size and same end regions for both models
             b = w.call("defeat.fea:mesh_and_solve", step_bytes(new), size, bc, timeout=max(timeout, 5.0))
+            if "timed out" in str(b.get("error", "")):
+                timed_out_at = size
             if (b.get("fea") or {}).get("ok"):
                 h = size
-                curvature = curve
+                curvature, route = curve, rt
                 break
     else:
         a = w.call("defeat.validate:mesh_stats", step_bytes(orig), h, timeout=timeout)
         b = w.call("defeat.validate:mesh_stats", step_bytes(new), h, timeout=timeout)
-    out = {"h": h, "original": a, "defeatured": b, "stat_curvature": curvature if with_fea else 12}
+    out = {"h": h, "original": a, "defeatured": b, "stat_curvature": curvature if with_fea else 12, "mesh_route": route if with_fea else "cad"}
     if with_fea and a.get("fea") and b.get("fea"):
         out["fea"] = {"load_case": bc["text"], "material": fea.MATERIAL, "original": a.pop("fea"),
                       "defeatured": b.pop("fea")}

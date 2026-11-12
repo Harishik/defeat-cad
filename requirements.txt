@@ -6,6 +6,7 @@ numpy>=2,<3 ; sys_platform == "darwin" and platform_machine == "arm64"
 gmsh>=4.11
 scipy>=1.10
 scikit-fem>=9
+pyamg>=5                 # multigrid solver: lets fine meshes and heavy parts fit in memory
 matplotlib>=3.7,<3.10
 torch>=2.2                 # CPU build is enough; Intel Macs top out at 2.2.2
 fastapi>=0.110

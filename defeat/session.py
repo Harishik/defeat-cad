@@ -177,6 +177,23 @@ class Session:
                     self._step(f"Meshing both models (h = {self.policy.h:g}) and running a static stress check", 0.72)
                     mesh = mesh_compare(self.shape, er.shape, self.policy.h, want_field=bool(self.guard_tol), analysis=self.policy.preset, boundary=self.policy.boundary,
                                         budget=0.5 * max(self._end - time.time(), 60.0))
+                    original = (mesh.get("fea") or {}).get("original") or (mesh.get("original") or {}).get("fea") or {}
+                    lost = str(((mesh.get("fea") or {}).get("defeatured") or {}).get("error")
+                               or ((mesh.get("defeatured") or {}).get("fea") or {}).get("error") or "")
+                    if not (mesh.get("fea") or {}).get("delta") and original.get("ok") and "support / load" in lost and er.removed:
+                        # The removal took away the material the supports or the load sit on, so the two models
+                        # can't be compared. Keep every feature that reaches into those end regions (they are
+                        # part of the test, not detail) and check the rest.
+                        kept = self._features_at_ends(original)
+                        if kept:
+                            self._step(f"Keeping {len(kept)} feature(s) at the supports and re-checking", 0.74)
+                            for fid in kept:
+                                self.decisions[fid] = Decision(fid, "keep", "it carries the stress check's supports or load", locked=True)
+                            er = defeature(self.shape, self.features, self.decisions, graph=self.graph, budget=max(self._end - time.time(), 30.0) * 0.3)
+                            self.result = er
+                            geo = geometry_report(self.shape, er.shape)
+                            mesh = mesh_compare(self.shape, er.shape, self.policy.h, want_field=bool(self.guard_tol), analysis=self.policy.preset,
+                                                boundary=self.policy.boundary, budget=0.5 * max(self._end - time.time(), 60.0))
                     if not (mesh.get("fea") or {}).get("delta"):
                         # No comparison came back: never leave a physics-based removal unchecked. Fall back to
                         # what is safe without one, the volume budget, and check that smaller removal if the
@@ -228,11 +245,29 @@ class Session:
                 raise
 
     guard_tol = 5.0   # % change in any load case the stress guard accepts (None/0 disables it)
-    run_seconds = 600.0   # one whole run on one part, on a laptop: every stage below shares this
+    run_seconds = 900.0   # one whole run on one part, on a laptop: every stage below shares this
     guard_evals = 7   # most trial solves it spends looking for the largest removal that passes
     guard_seconds = 240.0
     finer_share = 0.5   # results above this share of the tolerance get a second look on a finer mesh
     finer_ratio = 1.4
+
+    def _features_at_ends(self, original):
+        """Features with a face reaching into the clamped or loaded end regions of the original's check."""
+        ends = original.get("ends")
+        if not ends or self.policy.boundary and self.policy.boundary.get("fixed"):
+            return []
+        ax = fea.load_case(occ.bbox(self.shape), self.policy.preset)["axis"]
+        lo, hi = ends
+        out = []
+        for f in self.features:
+            if self.decisions[f.id].action != "remove":
+                continue
+            for i in f.faces:
+                b = occ.bbox(self.graph.faces[i])
+                if b[ax] <= lo or b[ax + 3] >= hi:
+                    out.append(f.id)
+                    break
+        return out
 
     @staticmethod
     def _unchecked_reason(mesh, original):
@@ -282,6 +317,7 @@ class Session:
         if self.policy.boundary.get("fixed"):
             fea.user_case(occ.faces_of(self.shape), self.policy.boundary, bc)
         bc["stat_curvature"] = mesh.get("stat_curvature", 12)
+        bc["mesh_route"] = mesh.get("mesh_route", "cad")   # trials mesh the way the comparison did
         orig_fea = mesh["fea"]["original"]
         fea.lock(bc, orig_fea)
         field = self._field
@@ -422,7 +458,17 @@ class Session:
 SESSIONS: dict[str, Session] = {}
 
 
+MAX_SESSIONS = int(os.environ.get("DEFEAT_MAX_SESSIONS", "24"))   # open parts kept in memory
+
+
 def new_session(path, name=None) -> Session:
     s = Session(path, name)
     SESSIONS[s.id] = s
+    # oldest idle parts go first, so a long-running server's memory stays bounded
+    while len(SESSIONS) > MAX_SESSIONS:
+        old = next((k for k, v in SESSIONS.items() if not (v.status or {}).get("busy")), None)
+        if old is None:
+            break
+        gone = SESSIONS.pop(old)
+        shutil.rmtree(gone.dir, ignore_errors=True)
     return s

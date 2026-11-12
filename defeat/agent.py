@@ -16,7 +16,17 @@ import httpx
 from .decide import PRESETS
 from .recognize import FEATURE_CLASSES
 
-OLLAMA = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
+def _ollama_url(v: str) -> str:
+    """OLLAMA_HOST the way Ollama itself accepts it: with or without a scheme or a port."""
+    v = (v or "localhost").strip().rstrip("/")
+    if "://" not in v:
+        v = "http://" + v
+    if v.count(":") < 2:
+        v += ":11434"
+    return v
+
+
+OLLAMA = _ollama_url(os.environ.get("OLLAMA_HOST", ""))
 CHAT_MODEL = os.environ.get("DEFEAT_CHAT_MODEL", "qwen3.5:4b")
 CAD_MODEL = os.environ.get("DEFEAT_CAD_MODEL", "hf.co/yuvit-batra/qwen2.5-coder-7b-cadquery-gguf:Q4_K_M")
 
@@ -145,9 +155,28 @@ _CLASS_WORDS = {
 }
 
 
+_EXPORT_ASK = re.compile(r"\b(give me|export|download|save|send|want|need|write|as a)\b")
+
+
+def classes_in(clause: str, text: str = ""):
+    """Feature classes a clause names. 'STEP' after an export word is the file format, not a step."""
+    out = []
+    for cls, words in _CLASS_WORDS.items():
+        if cls == "step":
+            if re.search(r"\b(steps|ledges?|shoulders?)\b", clause) or (
+                    re.search(r"\bstep\b(?!\s*file)", clause) and not _EXPORT_ASK.search(text or clause)):
+                out.append(cls)
+            continue
+        if any(re.search(r"\b" + re.escape(w), clause) for w in words):
+            out.append(cls)
+    return out
+
+
 _RUN = re.compile(r"\b(run|go|go ahead|do it|execute|apply|start|process it|kick it off|defeature|defeaturing)\b"
                   r"|\b(simplify|clean)\b.*\b(now|it|part|model|this)\b|\bsimplification\b")
-_FALSE_RUN = re.compile(r"\b(thermal|cfd|modal|static|stress|flow|analysis|study|simulation) run\b|\b(we're|we are|i'm|am|it's|is) (running|going)\b|\brunning\b")
+_FALSE_RUN = re.compile(r"\b(thermal|cfd|modal|static|stress|flow|analysis|study|simulation) run\b|\b(we're|we are|i'm|am|it's|is) (running|going)\b|\brunning\b"
+                        r"|\b(logos?|text|fillets?|rounds?|blends?|chamfers?|bevels?|holes?|bores?|bosses|ribs?|gussets?|slots?|pockets?|vents?|steps?|ledges?)"
+                        r" (can |must |should )?go\b|\b(can|must|should|could) go\b")
 _EXPORT = re.compile(r"\b(python|\.py|c\+\+|cpp|step|report|export|download|save)\b")
 
 
@@ -206,24 +235,110 @@ def plan_calls(messages, text, tools=None, timeout=150):
     except Exception:
         m = {}
     calls = [{"name": tc["function"]["name"], "arguments": tc["function"].get("arguments", {})} for tc in (m.get("tool_calls") or [])]
-    calls = sanitize(calls, text)
-    if calls:
+    calls = verify_calls(sanitize(calls, text), text) if calls else []
+    if calls or (m.get("content") and is_question(text)):
         return calls, (m.get("content") or "").strip(), CHAT_MODEL
     # the model was busy, timed out or called nothing: the keyword parser still understands most requests
     return parse_offline(text), (m.get("content") or "").strip(), "keyword parser"
 
 
-_KEEP = r"\b(keep|preserve|don'?t (remove|touch)|do not (remove|touch)|leave|stays?|must stay|remain|protect|hang on|hold on)\b"
-_REMOVE = (r"\b(remove|delete|drop|strip|get rid|clean|suppress|simplify|lose|wipe|erase|fill|plug|close up|flatten"
+_KEEP = (r"\b(keep|kept|preserved?|leave|stays?|must stay|can stay|remain|protect|hang on|hold on|alone|as (it|they) (is|are)"
+         r"|don'?t (remove|touch)|do not (remove|touch))\b")
+_REMOVE = (r"\b(remove|delete|drop|strip|get rid|clean|suppress|simplify|lose|wipe|erase|scrub|fill|plug|close|flatten"
            r"|take (out|off|away)|can go|out|no|without)\b")
-_DOMAIN = r"\b(fluid|flow) (domain|volume|region)\b|\benclosure\b"
+# a removal verb that is negated means keep, and a negated keep means remove: "don't fill", "no need to keep"
+_NEG = r"\b(don'?t|do not|never|no need to|not|nothing to)\b(\s+\w+){0,2}?\s+"
+_KEEP_VERB = r"(keep|preserve|leave|protect)\b"
+_REMOVE_VERB = r"(remove|delete|drop|strip|suppress|lose|wipe|erase|fill|plug|close|flatten|touch|take)\b"
+
+
+def polarity(clause: str):
+    """'keep', 'remove' or None for one clause. Negation is read first, so "don't fill the pockets"
+    keeps them and "no need to keep the fillets" removes them."""
+    if re.search(_NEG + _REMOVE_VERB, clause):
+        return "keep"
+    if re.search(_NEG + _KEEP_VERB, clause):
+        return "remove"
+    if re.search(r"\bfill\s+(in|up)\b|\bfill\b", clause) and not re.search(r"\bfill\s+nothing\b", clause):
+        return "remove"
+    if re.search(_KEEP, clause) or re.search(r"\b(in|stays?)\s*$", clause.strip()):
+        return "keep"
+    if re.search(_REMOVE, clause) or re.search(r"\btake\b.*\b(out|off|away)\b", clause) or re.search(r"\b(can |must |should )?go\b", clause):
+        return "remove"
+    return None
+
+
+_CLAUSES = r"\bbut\b|,|;|:|\bthen\b|\band\b(?=\s+(?:keep|remove|delete|drop|strip|preserve|fill|plug|leave|lose|go\b))|\."
+
+
+def stated_actions(text: str):
+    """{class: action} that the words of the request settle on their own: a class named in a clause whose
+    verb is unambiguous (or named earlier and pointed back to with 'them'). A class named with both
+    actions in different clauses is left out: the words don't settle it."""
+    t = text.lower()
+    out, clash, act, last = {}, set(), None, []
+    for clause in re.split(_CLAUSES, t):
+        a = polarity(clause)
+        found = classes_in(clause, t)
+        if not found and a and re.search(r"\b(them|those|these|it)\b", clause):
+            found = last
+        if a:
+            act = a
+            for cls in found:
+                if out.get(cls, a) != a:
+                    clash.add(cls)
+                out[cls] = a
+        elif found and act is None:
+            pass
+        last = found or last
+    return {c: a for c, a in out.items() if c not in clash}
+
+
+_QUESTION = re.compile(r"^\s*(what|how|is|are|does|do|why|which|when|where|who)\b.*\?\s*$")
+
+
+def is_question(text: str) -> bool:
+    """A question asks for an answer, not a change. "Can you remove the logo?" is a request, so only
+    plain information questions count."""
+    return bool(_QUESTION.match(text.lower()))
+
+
+def verify_calls(calls, text):
+    """Field-level check of the model's calls against what the words themselves settle. Where the
+    request is unambiguous about a class and the model disagrees on keep/remove, the words win; a class
+    the request clearly acts on but the model left out is added; a class rule for something the request
+    never mentions is dropped. Information questions change nothing."""
+    if is_question(text):
+        return []
+    said = stated_actions(text)
+    t = text.lower()
+    out, have = [], set()
+    for c in calls:
+        if c["name"] == "set_class_rule":
+            a = dict(c.get("arguments") or {})
+            cls = a.get("feature_class")
+            words = _CLASS_WORDS.get(cls, [])
+            if words and not any(re.search(r"\b" + re.escape(w), t) for w in words) and not re.search(r"\b(everything|all features|every feature)\b", t):
+                continue
+            if cls in said and a.get("action") != said[cls]:
+                a["action"] = said[cls]
+            have.add(cls)
+            c = {"name": c["name"], "arguments": a}
+        out.append(c)
+    for cls, act in said.items():
+        if cls not in have:
+            out.insert(0, {"name": "set_class_rule", "arguments": {"feature_class": cls, "action": act}})
+    return out
+_DOMAIN = r"\b(fluid|flow) (domain|volume|region)\b|\benclosure\b|\b(cfd|flow|fluid|air) box\b|\bwrap\b.*\b(cfd|flow|fluid)\b"
 
 
 def stated_preset(t: str):
     """The analysis the request names, if any."""
     for preset in PRESETS:
-        if preset in t or (preset == "static" and "stress" in t) or (preset == "modal" and "vibration" in t) \
-                or (preset == "cfd" and ("flow" in t or "cfd" in t)):
+        if preset in t or (preset == "static" and "stress" in t) \
+                or (preset == "modal" and ("vibration" in t or "natural frequenc" in t)) \
+                or (preset == "thermal" and re.search(r"\bheat\b", t)) \
+                or (preset == "cfd" and ("flow" in t or "cfd" in t or "airflow" in t)):
             return preset
     return None
 
@@ -235,7 +350,8 @@ def parse_offline(text: str):
     preset = stated_preset(t)
     if preset and not domain:     # a fluid domain is geometry: asking for one doesn't change the analysis
         calls.append({"name": "set_analysis", "arguments": {"preset": preset}})
-    m = (re.search(r"(?:mesh|elements?)\s*(?:size)?\s*(?:is|of|=|to|at)?\s*(\d+(?:\.\d+)?)\s*mm", t)
+    m = (re.search(r"(?:mesh|elements?)\s*(?:size)?\s*(?:is|of|=|to|at|should be|are)?\s*(\d+(?:\.\d+)?)\s*mm", t)
+         or re.search(r"\bh\s*=\s*(\d+(?:\.\d+)?)", t)
          or re.search(r"(\d+(?:\.\d+)?)\s*mm\s*(?:elements?|mesh)", t)
          or (preset and re.search(r"\b(?:at|with)\s*(\d+(?:\.\d+)?)\s*mm", t)))
     if m:
@@ -244,12 +360,17 @@ def parse_offline(text: str):
     # and "keep them" points back at what the clause before it named
     act, last_classes = None, []
     ids_all = {"keep": [], "remove": []}
-    for clause in re.split(r"\bbut\b|,|;|\band\b(?=\s+(?:keep|remove|delete|drop|strip|preserve))|\.", t):
-        if re.search(_KEEP, clause):
-            act = "keep"
-        elif re.search(_REMOVE, clause):
-            act = "remove"
-        found = [cls for cls, words in _CLASS_WORDS.items() if any(w in clause for w in words)]
+    if is_question(text):
+        return []
+    # "features 5, 6 and 7 can go": a list of numbers spans the clause breaks, so read it whole
+    listed = re.search(r"\bfeatures?\s+(?:number\s+|no\.?\s+)?((?:#?\d+(?:\s*,\s*|\s+and\s+|\s*&\s*)?)+)", t)
+    if listed and len(re.findall(r"\d+", listed.group(1))) < 2:
+        listed = None
+    if listed and polarity(t):
+        ids_all[polarity(t)] += [int(i) for i in re.findall(r"\d+", listed.group(1))]
+    for clause in re.split(_CLAUSES, t):
+        act = polarity(clause) or act
+        found = classes_in(clause, t)
         if not act:
             last_classes = found or last_classes
             continue
@@ -262,18 +383,20 @@ def parse_offline(text: str):
                 args["max_size_mm"] = float(size.group(1))
             calls.append({"name": "set_class_rule", "arguments": args})
         last_classes = found or last_classes
-        ids = re.findall(r"#(\d+)", clause) or (re.findall(r"\d+", clause.split("feature", 1)[1])
-                                                 if re.search(r"\bfeatures?\s+(?:number\s+|no\.?\s+)?#?\d", clause) else [])
-        ids_all[act] += [int(i) for i in ids]
+        if not listed:
+            ids_all[act] += [int(i) for i in re.findall(r"#(\d+)", clause) or re.findall(r"\bfeatures?\s+(?:number\s+|no\.?\s+)?#?(\d+)", clause)]
     for act2, ids in ids_all.items():
         if ids:
             calls.append({"name": "set_features", "arguments": {"feature_ids": ids, "action": act2}})
     if wants_run(t):
         calls.append({"name": "run_defeaturing", "arguments": {}})
     for fmt, words in {"python": ["python", ".py"], "cpp": ["c++", "cpp"], "step": ["step file", "download step"]}.items():
-        if any(w in t for w in words) or (fmt == "step" and re.search(r"\b(save|export|download)\b.*\bstep\b", t)):
+        if any(w in t for w in words) or (fmt == "step" and _EXPORT_ASK.search(t) and re.search(r"\bstep\b", t)):
             calls.append({"name": "export", "arguments": {"format": fmt}})
-    if re.search(r"\b(make|create|design|model|build)\b.*\b(part|bracket|plate|flange|block|box|housing|mount)\b", t) \
+    if re.search(r"\breport\b", t) and re.search(r"\b(write|export|download|save|give me|want|need|as a|generate|make)\b", t):
+        calls.append({"name": "export", "arguments": {"format": "report"}})
+    if re.search(r"\b(make|create|design|model|build)\b.*\b(part|bracket|plate|flange|block|box|housing|mount|cube|cylinder|disc|disk"
+                 r"|ring|sphere|shaft|washer|tube|spacer|bar|rod|cone|prism)\b", t) \
             and "defeature" not in t and "domain" not in t and "around" not in t:
         calls = [{"name": "create_part", "arguments": {"description": text}}]
     if domain or re.search(r"\b(extract|make|build|create)\b.*\b(flow|fluid)\b", t):
@@ -402,6 +525,19 @@ EXAMPLES = [
      "result = cq.Workplane('XY').circle(20).extrude(60).faces('>Z').workplane().hole(25, 40)"),
     ("boss hub disc on top standing", "A hub: 60 mm diameter disc 10 mm thick with a 30 mm diameter boss 20 mm tall on top. The overall height adds up to 30 mm.",
      "result = cq.Workplane('XY').circle(30).extrude(10).faces('>Z').workplane().circle(15).extrude(20)"),
+    ("i-beam i-section h-beam flanges web", "An I-beam 200 mm long, 50 mm wide, 80 mm tall, with 6 mm flanges and a 6 mm web. Height is 80 overall.",
+     "result = (cq.Workplane('XY').polyline([(-25, 0), (25, 0), (25, 6), (3, 6), (3, 74), (25, 74), (25, 80), (-25, 80), (-25, 74),"
+     " (-3, 74), (-3, 6), (-25, 6)]).close().extrude(200))"),
+    ("z-profile z-section zed top bottom flanges web", "A Z-profile 100 mm long, 30 mm top and bottom flanges, a 50 mm web, all 5 mm thick. Width is 30 + 30 - 5.",
+     "result = cq.Workplane('XY').polyline([(0, 0), (30, 0), (30, 45), (55, 45), (55, 50), (25, 50), (25, 5), (0, 5)]).close().extrude(100)"),
+    ("pentagon pentagonal polygon across corners plate", "A pentagon plate 80 mm across corners, 10 mm thick. polygon(n, d) takes the across-corners diameter directly.",
+     "result = cq.Workplane('XY').polygon(5, 80).extrude(10)"),
+    ("hex nut blank hole flats", "A hex nut blank 19 mm across flats, 10 mm thick, with a 10 mm hole",
+     "import math\nresult = cq.Workplane('XY').polygon(6, 19 / math.cos(math.radians(30))).extrude(10).faces('>Z').workplane().hole(10)"),
+    ("chamfer chamfers top edges plate block edges all edges", "A 90 x 60 x 12 mm plate with 2 mm chamfers on the top edges",
+     "result = cq.Workplane('XY').box(90, 60, 12).faces('>Z').edges().chamfer(2)"),
+    ("upright wall on one edge base plate bracket vertical", "A 100 x 100 x 8 mm base plate with a 100 x 60 x 8 mm upright wall on one edge. The wall stands on the plate, so the height is 8 + 60.",
+     "base = cq.Workplane('XY').box(100, 100, 8, centered=(True, True, False))\nwall = cq.Workplane('XY').box(100, 8, 60, centered=(True, True, False)).translate((0, 46, 8))\nresult = base.union(wall)"),
     ("cross plus shaped bars right angles", "A cross of two 100 x 30 mm bars at right angles, 8 mm thick",
      "result = cq.Workplane('XY').box(100, 30, 8).union(cq.Workplane('XY').box(30, 100, 8))"),
 ]
@@ -425,7 +561,12 @@ For a round part use its diameter twice. "holes" counts separate round holes ask
 Examples:
 "A 120 x 60 x 8 mm base plate with a 40 mm tall rib" -> {"overall_mm": [120, 60, 48], "holes": 0}
 "A 60 mm flange 10 mm thick with a 20 mm bore and six 6 mm holes" -> {"overall_mm": [60, 60, 10], "holes": 7}
-"A stepped shaft: 20 mm for 40 mm, then 12 mm for 30 mm" -> {"overall_mm": [20, 20, 70], "holes": 0}"""
+"A stepped shaft: 20 mm for 40 mm, then 12 mm for 30 mm" -> {"overall_mm": [20, 20, 70], "holes": 0}
+"A T-section 150 mm long with a 60 x 6 mm flange and a 40 x 6 mm web" -> {"overall_mm": [150, 60, 46], "holes": 0}
+"An L-angle 150 mm long with 40 mm legs, 4 mm thick" -> {"overall_mm": [150, 40, 40], "holes": 0}
+"A 100 x 100 x 8 mm base with a 100 x 60 x 8 mm upright wall on one edge" -> {"overall_mm": [100, 100, 68], "holes": 0}
+"A hexagon 19 mm across flats, 10 mm thick" -> {"overall_mm": [19, 21.9, 10], "holes": 0}   (across corners = flats / cos 30)
+"A pentagon 80 mm across corners, 10 mm thick" -> {"overall_mm": [76.1, 72.4, 10], "holes": 0}   (a pentagon of corner diameter d spans 0.951 d by 0.905 d)"""
 
 
 def _spec(description, model):
@@ -467,36 +608,59 @@ def _problems(spec, m):
     return out
 
 
-def text_to_cad(description: str, out_step: str, model=None, retries=3, repairs=3, log=None):
+def _consensus(cands):
+    """Index of the candidate that agrees most with the rest of the pool: the smallest summed distance in
+    log size and log volume to the others. Verifier-free consensus (2026) picks among programs this way;
+    here it only breaks ties left by the measured check against the request."""
+    import math
+
+    def key(c):
+        m = c["m"]
+        return [math.log(max(v, 1e-6)) for v in m["dims"]] + [math.log(max(m["volume"], 1e-9)) / 3]
+
+    keys = [key(c) for c in cands]
+    return min(range(len(cands)), key=lambda i: sum(sum(abs(a - b) for a, b in zip(keys[i], k)) for k in keys))
+
+
+def text_to_cad(description: str, out_step: str, model=None, retries=3, repairs=3, pool=2, log=None):
     """The LLM writes CadQuery from tested examples. We run it in a sandbox and fix errors (inner loop),
     then measure the solid with the CAD kernel, compare it with what was asked and send any mismatch back
-    (outer loop). The verify-and-repair idea follows CADSmith (2026) and CADCodeVerify (2025)."""
+    (outer loop). The verify-and-repair idea follows CADSmith (2026) and CADCodeVerify (2025). If a mismatch
+    is still open at the end, a few fresh candidates are drawn and the pool is ranked: fewest measured
+    mismatches first, then the candidate the others agree with most."""
     model = model or CHAT_MODEL
     system = CAD_SYSTEM if model == CAD_MODEL else CHEATSHEET
     near = _examples_for(description)
     if near and model != CAD_MODEL:
         system += "\n\nClosest tested patterns:\n```python\n" + near + "\n```"
     spec = _spec(description, model)
-    msgs = [{"role": "system", "content": system}, {"role": "user", "content": description}]
-    attempts, best = [], None
-    code, fixes, repair = "", 0, 0
+    base = [{"role": "system", "content": system}, {"role": "user", "content": description}]
+    attempts, cands = [], []
     tmp = out_step + ".try.step"
-    while fixes <= retries + repairs:
+
+    def attempt(msgs, temperature):
         t = time.time()
-        reply = llm_chat(msgs, model=model, timeout=600, options={"temperature": 0.2, "num_predict": 1200})
+        reply = llm_chat(msgs, model=model, timeout=600, options={"temperature": temperature, "num_predict": 1200})
         code = _extract_code(reply.get("content", ""))
         ok, err = run_cadquery(code, tmp)
-        fixes += 1
-        issues = None
+        issues, m = None, None
         if ok:
             try:
-                issues = _problems(spec, _measure(tmp))
+                m = _measure(tmp)
+                issues = _problems(spec, m)
             except Exception as e:  # noqa
                 ok, err = False, f"the result could not be measured: {e}"
         attempts.append({"model": model, "ok": ok, "error": err, "issues": issues, "seconds": round(time.time() - t, 1)})
-        if ok and (best is None or len(issues) < len(best["issues"])):
-            os.replace(tmp, out_step)
-            best = {"code": code, "issues": issues}
+        if ok:
+            path = f"{out_step}.cand{len(cands)}.step"
+            os.replace(tmp, path)
+            cands.append({"code": code, "issues": issues, "m": m, "path": path})
+        return code, ok, err, issues
+
+    msgs, fixes, repair, code = list(base), 0, 0, ""
+    while fixes <= retries + repairs:
+        code, ok, err, issues = attempt(msgs, 0.2)
+        fixes += 1
         if ok and not issues:
             if log:
                 log(f"Attempt {fixes}: valid solid, dimensions match")
@@ -514,10 +678,28 @@ def text_to_cad(description: str, out_step: str, model=None, retries=3, repairs=
                 log(f"Attempt {fixes}: error, retrying")
             msgs += [{"role": "assistant", "content": code},
                      {"role": "user", "content": f"That script failed:\n{err}\nFix it. Respond with only the corrected code."}]
+    if not any(c["issues"] == [] for c in cands):
+        for k in range(pool):   # fresh draws, so the pool doesn't inherit one conversation's mistake
+            if log:
+                log(f"Drawing fresh candidate {k + 1} of {pool}")
+            code2, ok, err, issues = attempt(list(base), 0.7)
+            if not ok:
+                attempt(list(base) + [{"role": "assistant", "content": code2},
+                                      {"role": "user", "content": f"That script failed:\n{err}\nFix it. Respond with only the corrected code."}], 0.4)
+            if any(c["issues"] == [] for c in cands):
+                break
     try:
         os.unlink(tmp)
     except OSError:
         pass
-    if best is None:
+    if not cands:
         return {"ok": False, "code": code, "attempts": attempts, "model": model, "spec": spec}
-    return {"ok": True, "code": best["code"], "attempts": attempts, "model": model, "spec": spec, "unresolved": best["issues"]}
+    fewest = min(len(c["issues"]) for c in cands)
+    tied = [c for c in cands if len(c["issues"]) == fewest]
+    best = tied[_consensus(tied)] if len(tied) > 2 else tied[0]
+    os.replace(best["path"], out_step)
+    for c in cands:
+        if os.path.exists(c["path"]):
+            os.unlink(c["path"])
+    return {"ok": True, "code": best["code"], "attempts": attempts, "model": model, "spec": spec, "unresolved": best["issues"],
+            "pool": len(cands)}
