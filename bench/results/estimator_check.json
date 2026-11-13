@@ -1,0 +1,267 @@
+{
+ "parts_compared": 21,
+ "all_negative_parts": 14,
+ "skipped": {
+  "original not solvable": 1,
+  "nothing removed": 9,
+  "nothing to remove": 40
+ },
+ "errors": 4,
+ "general_lower_bound": {
+  "load_cases": 68,
+  "holds": [
+   0.2893,
+   0.5158
+  ],
+  "violations": [
+   {
+    "measured_pct": -0.0601854519171075,
+    "lower_pct": 0.012479854163881646,
+    "est_pct": 6.107385798550056,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.012479854163881646
+   },
+   {
+    "measured_pct": -0.04984085932439235,
+    "lower_pct": 0.01213268528948085,
+    "est_pct": 4.614349331368745,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.01213268528948085
+   },
+   {
+    "measured_pct": -0.07099911454050614,
+    "lower_pct": 0.00388366647697007,
+    "est_pct": 3.972883047908114,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.00388366647697007
+   },
+   {
+    "measured_pct": -1.716665756737711,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0
+   },
+   {
+    "measured_pct": -2.096369339857955,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0
+   },
+   {
+    "measured_pct": -0.7018051441540585,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0
+   },
+   {
+    "measured_pct": -0.8786255546248207,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0
+   },
+   {
+    "measured_pct": 0.9556102559737039,
+    "lower_pct": 1.2994831863900227,
+    "est_pct": 99.9919691461674,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.2994831863900227
+   },
+   {
+    "measured_pct": 0.2920331852657023,
+    "lower_pct": 1.377136463087168,
+    "est_pct": 68.1250724064133,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.377136463087168
+   },
+   {
+    "measured_pct": 0.8570530447119751,
+    "lower_pct": 1.2361520621107858,
+    "est_pct": 36.56494098531811,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.2361520621107858
+   }
+  ],
+  "parts_without_it": 4
+ },
+ "all_negative": {
+  "load_cases": 56,
+  "lower_bound_holds": [
+   0.3239,
+   0.5759
+  ],
+  "lower_bound_violations": [
+   {
+    "measured_pct": -0.0601854519171075,
+    "lower_pct": 0.012479854163881646,
+    "est_pct": 6.107385798550056,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.012479854163881646
+   },
+   {
+    "measured_pct": -0.04984085932439235,
+    "lower_pct": 0.01213268528948085,
+    "est_pct": 4.614349331368745,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.01213268528948085
+   },
+   {
+    "measured_pct": -0.07099911454050614,
+    "lower_pct": 0.00388366647697007,
+    "est_pct": 3.972883047908114,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.00388366647697007
+   },
+   {
+    "measured_pct": 0.9556102559737039,
+    "lower_pct": 1.2994831863900227,
+    "est_pct": 99.9919691461674,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.2994831863900227
+   },
+   {
+    "measured_pct": 0.2920331852657023,
+    "lower_pct": 1.377136463087168,
+    "est_pct": 68.1250724064133,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.377136463087168
+   },
+   {
+    "measured_pct": 0.8570530447119751,
+    "lower_pct": 1.2361520621107858,
+    "est_pct": 36.56494098531811,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.2361520621107858
+   },
+   {
+    "measured_pct": 0.620300524985462,
+    "lower_pct": 1.0028910523966585,
+    "est_pct": 52.61179052298259,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.0028910523966585
+   },
+   {
+    "measured_pct": 0.73607363910587,
+    "lower_pct": 1.2079875673383011,
+    "est_pct": 511.7743436400647,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.2079875673383011
+   },
+   {
+    "measured_pct": 1.2048538003752611,
+    "lower_pct": 2.025178574241308,
+    "est_pct": 10.415252133065318,
+    "pos_pct": 0.0,
+    "general_lower_pct": 2.025178574241308
+   },
+   {
+    "measured_pct": 0.46920731671020754,
+    "lower_pct": 0.729874684974114,
+    "est_pct": 0.44300682092967825,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.729874684974114
+   }
+  ],
+  "share_explained_by_lower_median": 0.4680943329124173,
+  "C_needed_p50_p90_p100": [
+   0.0,
+   0.13095769372640123,
+   4.0701190753890755
+  ],
+  "upper_over_measured_median_C1": 10.235317645395249
+ },
+ "any": {
+  "load_cases": 84,
+  "lower_bound_holds": [
+   0.3062,
+   0.5117
+  ],
+  "lower_bound_violations": [
+   {
+    "measured_pct": -0.13689710790960585,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   {
+    "measured_pct": -0.138920346296417,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   {
+    "measured_pct": -0.0601854519171075,
+    "lower_pct": 0.012479854163881646,
+    "est_pct": 6.107385798550056,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.012479854163881646
+   },
+   {
+    "measured_pct": -0.04984085932439235,
+    "lower_pct": 0.01213268528948085,
+    "est_pct": 4.614349331368745,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.01213268528948085
+   },
+   {
+    "measured_pct": -0.07099911454050614,
+    "lower_pct": 0.00388366647697007,
+    "est_pct": 3.972883047908114,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.00388366647697007
+   },
+   {
+    "measured_pct": -1.716665756737711,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0
+   },
+   {
+    "measured_pct": -2.096369339857955,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0
+   },
+   {
+    "measured_pct": -0.7018051441540585,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0
+   },
+   {
+    "measured_pct": -0.8786255546248207,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0
+   },
+   {
+    "measured_pct": 0.9556102559737039,
+    "lower_pct": 1.2994831863900227,
+    "est_pct": 99.9919691461674,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.2994831863900227
+   }
+  ],
+  "share_explained_by_lower_median": 0.4680943329124173,
+  "C_needed_p50_p90_p100": [
+   0.0,
+   0.15336112546855055,
+   4.0701190753890755
+  ],
+  "upper_over_measured_median_C1": 10.235317645395249
+ },
+ "seconds_median": {
+  "seconds_original": 29.74909281730652,
+  "seconds_simplified": 8.889120101928711,
+  "seconds_estimator": 4.172237157821655
+ }
+}

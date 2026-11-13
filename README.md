@@ -71,7 +71,7 @@ flowchart LR
     D --> E
     E --> F[Decide<br/>preset × mesh size h]
     F --> G[OpenCASCADE defeaturing<br/>guarded, never invalid]
-    G --> H[Validate<br/>deviation · gmsh mesh · stress check]
+    G --> H[Validate<br/>deviation · gmsh mesh · stress check<br/>fixed-grid check when meshing fails]
     H --> I[STEP · report · Python · C++]
     J([Plain-English request]) -. local LLM tool calls .-> F
 ```
@@ -84,10 +84,12 @@ flowchart LR
 | Network | `net.py`, `brepfeat.py` | Two models, averaged. Each face is described by a 10×10 grid of points and normals sampled on its surface (the UV-Net idea) and each edge by a sampled curve. Winged-edge walks around every coedge pass information through the B-Rep topology (the BRepNet idea). Two layers of face self-attention let distant faces of the same part inform each other, and part-wide context and the rule recognizer's guesses are inputs too. One head predicts DeFeat's classes, a second predicts the Fusion 360 Gallery's eight modelling labels. 2.8–2.9 million parameters per model; the second model drops the surface grids, so the pair disagree in useful ways |
 | Fuse | `recognize.py` | The network confirms or vetoes rule fillets and chamfers, adds the ones the rules miss, and fills in steps and cut-outs the rules can't see. Its cut-history head marks small cut-outs only: a large design cut is part of the shape, not a feature to remove. Every threshold was tuned on validation parts |
 | Decide | `decide.py` | Presets for static, modal, thermal and CFD. Thresholds are multiples of the target mesh size *h*, because a feature only hurts the mesh when it's small relative to the elements. When the stress check will run, it judges what can go, so nothing is held back up front. Without it, a volume budget keeps the total change small |
-| Execute | `execute.py` | `BRepAlgoAPI_Defeaturing` (run in parallel) inside a killable worker process, so hangs and native crashes are contained. It tries a single pass first, then goes feature by feature, then retries a refused blend with its tangent neighbours. Features are tracked exactly through each removal using the kernel's own history. A removal that adds or takes away more material than its feature could account for is rejected |
+| Execute | `execute.py` | `BRepAlgoAPI_Defeaturing` (run in parallel) inside a killable worker process, so hangs and native crashes are contained. It tries a single pass first, then goes feature by feature, then retries a refused blend with its tangent neighbours. Features are tracked exactly through each removal using the kernel's own history, and a feature counts as removed only when that history shows every one of its faces deleted. A boss or hole takes its own edge blends and chamfers with it (a dowel's tip chamfer, the blend at a blind hole's bottom), and any refused feature is retried with the tangent sliver faces around it. A removal that adds or takes away more material than its feature could account for is rejected |
+| Speed | `validate.py`, `session.py` | The original part's mesh and stress solve depend only on its geometry, mesh size and loads, never on what is removed. The app starts it in a background process as soon as a part is opened, keeps it for every run and every stress-guard re-check, and starts the original's finer confirmation solve as soon as a result lands near the limit, so a run usually only has to solve the simplified part |
 | Mesh | `validate.py` | Deterministic gmsh meshing of both models at the same *h*. When gmsh can't mesh the CAD surfaces, DeFeat re-meshes from a watertight OpenCASCADE triangulation of the part before it ever coarsens the mesh, so awkward real parts still get checked at the working size |
+| Grid check | `immersed.py` | For a part neither gmsh route can mesh, the stress check runs on a fixed grid instead (the finite cell method). The part is placed in about 2,500 regular cells with quadratic elements; generalized winding numbers decide what is inside, and in the cells the surface cuts through, integration weights are fitted so the cut volume and its moments come out exact. No mesh of the part is needed, so self-touching and non-manifold surfaces are fine. It is slower and more cautious than the tetrahedral check, so it uses a tighter 3% tolerance |
 | Validate | `validate.py`, `fea.py`, `sensitivity.py` | Surface deviation, a linear static solve on both meshes (scikit-fem, quadratic tetrahedra, four load cases) and a **stress guard**. The working mesh can now be 45,000 elements instead of 17,000 (the old cap left stiffness about 2.5% short of converged). Up to 250,000 unknowns one sparse LU factorization serves all four load cases; beyond that, for the finer meshes of the convergence check, smoothed-aggregation algebraic multigrid (pyamg) with the six rigid-body modes as its near-null space takes over. It matches the direct solver to 1e-12 and uses memory linear in the mesh. Multigrid isn't used below that size because on thin-walled parts it needs about 200 iterations per load case, which made it slower than a single factorization. When a load case moves more than 5% (for the static preset: deflection or peak stress), it prices each removed feature by the stress field around it, puts back the costliest first, and bisects to keep as many removals as stay within tolerance |
-| Export | `codegen.py` | Python (OCP) and C++ (OCCT) programs that locate faces by geometric signature |
+| Export | `codegen.py` | Python (OCP) and C++ (OCCT) programs that replay the exact kernel calls the app made, in order: each face is found once in the original file by its geometric signature, then followed through every call by the kernel's history. The Python script reproduces the app's result to 1e-12 in volume on the samples; the C++ program uses the same calls but hasn't been compiled on this release |
 | Assistant | `agent.py`, `server.py` | Ollama tool calling (`qwen3.5:4b`) with a keyword fallback that needs no model. Every proposed call is **verified against the sentence** before it runs: negation and verbs such as *fill*, *plug* and *suppress* decide keep vs. remove, classes the model missed are added, classes the user never mentioned are dropped, and questions run nothing. Sandboxed text-to-CAD (CadQuery) measures every candidate it builds against the request, repairs from the measured error, and picks among several candidates by fewest mismatches, then by agreement with the others |
 
 ## Benchmarks
@@ -170,6 +172,7 @@ The run uses 500 Fusion 360 test parts that none of the other benchmarks or tuni
 | Refused by the kernel, kept and reported | 138 |
 | Kept because no stress comparison came back, so only the volume-budget removals were allowed | 215 (110 of them on one part) |
 
+- **Correction to the removal counts above.** This run counted a feature as removed when the face count dropped. An audit on 300 validation parts found that a single kernel pass can lower the face count while a blend stays in place: 35 features on 12 of 136 parts were reported removed but were still there, overstating reported removals by about 7.7%. The counts above come from that version. The current release only counts a feature as removed when the kernel's history shows all its faces deleted, and retries the rest one by one. The validity, completion and stress-check results are unaffected, since they were measured on the actual output parts.
 - **Parts without a stress comparison: 9 of 206, down from 16 of 220 on the earlier run.** Seven have surfaces gmsh can't mesh by either route and one was too heavy for this laptop. One comes out unchanged; the others keep only small volume-budget removals, and the app tells the user plainly that the part has no stress check.
 - **What closed the gap:** 52 parts were meshed through the triangulation route after the CAD-surface mesher failed, at the working mesh size rather than a coarser one. Parts where removing an end feature used to wipe out the clamped or loaded region now keep those features and are checked; on the earlier run two parts were lost that way, here none.
 - **Measured before two last fixes**, which were found on the printer chassis after this run and so can't have been tuned on it: a mesh round that times out now skips straight to a coarser mesh instead of retrying at the same size, and meshes up to the 45,000-element cap use one LU factorization instead of multigrid. Both only affect parts that were running out of time, so the numbers above are, if anything, conservative.
@@ -193,14 +196,26 @@ The run uses 500 Fusion 360 test parts that none of the other benchmarks or tuni
 
 So a pass is strong evidence, not a guarantee. Treat anything close to 5% as a reason to look.
 
+**When gmsh can't mesh the part: the grid check.** Calibrated on validation parts against the tetrahedral check, both run with the same load cases and end regions (75 parts, 19 with something removed and both checks available):
+
+| Grid check vs. tetrahedral check | Result |
+|---|---|
+| Difference per load case | median 0.2 points, 90th percentile 4.6 |
+| Parts the tetrahedral check fails at 5% that the grid passes | **0 of 5**, at every grid tolerance from 2% to 5% |
+| Tetrahedral passes the grid also passes, at its 3% tolerance | 79% (52–92%) |
+| Part volume on the grid | median error −0.26% |
+| Time | median 316 s, against 23 s for the tetrahedral check |
+
+So the grid mostly errs toward caution: it never let through a part the regular check would fail, and it keeps about four in five of the removals the regular check would keep. It only runs when meshing has failed, so its cost lands on the parts that would otherwise get no check at all.
+
 **Worked examples** (bundled samples, static preset):
 
 | Part | Removed | Faces | Tetrahedra | Worst load case | Stress guard |
 |---|---|---|---|---|---|
-| L-bracket | 22 / 27 | 84 → 32 | **−50%** | 4.0% | saw 6.3%, put 1 feature back |
-| Printer chassis | 21 / 31 | 261 → 105 | **−42%** | 0.6% | not needed |
+| L-bracket | 20 / 27 | 84 → 22 | **−46%** | 3.8% | saw 7.8%, put 2 features back |
+| Printer chassis | 21 / 31 | 261 → 105 | **−42%** | 3.3% | not needed |
 
-Both are checked on the larger 1.1 working mesh (the chassis's is 42,000 elements). The coarser mesh of earlier releases understated how much the bracket's removals mattered: there the guard saw 5.0% and the worst case ended at 2.8%.
+Both are checked on the larger working mesh (the chassis's is 46,000 elements) and re-measured for this release. The bracket now really removes its blends and chamfers (earlier releases reported 22 removed while leaving 6 blend faces in place, ending at 32 faces), so its removals matter more: the guard saw 7.8% and put 2 back. The chassis's 0.6% in the previous README was out of date: release 1.1 itself gives 3.3% (bending about the wide axis), the same as now.
 
 ### Assistant
 
@@ -292,6 +307,8 @@ python -m bench.mfcad --n 99999                           # every MFCAD test par
 python -m bench.robust --n 500 --skip 2000 --mesh 500 --workers 5 --timeout 2400 --tag robustness_v11
 python -m bench.convergence --n 400 --workers 8           # does the stress check depend on the mesh? (validation parts)
 python -m bench.solver_check --n 40                       # stress solver vs CalculiX and beam theory
+python -m bench.immersed_check --n 75 --workers 3         # grid check vs tetrahedral check (validation parts)
+python -m bench.removal_audit --n 300                     # are features reported removed really gone? (validation parts)
 python -m bench.assistant
 python -m bench.assistant_v4 --tag after                  # fourth held-out set, scored once
 python docs/make_charts.py          # regenerate the charts above
@@ -305,17 +322,20 @@ Version 1.1 takes ideas from work published in the last few months and adapts th
 - **Mesh-independent checking.** Work on a posteriori error estimation for defeatured models (arXiv 2503.19784, revised November 2026) and on solver-level robustness for automated meshing pipelines (arXiv 2512.20124) pointed at the two things that left parts unchecked: meshes too coarse to trust, and meshes that never got built. DeFeat answers with a working mesh 2.6× larger (and algebraic multigrid for the finer meshes that check it), and a triangulation fallback that keeps the working size instead of coarsening.
 - **Verified tool calls.** Small models drop or flip constraints when a prompt carries many rules (arXiv 2606.25605), and checking each tool call against explicit postconditions catches most of it (arXiv 2608.02645). DeFeat checks every call against what the sentence actually says before running it.
 - **Measured feedback for text-to-CAD.** CADSmith (arXiv 2603.26512) repairs generated CAD from measured geometry instead of from the model's own judgement, and arXiv 2608.09706 picks among several candidates by agreement when no verifier is available. DeFeat measures every candidate against the requested dimensions, repairs from the measured error, and only falls back to agreement to break ties.
+- **Meshless checking from computational-design practice.** Immersed-grid analysis as used in CDFAM-community tools (finite cell method: Parvizian, Düster and Rank 2007; moment fitting: Joulaian et al. 2016) and generalized winding numbers (Jacobson et al. 2013) give DeFeat a stress check that needs no mesh of the part.
 - **Canonical inputs for recognition** (arXiv 2609.11573) was tested as rotation averaging and dropped; see *Tried and dropped*.
 
 ## Limits
 - **The stress check is a comparison tool, not a replacement for the real CAE run.** It's linear and isotropic, and the automatic supports and loads are a stand-in for yours. Choose your own in the app when you know them.
 - **A pass isn't a guarantee.** 3 of 42 checked parts that passed on the working mesh failed on a finer one, and that check only reaches parts small enough for the finer mesh.
-- **A few parts still get no stress check.** 9 of 206 on the real-part run. Most have non-manifold or self-touching surfaces that neither gmsh route can mesh (one part has 42 edges shared by four faces each). They keep only small removals, and the app says so. Healing such geometry is the next step.
+- **Parts gmsh can't mesh now get the slower grid check.** On the real-part run, 9 of 206 had no stress check; the grid check was added after that run, so how many of them it now covers hasn't been scored on test parts. It is calibrated on validation parts only, and a few parts can still fail both.
 - **Recognition isn't perfect.** Fillets and chamfers are near 0.97–0.99 F1, but no model here is at 1.0. Rare labels such as revolve ends are weak (IoU 0.32).
 - **The segmentation comparison isn't exact.** The published scores use an earlier version of the dataset.
 - **NX files need exporting to STEP first.** There's no open-source `.prt` reader, and the NX journal hasn't run in a real NX install.
 - **FreeCAD macro:** re-tested on this release in headless FreeCAD. The full GUI run dates from an earlier release; see [`freecad/README.md`](freecad/README.md).
 - **The assistant can still misread a command.** On fresh commands, both the local LLM and the keyword fallback get about 24 in 25 exactly right; exceptions ("everything *except* the holes") are the usual miss. Text-to-CAD misses the requested dimensions on about 1 part in 20, so check what it builds.
+
+**In progress, not shipped as a guarantee:** judging a change from one solve of the simplified part (the strain energy in the filled-in material plus the Antolin–Chanon defeaturing estimator, arXiv 2212.03141). On validation parts it held as a lower bound in 26 of 37 load cases where the reference had converged, not every case, so the app doesn't rely on it. It is being turned into a per-feature importance score for choosing which features to put back first.
 
 **Tried and dropped:** fTetWild as a last-resort mesher for the non-manifold parts (no mesh within 400 s even on the L-bracket on this laptop), averaging the network over 4 or 8 rotations of each part at test time (+0.14 points accuracy on validation, inside the noise, at 4–8× the cost), rebuilding parts from cells instead of removing faces (more failures, not fewer), a fixed stress hot-spot rule in place of the guard's pricing (it put back the wrong features), training without random rotations (worse on rotated parts), and retrying refused removals with a fuzzy tolerance (0 of 83 retries succeeded).
 

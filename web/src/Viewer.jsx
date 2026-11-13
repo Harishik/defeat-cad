@@ -228,8 +228,11 @@ export default function Viewer({ original, result, features, mode, wipe, selecte
       mesh.children[0].material.clippingPlanes = planes
       mesh.material.needsUpdate = true
     }
+    // a newer view mode cancels any cross-dissolve still running, so it can't fade a model out afterwards
+    const fade = (s.fade = (s.fade || 0) + 1)
     if (mode === 'compare' && r) {
-      o.visible = true; r.visible = true
+      // both halves at full opacity: an earlier switch to one model may have faded the other to zero
+      for (const m of [o, r]) { m.visible = true; m.material.opacity = 1 }
       setClip(o, [s.clipA]); setClip(r, [s.clipB])
     } else {
       setClip(o, null); setClip(r, null)
@@ -240,6 +243,7 @@ export default function Viewer({ original, result, features, mode, wipe, selecte
         to.visible = true
         const t0 = performance.now()
         s.anim.push((t) => {
+          if (s.fade !== fade) return false
           const k = Math.min(1, (t - t0) / 650)
           const e = 1 - Math.pow(1 - k, 3)
           to.material.opacity = e

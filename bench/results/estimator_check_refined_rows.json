@@ -1,0 +1,1115 @@
+[
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": -0.13689710790960585,
+    "lower_pct": 0.001047554039860541,
+    "est_pct": 0.0,
+    "measured_fine_pct": -0.024729544976497236,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "bend_wide": {
+    "measured_pct": 0.10381362693658247,
+    "lower_pct": 0.002415726089833823,
+    "est_pct": 0.0,
+    "measured_fine_pct": -0.054783664484662806,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "tension": {
+    "measured_pct": -0.138920346296417,
+    "lower_pct": 0.0029340680793235887,
+    "est_pct": 0.0,
+    "measured_fine_pct": -0.025921716131208753,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "torsion": {
+    "measured_pct": 0.10654197490564445,
+    "lower_pct": 9.605013683447378e-05,
+    "est_pct": 0.0,
+    "measured_fine_pct": -0.019434830267882883,
+    "pos_pct": null,
+    "general_lower_pct": null
+   }
+  },
+  "lower_method": "dense sampling near features",
+  "n_removed": 1,
+  "negative": 0,
+  "positive": 1,
+  "mixed": 0,
+  "tets": 10607,
+  "tets_fine": [
+   29914,
+   30082
+  ],
+  "seconds_original": 38.20930314064026,
+  "seconds_simplified": 31.205969095230103,
+  "seconds_estimator": 7.519551992416382,
+  "ok": true,
+  "seconds": 994.155,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/23519_31078773_3.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": -0.0601854519171075,
+    "lower_pct": 0.012737479900259554,
+    "est_pct": 1.2368548788347937,
+    "measured_fine_pct": -0.032934871972801594,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.012737479900259554
+   },
+   "bend_wide": {
+    "measured_pct": -0.04984085932439235,
+    "lower_pct": 0.012450466347494252,
+    "est_pct": 0.8452707435101673,
+    "measured_fine_pct": -0.04035322769630239,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.012450466347494252
+   },
+   "tension": {
+    "measured_pct": -0.07099911454050614,
+    "lower_pct": 0.003987106894793334,
+    "est_pct": 0.27599966826426503,
+    "measured_fine_pct": -0.06719482035782345,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.003987106894793334
+   },
+   "torsion": {
+    "measured_pct": 0.08236587411169291,
+    "lower_pct": 0.0064281725057162556,
+    "est_pct": 0.0872651499430028,
+    "measured_fine_pct": 0.004622035430240736,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0064281725057162556
+   }
+  },
+  "lower_method": "dense sampling near features",
+  "n_removed": 1,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 15652,
+  "tets_fine": [
+   23589,
+   23457
+  ],
+  "seconds_original": 39.629209995269775,
+  "seconds_simplified": 31.572210788726807,
+  "seconds_estimator": 10.201117753982544,
+  "ok": true,
+  "seconds": 305.025,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/109576_3504cc04_0.stp"
+ },
+ {
+  "ok": false,
+  "error": "timeout",
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/52890_d9c33062_10.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 0.9556102559737039,
+    "lower_pct": 1.4077527339093114,
+    "est_pct": 47.670741819941135,
+    "measured_fine_pct": 1.8131181776438974,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.4077527339093114
+   },
+   "bend_wide": {
+    "measured_pct": 0.2920331852657023,
+    "lower_pct": 1.504103009126909,
+    "est_pct": 27.858265591839015,
+    "measured_fine_pct": 1.0092456773041552,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.504103009126909
+   },
+   "tension": {
+    "measured_pct": 0.8570530447119751,
+    "lower_pct": 1.3376105733876682,
+    "est_pct": 19.384268621030774,
+    "measured_fine_pct": 1.2202143531515603,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.3376105733876682
+   },
+   "torsion": {
+    "measured_pct": 0.620300524985462,
+    "lower_pct": 1.1117128943724228,
+    "est_pct": 22.090584974807747,
+    "measured_fine_pct": 1.3446471984112425,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.1117128943724228
+   }
+  },
+  "lower_method": "dense sampling near features",
+  "n_removed": 1,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 11814,
+  "tets_fine": [
+   24390,
+   17153
+  ],
+  "seconds_original": 35.4819917678833,
+  "seconds_simplified": 7.976426839828491,
+  "seconds_estimator": 3.2293858528137207,
+  "ok": true,
+  "seconds": 212.817,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/45312_89e95202_0.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 0.73607363910587,
+    "lower_pct": 0.8085329225740014,
+    "est_pct": 0.03101960545295486,
+    "measured_fine_pct": 1.0156830348336867,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.8085329225740014
+   },
+   "bend_wide": {
+    "measured_pct": 1.2048538003752611,
+    "lower_pct": 1.2104925853173485,
+    "est_pct": 0.010911505684919914,
+    "measured_fine_pct": 1.0264013693054501,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.2104925853173485
+   },
+   "tension": {
+    "measured_pct": 0.46920731671020754,
+    "lower_pct": 0.4596083156993432,
+    "est_pct": 0.11854379646359509,
+    "measured_fine_pct": 0.3909039022726978,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.4596083156993432
+   },
+   "torsion": {
+    "measured_pct": 0.5863795216868274,
+    "lower_pct": 0.5383153278695427,
+    "est_pct": 2.6305623839921224,
+    "measured_fine_pct": 0.9283760020065484,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.5383153278695427
+   }
+  },
+  "lower_method": "added-material mesh",
+  "n_removed": 1,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 6335,
+  "tets_fine": [
+   8248,
+   8169
+  ],
+  "seconds_original": 6.779973983764648,
+  "seconds_simplified": 6.079649925231934,
+  "seconds_estimator": 2.039824962615967,
+  "ok": true,
+  "seconds": 35.711,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/41512_c1a779f2_6.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": -0.978972519124516,
+    "lower_pct": 0.002312357842122239,
+    "est_pct": 0.026987952849999775,
+    "measured_fine_pct": -0.9752587374828585,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.002312357842122239
+   },
+   "bend_wide": {
+    "measured_pct": -1.0702227226138517,
+    "lower_pct": 0.002369800905241192,
+    "est_pct": 0.027426001466556778,
+    "measured_fine_pct": -0.9405923979413752,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.002369800905241192
+   },
+   "tension": {
+    "measured_pct": 0.038015238682484485,
+    "lower_pct": 0.03578636818201811,
+    "est_pct": 1.4127509692194746,
+    "measured_fine_pct": 0.11950406152120431,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.03578636818201811
+   },
+   "torsion": {
+    "measured_pct": -0.47990116250091547,
+    "lower_pct": 0.06447869198239448,
+    "est_pct": 0.9883755348316464,
+    "measured_fine_pct": -0.46492596191140595,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.06447869198239448
+   }
+  },
+  "lower_method": "added-material mesh",
+  "n_removed": 1,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 3373,
+  "tets_fine": [
+   11614,
+   11722
+  ],
+  "seconds_original": 3.9370667934417725,
+  "seconds_simplified": 4.207830190658569,
+  "seconds_estimator": 1.3194868564605713,
+  "ok": true,
+  "seconds": 95.757,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/31855_b100a912_11.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": -0.7752980609768219,
+    "lower_pct": 8.294613570631091e-07,
+    "est_pct": 0.0,
+    "measured_fine_pct": -0.767084430596008,
+    "pos_pct": 0.0,
+    "general_lower_pct": 8.294613570631091e-07
+   },
+   "bend_wide": {
+    "measured_pct": -0.03502133492057331,
+    "lower_pct": 3.427722732913692e-08,
+    "est_pct": 0.0,
+    "measured_fine_pct": -0.06617601977514095,
+    "pos_pct": 0.0,
+    "general_lower_pct": 3.427722732913692e-08
+   },
+   "tension": {
+    "measured_pct": -0.9648763202368552,
+    "lower_pct": 4.414973086178999e-06,
+    "est_pct": 0.0,
+    "measured_fine_pct": -1.0176158573953769,
+    "pos_pct": 0.0,
+    "general_lower_pct": 4.414973086178999e-06
+   },
+   "torsion": {
+    "measured_pct": -2.3415561424770783,
+    "lower_pct": 8.826180267151834e-06,
+    "est_pct": 0.0,
+    "measured_fine_pct": -2.306304587864876,
+    "pos_pct": 0.0,
+    "general_lower_pct": 8.826180267151834e-06
+   }
+  },
+  "lower_method": "dense sampling near features",
+  "n_removed": 4,
+  "negative": 0,
+  "positive": 0,
+  "mixed": 4,
+  "tets": 2561,
+  "tets_fine": [
+   3638,
+   3213
+  ],
+  "seconds_original": 2.2887539863586426,
+  "seconds_simplified": 1.8238630294799805,
+  "seconds_estimator": 6.988534927368164,
+  "ok": true,
+  "seconds": 18.671,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/128043_9f8cd69e_0.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 0.3841376369169695,
+    "lower_pct": 0.30973376383170725,
+    "est_pct": 18.869470540247846,
+    "measured_fine_pct": 0.42116380564250594,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.30973376383170725
+   },
+   "bend_wide": {
+    "measured_pct": 0.5751804813715123,
+    "lower_pct": 0.3334717059917223,
+    "est_pct": 30.410044031960297,
+    "measured_fine_pct": 0.6441925441711621,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.3334717059917223
+   },
+   "tension": {
+    "measured_pct": 0.1840660320645093,
+    "lower_pct": 0.11029802512286778,
+    "est_pct": 6.47204319965907,
+    "measured_fine_pct": 0.2893195056112612,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.11029802512286778
+   },
+   "torsion": {
+    "measured_pct": 0.05182898843791843,
+    "lower_pct": 0.08737624165731399,
+    "est_pct": 5.925910339660711,
+    "measured_fine_pct": -0.032258837181145666,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.08737624165731399
+   }
+  },
+  "lower_method": "dense sampling near features",
+  "n_removed": 1,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 30853,
+  "tets_fine": [
+   45353,
+   13916
+  ],
+  "seconds_original": 290.10786485671997,
+  "seconds_simplified": 7.081626892089844,
+  "seconds_estimator": 7.468377113342285,
+  "ok": true,
+  "seconds": 1510.371,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/121949_e10b5e85_9.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 0.653347254148937,
+    "lower_pct": 0.030382521966426698,
+    "est_pct": 0.43897091609033967,
+    "measured_fine_pct": 0.7997636324426446,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.030382521966426698
+   },
+   "bend_wide": {
+    "measured_pct": 0.07718374543355762,
+    "lower_pct": 0.0005744349547881573,
+    "est_pct": 0.013638651662014781,
+    "measured_fine_pct": 0.1450646681360742,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0005744349547881573
+   },
+   "tension": {
+    "measured_pct": 1.1692971253884852,
+    "lower_pct": 0.01986171637449889,
+    "est_pct": 0.5737924956711624,
+    "measured_fine_pct": 1.0964141535365917,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.01986171637449889
+   },
+   "torsion": {
+    "measured_pct": 4.1609910187057295,
+    "lower_pct": 0.1640986887611748,
+    "est_pct": 2.3946345370804285,
+    "measured_fine_pct": 3.9609389535321364,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.1640986887611748
+   }
+  },
+  "lower_method": "added-material mesh",
+  "n_removed": 1,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 3014,
+  "tets_fine": [
+   3411,
+   2488
+  ],
+  "seconds_original": 3.5490097999572754,
+  "seconds_simplified": 2.0054640769958496,
+  "seconds_estimator": 1.220055103302002,
+  "ok": true,
+  "seconds": 15.775,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/42005_3da46d94_0.stp"
+ },
+ {
+  "ok": false,
+  "error": "RuntimeError: the iterative solver did not converge",
+  "seconds": 951.034,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/124428_06582197_0.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 2.4301321907795654,
+    "lower_pct": 1.1366258667160136,
+    "est_pct": 12.953537676976298,
+    "measured_fine_pct": 2.5389851764564897,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.1366258667160136
+   },
+   "bend_wide": {
+    "measured_pct": 2.685476501460433,
+    "lower_pct": 1.1300593375294894,
+    "est_pct": 13.579636027629574,
+    "measured_fine_pct": 2.815986692566027,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.1300593375294894
+   },
+   "tension": {
+    "measured_pct": 1.1047393036149822,
+    "lower_pct": 0.44704329555575545,
+    "est_pct": 5.656002345252088,
+    "measured_fine_pct": 1.2244743487185084,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.44704329555575545
+   },
+   "torsion": {
+    "measured_pct": 1.906740887918442,
+    "lower_pct": 0.9277716016825986,
+    "est_pct": 10.421448646630122,
+    "measured_fine_pct": 1.9662918822649589,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.9277716016825986
+   }
+  },
+  "lower_method": "dense sampling near features",
+  "n_removed": 1,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 9062,
+  "tets_fine": [
+   18313,
+   17633
+  ],
+  "seconds_original": 13.02878212928772,
+  "seconds_simplified": 11.90065312385559,
+  "seconds_estimator": 6.5984368324279785,
+  "ok": true,
+  "seconds": 161.969,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/24470_21c25a2d_9.stp"
+ },
+ {
+  "ok": false,
+  "error": "native crash",
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/138454_c91f4eb9_0.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 4.333435793311215,
+    "lower_pct": 1.0736370308382055,
+    "est_pct": 23.523857065962122,
+    "measured_fine_pct": 2.941312936672664,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.0736370308382055
+   },
+   "bend_wide": {
+    "measured_pct": 3.839299045293051,
+    "lower_pct": 1.210503991153008,
+    "est_pct": 26.67440625791355,
+    "measured_fine_pct": 3.4407674232655054,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.210503991153008
+   },
+   "tension": {
+    "measured_pct": 2.7865945719103595,
+    "lower_pct": 0.9089387790156787,
+    "est_pct": 20.84360520278972,
+    "measured_fine_pct": 2.629628175988473,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.9089387790156787
+   },
+   "torsion": {
+    "measured_pct": 2.8219321889988787,
+    "lower_pct": 1.0824857199265394,
+    "est_pct": 19.899885833126973,
+    "measured_fine_pct": 2.7323002562577323,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.0824857199265394
+   }
+  },
+  "lower_method": "dense sampling near features",
+  "n_removed": 7,
+  "negative": 7,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 48356,
+  "tets_fine": [
+   83648,
+   53902
+  ],
+  "seconds_original": 554.3120620250702,
+  "seconds_simplified": 288.65678310394287,
+  "seconds_estimator": 14.497031927108765,
+  "ok": true,
+  "seconds": 1921.342,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/143823_1b04bf80_12.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": -62.87026907068414,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "measured_fine_pct": -59.76105918542069,
+    "pos_pct": 6309.95693396066,
+    "general_lower_pct": -6309.95693396066
+   },
+   "bend_wide": {
+    "measured_pct": -47.458542044316005,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "measured_fine_pct": -45.35592357790565,
+    "pos_pct": 4960.832506620311,
+    "general_lower_pct": -4960.832506620311
+   },
+   "tension": {
+    "measured_pct": -59.579456467637904,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "measured_fine_pct": -58.58032841337781,
+    "pos_pct": 5066.592873378157,
+    "general_lower_pct": -5066.592873378157
+   },
+   "torsion": {
+    "measured_pct": -60.358966295976074,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "measured_fine_pct": -57.481062342463424,
+    "pos_pct": 6089.938256684969,
+    "general_lower_pct": -6089.938256684969
+   }
+  },
+  "lower_method": "added-material mesh",
+  "n_removed": 7,
+  "negative": 0,
+  "positive": 7,
+  "mixed": 0,
+  "tets": 9998,
+  "tets_fine": [
+   17891,
+   15637
+  ],
+  "seconds_original": 13.571682929992676,
+  "seconds_simplified": 11.378008127212524,
+  "seconds_estimator": 5.675663948059082,
+  "ok": true,
+  "seconds": 103.319,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/99836_9013c1e5_0.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 12.83321647110094,
+    "lower_pct": 8.334251380001984,
+    "est_pct": 54.88664537730366,
+    "measured_fine_pct": 12.795066936327933,
+    "pos_pct": 8.539100156033566,
+    "general_lower_pct": -0.20484877603158225
+   },
+   "bend_wide": {
+    "measured_pct": 4.049280170401492,
+    "lower_pct": 2.9040739311952573,
+    "est_pct": 15.65605487747821,
+    "measured_fine_pct": 4.023623089740582,
+    "pos_pct": 0.18125959465562375,
+    "general_lower_pct": 2.7228143365396336
+   },
+   "tension": {
+    "measured_pct": 2.9988368213134926,
+    "lower_pct": 1.5072374569999416,
+    "est_pct": 12.391512708984807,
+    "measured_fine_pct": 2.927867213547182,
+    "pos_pct": 0.164224819135838,
+    "general_lower_pct": 1.3430126378641036
+   },
+   "torsion": {
+    "measured_pct": 3.9684733862655936,
+    "lower_pct": 2.890946472122877,
+    "est_pct": 36.399669532253405,
+    "measured_fine_pct": 3.763273913717415,
+    "pos_pct": 3.9348914438930476,
+    "general_lower_pct": -1.0439449717701708
+   }
+  },
+  "lower_method": "added-material mesh",
+  "n_removed": 9,
+  "negative": 8,
+  "positive": 1,
+  "mixed": 0,
+  "tets": 5758,
+  "tets_fine": [
+   9688,
+   9335
+  ],
+  "seconds_original": 9.009307861328125,
+  "seconds_simplified": 8.47948431968689,
+  "seconds_estimator": 25.809655904769897,
+  "ok": true,
+  "seconds": 82.378,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/26394_b384e5f1_1.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": -0.30327525474097083,
+    "lower_pct": 0.12711256860179848,
+    "est_pct": 0.41019870572031875,
+    "measured_fine_pct": 0.6499891372008967,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "bend_wide": {
+    "measured_pct": -0.294849517312065,
+    "lower_pct": 0.05269614837018425,
+    "est_pct": 0.21593377624614934,
+    "measured_fine_pct": 0.6113437950529403,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "tension": {
+    "measured_pct": 15.983828481933267,
+    "lower_pct": 7.4773975793475405,
+    "est_pct": 16.05985906457493,
+    "measured_fine_pct": 16.893142374185636,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "torsion": {
+    "measured_pct": 16.57193425041103,
+    "lower_pct": 7.900762351573531,
+    "est_pct": 10.96345356500573,
+    "measured_fine_pct": 18.648454393569175,
+    "pos_pct": null,
+    "general_lower_pct": null
+   }
+  },
+  "lower_method": "dense sampling near features",
+  "n_removed": 3,
+  "negative": 2,
+  "positive": 0,
+  "mixed": 1,
+  "tets": 13696,
+  "tets_fine": [
+   37943,
+   5779
+  ],
+  "seconds_original": 33.15338492393494,
+  "seconds_simplified": 2.1542630195617676,
+  "seconds_estimator": 35.29106593132019,
+  "ok": true,
+  "seconds": 262.294,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/130916_db1e9b1f_0.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 1.9180131060272683,
+    "lower_pct": 0.7722237502247272,
+    "est_pct": 2.6489831556237236,
+    "measured_fine_pct": 2.0108478508618575,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.7722237502247272
+   },
+   "bend_wide": {
+    "measured_pct": 0.07309363981782714,
+    "lower_pct": 0.04118731674819658,
+    "est_pct": 0.13503316070853794,
+    "measured_fine_pct": 0.2790759883253154,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.04118731674819658
+   },
+   "tension": {
+    "measured_pct": 6.992966197080577,
+    "lower_pct": 0.8574264460859684,
+    "est_pct": 2.6061878396237392,
+    "measured_fine_pct": 7.98006646330235,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.8574264460859684
+   },
+   "torsion": {
+    "measured_pct": 11.913132197404611,
+    "lower_pct": 5.4144236635068745,
+    "est_pct": 17.973023823672495,
+    "measured_fine_pct": 13.917144986439368,
+    "pos_pct": 0.0,
+    "general_lower_pct": 5.4144236635068745
+   }
+  },
+  "lower_method": "added-material mesh",
+  "n_removed": 2,
+  "negative": 2,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 22894,
+  "tets_fine": [
+   27885,
+   28794
+  ],
+  "seconds_original": 29.507984161376953,
+  "seconds_simplified": 35.748218059539795,
+  "seconds_estimator": 9.097836017608643,
+  "ok": true,
+  "seconds": 171.201,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/70292_0a956492_7.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 0.11258774508936444,
+    "lower_pct": 0.0005664735630924959,
+    "est_pct": 0.0065853796077892865,
+    "measured_fine_pct": 0.11258774508936444,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0005664735630924959
+   },
+   "bend_wide": {
+    "measured_pct": 0.1636273923083694,
+    "lower_pct": 0.0005705436004021261,
+    "est_pct": 0.00670701729923896,
+    "measured_fine_pct": 0.1636273923083694,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0005705436004021261
+   },
+   "tension": {
+    "measured_pct": 0.1848656193886802,
+    "lower_pct": 0.05768134928270586,
+    "est_pct": 0.6386395299944768,
+    "measured_fine_pct": 0.1848656193886802,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.05768134928270586
+   },
+   "torsion": {
+    "measured_pct": -0.03341804318610613,
+    "lower_pct": 0.014229435457403765,
+    "est_pct": 0.05222409378113235,
+    "measured_fine_pct": -0.03341804318610613,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.014229435457403765
+   }
+  },
+  "lower_method": "dense sampling near features",
+  "n_removed": 2,
+  "negative": 2,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 8978,
+  "tets_fine": [
+   8978,
+   8857
+  ],
+  "seconds_original": 21.981998920440674,
+  "seconds_simplified": 30.102126121520996,
+  "seconds_estimator": 29.01360297203064,
+  "ok": true,
+  "seconds": 144.218,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/23539_b3917f22_3.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 0.06777687016776934,
+    "lower_pct": 0.23219336107307473,
+    "est_pct": 0.006486227768104414,
+    "measured_fine_pct": 0.013239242583080933,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.23219336107307473
+   },
+   "bend_wide": {
+    "measured_pct": -0.06052331386619149,
+    "lower_pct": 0.225565237821621,
+    "est_pct": 0.016810041616858912,
+    "measured_fine_pct": -0.06867301607019953,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.225565237821621
+   },
+   "tension": {
+    "measured_pct": 0.18984894493155513,
+    "lower_pct": 0.3826055063597685,
+    "est_pct": 0.009807308810182774,
+    "measured_fine_pct": 0.23985862917866138,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.3826055063597685
+   },
+   "torsion": {
+    "measured_pct": 0.24843558331161894,
+    "lower_pct": 0.32183620712876887,
+    "est_pct": 0.06418835285370773,
+    "measured_fine_pct": 0.19871012190253268,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.32183620712876887
+   }
+  },
+  "lower_method": "dense sampling near features",
+  "n_removed": 18,
+  "negative": 14,
+  "positive": 0,
+  "mixed": 4,
+  "tets": 19046,
+  "tets_fine": [
+   26448,
+   16463
+  ],
+  "seconds_original": 39.85849595069885,
+  "seconds_simplified": 17.6304030418396,
+  "seconds_estimator": 101.96501302719116,
+  "ok": true,
+  "seconds": 389.18,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/21566_1004b562_0.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": -0.06645060653766462,
+    "lower_pct": 9.448901108558148e-07,
+    "est_pct": 8.725771161518935e-06,
+    "measured_fine_pct": 0.06286055856580283,
+    "pos_pct": 0.0,
+    "general_lower_pct": 9.448901108558148e-07
+   },
+   "bend_wide": {
+    "measured_pct": -0.08977763071205307,
+    "lower_pct": 7.715358700916781e-06,
+    "est_pct": 0.0001238831877314534,
+    "measured_fine_pct": -0.0023842591972029785,
+    "pos_pct": 0.0,
+    "general_lower_pct": 7.715358700916781e-06
+   },
+   "tension": {
+    "measured_pct": -0.05151047543698887,
+    "lower_pct": 3.4295444179668623e-06,
+    "est_pct": 7.947431875047735e-05,
+    "measured_fine_pct": -0.02611965564622703,
+    "pos_pct": 0.0,
+    "general_lower_pct": 3.4295444179668623e-06
+   },
+   "torsion": {
+    "measured_pct": -0.08737125596213244,
+    "lower_pct": 9.007209602314762e-05,
+    "est_pct": 0.0008094239117666564,
+    "measured_fine_pct": -0.022874538593585937,
+    "pos_pct": 0.0,
+    "general_lower_pct": 9.007209602314762e-05
+   }
+  },
+  "lower_method": "added-material mesh",
+  "n_removed": 1,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 3059,
+  "tets_fine": [
+   7616,
+   7584
+  ],
+  "seconds_original": 4.566630840301514,
+  "seconds_simplified": 4.201098918914795,
+  "seconds_estimator": 4.620944976806641,
+  "ok": true,
+  "seconds": 43.937,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/98399_1b3b0f36_4.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 3.6631718335966155,
+    "lower_pct": 1.2052557385929594,
+    "est_pct": 1.3661268986408532,
+    "measured_fine_pct": 3.643061238783259,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.2052557385929594
+   },
+   "bend_wide": {
+    "measured_pct": 255.61741234589576,
+    "lower_pct": 13.270810332820984,
+    "est_pct": 54.45772225733393,
+    "measured_fine_pct": 265.0812960912411,
+    "pos_pct": 0.0,
+    "general_lower_pct": 13.270810332820984
+   },
+   "tension": {
+    "measured_pct": 8.100987151880451,
+    "lower_pct": 0.48061566527354493,
+    "est_pct": 1.7510219860595961,
+    "measured_fine_pct": 8.445460581695105,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.48061566527354493
+   },
+   "torsion": {
+    "measured_pct": 31.744361788297738,
+    "lower_pct": 3.9581767077478283,
+    "est_pct": 7.053863006273112,
+    "measured_fine_pct": 33.66362840206412,
+    "pos_pct": 0.0,
+    "general_lower_pct": 3.9581767077478283
+   }
+  },
+  "lower_method": "dense sampling near features",
+  "n_removed": 2,
+  "negative": 2,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 7454,
+  "tets_fine": [
+   17024,
+   17265
+  ],
+  "seconds_original": 12.078859090805054,
+  "seconds_simplified": 11.793571949005127,
+  "seconds_estimator": 15.171880960464478,
+  "ok": true,
+  "seconds": 129.039,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/142246_0851be5e_1.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": -1.2462251483024378,
+    "lower_pct": 0.8419441167502136,
+    "est_pct": 33.694757687044756,
+    "measured_fine_pct": 0.6203566890528329,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.8419441167502136
+   },
+   "bend_wide": {
+    "measured_pct": -1.1589663574338709,
+    "lower_pct": 0.9273133903371932,
+    "est_pct": 48.62331023983346,
+    "measured_fine_pct": 0.889914809892141,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.9273133903371932
+   },
+   "tension": {
+    "measured_pct": -0.20656754642308042,
+    "lower_pct": 0.22921913727281445,
+    "est_pct": 10.87017745478823,
+    "measured_fine_pct": 0.44052575495027085,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.22921913727281445
+   },
+   "torsion": {
+    "measured_pct": 0.9804117675234979,
+    "lower_pct": 1.1684940798164096,
+    "est_pct": 21.54476965162789,
+    "measured_fine_pct": 1.6561570744155776,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.1684940798164096
+   }
+  },
+  "lower_method": "dense sampling near features",
+  "n_removed": 2,
+  "negative": 2,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 157369,
+  "tets_fine": [
+   157358,
+   30109
+  ],
+  "seconds_original": 645.2887532711029,
+  "seconds_simplified": 37.99734282493591,
+  "seconds_estimator": 6.986130952835083,
+  "ok": true,
+  "seconds": 1695.743,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/34522_ed4af450_0.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 1.237636687806109,
+    "lower_pct": 0.9332140205083246,
+    "est_pct": 0.061158899043776915,
+    "measured_fine_pct": 1.302205061870854,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "bend_wide": {
+    "measured_pct": 1.4135769555013817,
+    "lower_pct": 1.114312244938562,
+    "est_pct": 0.12544945553153436,
+    "measured_fine_pct": 1.5283001803380858,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "tension": {
+    "measured_pct": -0.12339011694045277,
+    "lower_pct": 0.012234627301912515,
+    "est_pct": 9.638645661722054e-05,
+    "measured_fine_pct": -0.15033077181771926,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "torsion": {
+    "measured_pct": 2.3332348609289126,
+    "lower_pct": 1.0041464110541285,
+    "est_pct": 2.776339760376804,
+    "measured_fine_pct": 1.366666495666173,
+    "pos_pct": null,
+    "general_lower_pct": null
+   }
+  },
+  "lower_method": "dense sampling near features",
+  "n_removed": 2,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 1,
+  "tets": 7119,
+  "tets_fine": [
+   9345,
+   7561
+  ],
+  "seconds_original": 9.675852060317993,
+  "seconds_simplified": 9.637261867523193,
+  "seconds_estimator": 61.67318391799927,
+  "ok": true,
+  "seconds": 200.779,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/43866_908e0b9a_51.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 1.642312005706934,
+    "lower_pct": 1.1660122923119378,
+    "est_pct": 1.1342997611271843,
+    "measured_fine_pct": 1.2411578599245516,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.1660122923119378
+   },
+   "bend_wide": {
+    "measured_pct": 0.6029728529151586,
+    "lower_pct": 0.3405512260417235,
+    "est_pct": 0.5170509089567817,
+    "measured_fine_pct": 0.202950911035128,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.3405512260417235
+   },
+   "tension": {
+    "measured_pct": 0.8951004727037929,
+    "lower_pct": 0.6429433202804702,
+    "est_pct": 0.8306979451899632,
+    "measured_fine_pct": 0.562816352539704,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.6429433202804702
+   },
+   "torsion": {
+    "measured_pct": 0.9514206580647374,
+    "lower_pct": 0.7539125203818147,
+    "est_pct": 1.2593478056843517,
+    "measured_fine_pct": 0.6076767397476669,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.7539125203818147
+   }
+  },
+  "lower_method": "added-material mesh",
+  "n_removed": 2,
+  "negative": 2,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 2341,
+  "tets_fine": [
+   6241,
+   6466
+  ],
+  "seconds_original": 2.38287091255188,
+  "seconds_simplified": 2.306104898452759,
+  "seconds_estimator": 1.1513698101043701,
+  "ok": true,
+  "seconds": 26.475,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/22124_6f71410e_7.stp"
+ },
+ {
+  "ok": false,
+  "error": "timeout",
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/142076_08d80e12_20.stp"
+ }
+]

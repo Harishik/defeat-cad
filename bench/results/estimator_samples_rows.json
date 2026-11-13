@@ -1,0 +1,72 @@
+[
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 1.9210409871911716,
+    "lower_pct": 1.7977344664119441,
+    "est_pct": 4.7682928048969195
+   },
+   "bend_wide": {
+    "measured_pct": 3.5046694838899075,
+    "lower_pct": 3.034358394467431,
+    "est_pct": 12.536837498626785
+   },
+   "tension": {
+    "measured_pct": 4.4062916835936665,
+    "lower_pct": 1.8533145601328085,
+    "est_pct": 8.121496052316015
+   },
+   "torsion": {
+    "measured_pct": 1.6558225292436726,
+    "lower_pct": 1.6649984677437812,
+    "est_pct": 10.40943008240848
+   }
+  },
+  "n_removed": 17,
+  "negative": 12,
+  "positive": 3,
+  "mixed": 2,
+  "tets": 17428,
+  "seconds_original": 25.23379611968994,
+  "seconds_simplified": 16.696069955825806,
+  "seconds_estimator": 7.576138973236084,
+  "ok": true,
+  "seconds": 64.443,
+  "item": "/Users/harishikjamwal/CAD (Defeaturing) Project/samples/l_bracket.step"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 1.3875764812619555,
+    "lower_pct": 0.36531894318432406,
+    "est_pct": 9.777990075069848
+   },
+   "bend_wide": {
+    "measured_pct": 4.115978409084465,
+    "lower_pct": 0.982781201105575,
+    "est_pct": 27.587989162774264
+   },
+   "tension": {
+    "measured_pct": -0.4558858484538634,
+    "lower_pct": 0.14264691429876733,
+    "est_pct": 1.9325156427236403
+   },
+   "torsion": {
+    "measured_pct": 1.4971903109498859,
+    "lower_pct": 0.49941647413625284,
+    "est_pct": 16.690369649363102
+   }
+  },
+  "n_removed": 21,
+  "negative": 12,
+  "positive": 5,
+  "mixed": 4,
+  "tets": 40702,
+  "seconds_original": 83.73795294761658,
+  "seconds_simplified": 45.86788201332092,
+  "seconds_estimator": 16.396050930023193,
+  "ok": true,
+  "seconds": 172.661,
+  "item": "/Users/harishikjamwal/CAD (Defeaturing) Project/samples/printer_chassis.step"
+ }
+]

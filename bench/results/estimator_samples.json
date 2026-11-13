@@ -1,0 +1,32 @@
+{
+ "parts_compared": 2,
+ "all_negative_parts": 0,
+ "skipped": {},
+ "errors": 0,
+ "any": {
+  "load_cases": 8,
+  "lower_bound_holds": [
+   0.5291,
+   0.9776
+  ],
+  "lower_bound_violations": [
+   {
+    "measured_pct": -0.4558858484538634,
+    "lower_pct": 0.14264691429876733,
+    "est_pct": 1.9325156427236403
+   }
+  ],
+  "share_explained_by_lower_median": 0.4206064176444373,
+  "C_needed_p50_p90_p100": [
+   0.048647871382498306,
+   0.17380418288366012,
+   0.31434813327685146
+  ],
+  "upper_over_measured_median_C1": 6.941428628687816
+ },
+ "seconds_median": {
+  "seconds_original": 54.48587453365326,
+  "seconds_simplified": 31.281975984573364,
+  "seconds_estimator": 11.986094951629639
+ }
+}

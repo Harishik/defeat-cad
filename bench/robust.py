@@ -64,6 +64,8 @@ def run_one(args):
         out["mesh_route"] = m.get("mesh_route")
         fo = (m.get("fea") or {}).get("original") or {}
         out["solver"], out["tets_fea"] = fo.get("solver"), fo.get("tets_fea")
+        if (m.get("fea") or {}).get("method") == "grid":
+            out["check_method"], out["grid_cells"] = "grid", fo.get("cells")
         gd = s.metrics.get("guard") or {}
         if gd.get("triggered"):
             out["guard_before_pct"] = gd.get("before_pct")

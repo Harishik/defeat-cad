@@ -61,17 +61,23 @@ def build_report(s) -> str:
         worst = worst_case(dlt)
         if worst is not None:
             stats += stat("Worst of 4 load cases", f"{worst:.2f}%", "two bending directions, tension, torsion")
-        stats += stat("Peak stress Δ (p99)", f"{dlt['vm_p99_delta_pct']:+.2f}%", f"{fo['vm_p99']:.2f} → {fd['vm_p99']:.2f} MPa")
+        if dlt.get("vm_p99_delta_pct") is not None:
+            stats += stat("Peak stress Δ (p99)", f"{dlt['vm_p99_delta_pct']:+.2f}%", f"{fo['vm_p99']:.2f} → {fd['vm_p99']:.2f} MPa")
         stats += stat("Solve time", f"{fo['seconds']:.1f} → {fd['seconds']:.1f} s", f"{fo['dofs']:,} → {fd['dofs']:,} DOFs")
         rows_f = "".join(f"<tr><td>{lbl}</td><td>{fo[k]:.4g}</td><td>{fd[k]:.4g}</td><td>{100*(fd[k]-fo[k])/fo[k]:+.2f}%</td></tr>"
                          for lbl, k in [("Tip deflection (mm)", "tip_disp"), ("Max displacement (mm)", "max_disp"),
                                         ("Stiffness (N/mm)", "stiffness"), ("von Mises p99 (MPa)", "vm_p99"),
                                         ("von Mises p95 (MPa)", "vm_p95"), ("von Mises vol-mean (MPa)", "vm_mean"),
                                         ("Degrees of freedom", "dofs")] if fo.get(k) and fd.get(k))
-        guard_note = guard_message(m.get("guard"))
-        fea_html = (f"<h2>Static stress check</h2><p class='sub'>{html.escape(fea['load_case'])}. Both models meshed at the same h "
-                    f"and solved with quadratic tetrahedra (scikit-fem). Peak values use the 99th percentile to ignore the "
-                    f"singular corners at the clamp. This is a comparison between the two models, not a replacement for your full analysis.</p>"
+        guard_note = m.get("guard_message") if fea.get("method") == "grid" else guard_message(m.get("guard"))
+        how = ("No volume mesh could be built, so both models were solved on the same fixed grid of quadratic hexahedra, "
+               "integrated over the material only (finite cell method with moment-fitted quadrature, inside test by "
+               "generalized winding number). The grid gives stiffness changes, not stress peaks."
+               if fea.get("method") == "grid" else
+               "Both models meshed at the same h and solved with quadratic tetrahedra (scikit-fem). Peak values use the "
+               "99th percentile to ignore the singular corners at the clamp.")
+        fea_html = (f"<h2>Static stress check</h2><p class='sub'>{html.escape(fea['load_case'])}. {how} "
+                    f"This is a comparison between the two models, not a replacement for your full analysis.</p>"
                     + (f"<p><b>Stress guard:</b> {html.escape(guard_note)}</p>" if guard_note else "")
                     + f"<table><tr><th>Quantity</th><th>Original</th><th>Simplified</th><th>Change</th></tr>{rows_f}</table>")
     page = f"""<!doctype html><html><head><meta charset='utf-8'><title>DeFeat report — {html.escape(s.name)}</title>

@@ -63,7 +63,8 @@ def test_defeature_and_stress_check(bracket):
     r = defeature(shape, feats, d)
     try:
         assert occ.is_valid(r.shape)
-        assert len(occ.faces_of(r.shape)) == 31
+        # 25, not the 31 of earlier releases: those left 6 blend faces in place while reporting them removed
+        assert len(occ.faces_of(r.shape)) == 25
         geo = geometry_report(shape, r.shape)
         assert abs(geo["volume_delta_pct"]) < 2.0
         m = mesh_compare(shape, r.shape, 4.0)
@@ -277,6 +278,7 @@ def test_a_part_too_heavy_to_check_keeps_only_small_removals(monkeypatch):
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     s = sm.Session(os.path.join(root, "samples", "l_bracket.step"))
     monkeypatch.setattr(sm, "mesh_compare", lambda *a, **k: {"h": 4, "original": {"ok": False, "error": "mesh timed out after 60s"}, "defeatured": {"ok": False}})
+    monkeypatch.setattr(sm, "grid_compare", lambda *a, **k: None)   # the fixed-grid fallback isn't available either
     s.run(with_mesh=True)
     assert s.metrics["unchecked"] is True
     assert "too heavy" in s.metrics["guard_message"]
@@ -400,6 +402,7 @@ def test_no_comparison_is_never_reported_as_checked(monkeypatch):
     no_delta = {"h": 1, "original": {"ok": True}, "defeatured": {"ok": True}, "stat_curvature": 12,
                 "fea": {"original": {"ok": True}, "defeatured": {"ok": False, "error": "could not find support / load regions"}, "delta": None}}
     monkeypatch.setattr(sm, "mesh_compare", lambda *a, **k: no_delta)
+    monkeypatch.setattr(sm, "grid_compare", lambda *a, **k: None)
     s.run(with_mesh=True)
     assert s.metrics["unchecked"] is True
     assert "supports" in s.metrics["guard_message"] and "too heavy" not in s.metrics["guard_message"]
@@ -417,6 +420,7 @@ def test_the_smaller_removal_is_checked_when_the_first_comparison_fails(monkeypa
                     "fea": {"original": {"ok": True}, "defeatured": {"ok": False}, "delta": None}}
         return real(*a, **k)
     monkeypatch.setattr(sm, "mesh_compare", first_fails)
+    monkeypatch.setattr(sm, "grid_compare", lambda *a, **k: None)
     s.run(with_mesh=True)
     assert len(calls) >= 2 and s.metrics["unchecked"] is False
     assert s.metrics["fea"]["delta"]["cases_delta_pct"]
@@ -427,6 +431,7 @@ def test_a_part_that_cannot_be_meshed_says_that_not_too_heavy(monkeypatch):
     bad = {"h": 1, "original": {"ok": False, "error": "the mesher produced no volume elements"},
            "defeatured": {"ok": False, "error": "the original could not be meshed"}, "stat_curvature": 12}
     monkeypatch.setattr(sm, "mesh_compare", lambda *a, **k: bad)
+    monkeypatch.setattr(sm, "grid_compare", lambda *a, **k: None)
     s.run(with_mesh=True)
     assert s.metrics["unchecked"] is True and "mesher" in s.metrics["guard_message"]
 
@@ -521,3 +526,236 @@ def test_upload_limit_and_session_cap(monkeypatch, tmp_path):
     for _ in range(3):
         session.new_session(BRACKET)
     assert len(session.SESSIONS) <= 2
+
+
+def test_grid_assembly_matches_scikit_fem():
+    import numpy as np
+    from skfem import Basis, BilinearForm, ElementHex2, ElementVector, MeshHex, asm
+    from skfem.helpers import ddot, sym_grad, trace
+    from skfem.quadrature import get_quadrature
+    from skfem.refdom import RefHex
+    from defeat import immersed
+    g = 2.0
+    xs = np.arange(4) * g
+    m = MeshHex.init_tensor(xs, xs[:3], xs[:3])
+    e = ElementVector(ElementHex2())
+    q = get_quadrature(RefHex, immersed.INTORDER)
+    ib = Basis(m, e, quadrature=q)
+    phi = np.random.default_rng(1).uniform(0.1, 1, (m.t.shape[1], len(q[1])))
+
+    @BilinearForm
+    def stiff(u, v, w):
+        eu, ev = sym_grad(u), sym_grad(v)
+        return w.phi * (2 * 1.0 * ddot(eu, ev) + 0.5 * trace(eu) * trace(ev))
+    K1 = asm(stiff, ib, phi=phi)
+    K2 = immersed._assemble(immersed._element_matrices(g, e, q, 0.5, 1.0), phi, ib.element_dofs, ib.N)
+    assert abs(K1 - K2).max() < 1e-10 * abs(K1).max()
+
+
+def test_moment_fitted_weights_integrate_the_cut_exactly():
+    import numpy as np
+    from skfem.quadrature import get_quadrature
+    from skfem.refdom import RefHex
+    from defeat import immersed
+    q, fine = get_quadrature(RefHex, immersed.INTORDER), immersed._composite()
+    chi = (fine[0][0] + 0.3 * fine[0][1] < 0.52).astype(float)[None]
+    w = immersed.moment_fitted_weights(chi, fine, q)
+    assert abs(w.sum() - (chi * fine[1]).sum()) < 1e-9
+    assert abs((w * q[0][0]).sum() - (chi * fine[1] * fine[0][0]).sum()) < 1e-9
+    assert (w >= 0).all()
+
+
+def test_grid_check_matches_tetrahedra_on_a_bar_with_a_hole():
+    """The grid and the tetrahedral check agree on a plain bar and on what drilling a hole costs it."""
+    from OCP.BRepAlgoAPI import BRepAlgoAPI_Cut
+    from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox, BRepPrimAPI_MakeCylinder
+    from OCP.gp import gp_Ax2, gp_Dir, gp_Pnt
+    from defeat import fea, immersed, occ
+    from defeat.validate import mesh_stats, step_bytes
+    bar = BRepPrimAPI_MakeBox(120.0, 20.0, 10.0).Shape()
+    hole = BRepPrimAPI_MakeCylinder(gp_Ax2(gp_Pnt(60, 10, -1), gp_Dir(0, 0, 1)), 5.0, 12.0).Shape()
+    holed = BRepAlgoAPI_Cut(bar, hole).Shape()
+    bc = fea.load_case(occ.bbox(bar))
+    bc["grid"] = immersed.grid_for(bar, target=500)
+    ga, gb = immersed.compare(holed, bar, bc)          # filling the hole: the "defeatured" part is the plain bar
+    ma = mesh_stats(step_bytes(holed), 4.0, keep_mesh=True)
+    ta = fea.solve(ma["mesh"]["p"], ma["mesh"]["t"], dict(fea.load_case(occ.bbox(bar)), ends=ga["ends"], load_center=ga["load_center"]))
+    mb = mesh_stats(step_bytes(bar), 4.0, keep_mesh=True)
+    tb = fea.solve(mb["mesh"]["p"], mb["mesh"]["t"], dict(fea.load_case(occ.bbox(bar)), ends=ga["ends"], load_center=ga["load_center"]))
+    assert abs(ga["volume"] / occ.volume(holed) - 1) < 0.02
+    for k in ("bend_thin", "tension"):
+        assert abs(ga["cases"][k] / ta["cases"][k] - 1) < 0.08
+        grid_change = 100 * (gb["cases"][k] - ga["cases"][k]) / ga["cases"][k]
+        tet_change = 100 * (tb["cases"][k] - ta["cases"][k]) / ta["cases"][k]
+        assert grid_change < 0 and abs(grid_change - tet_change) < 1.5
+
+
+def test_an_unmeshable_part_is_checked_on_the_grid(monkeypatch):
+    sm, s = _sample_session()
+    bad = {"h": 1, "original": {"ok": False, "error": "the mesher produced no volume elements"},
+           "defeatured": {"ok": False, "error": "the original could not be meshed"}, "stat_curvature": 12}
+    grid = {"method": "grid", "load_case": "grid", "material": {}, "original": {"ok": True, "cases": {"a": 1.0}, "tip_disp": 1.0},
+            "defeatured": {"ok": True, "cases": {"a": 0.99}, "tip_disp": 0.99},
+            "delta": {"cases_delta_pct": {"a": -1.0}, "tip_disp_delta_pct": -1.0}}
+    monkeypatch.setattr(sm, "mesh_compare", lambda *a, **k: bad)
+    monkeypatch.setattr(sm, "grid_compare", lambda *a, **k: grid)
+    s.run(with_mesh=True)
+    assert s.metrics["unchecked"] is False and s.metrics["fea"]["method"] == "grid"
+    assert "fixed grid" in s.metrics["guard_message"] and s.metrics["removed"]
+
+
+def test_one_solve_bounds_bracket_the_change_from_filling_a_hole():
+    """Plate in tension with a small hole (plane stress): filling the hole changes compliance by
+    3 pi a^2 / (W L); the strain energy in the filled material is exactly a third of that and is a lower
+    bound; the Antolin-Chanon estimator covers the rest. All from one solve of the simplified plate."""
+    import numpy as np
+    from OCP.BRepAlgoAPI import BRepAlgoAPI_Cut
+    from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox, BRepPrimAPI_MakeCylinder
+    from OCP.gp import gp_Ax2, gp_Dir, gp_Pnt
+    from defeat import estimator, fea, occ
+    from defeat.recognize import Feature
+    from defeat.validate import mesh_stats, step_bytes
+    L, W, T, a, h = 300.0, 100.0, 2.0, 8.0, 3.5
+    plate = BRepPrimAPI_MakeBox(L, W, T).Shape()
+    holed = BRepAlgoAPI_Cut(plate, BRepPrimAPI_MakeCylinder(gp_Ax2(gp_Pnt(L / 2, W / 2, -1), gp_Dir(0, 0, 1)), a, T + 2).Shape()).Shape()
+    walls = [i for i, f in enumerate(occ.faces_of(holed)) if occ.surf_info(f).kind == "cylinder"]
+    bc = fea.load_case(occ.bbox(plate))
+
+    def solve(shape, bc):
+        m = mesh_stats(step_bytes(shape), h, keep_mesh=True)
+        return fea.solve(m["mesh"]["p"], m["mesh"]["t"], dict(bc, want_system=True))
+    rs = solve(plate, bc)
+    rh = solve(holed, dict(bc, ends=rs["ends"], load_center=rs["load_center"]))
+    s = rs["system"]
+    lbc = dict(bc, ends=rs["ends"], load_center=rs["load_center"])
+    res = estimator.bounds(s["p"], s["t"], s["U"], s["forms"], holed, plate, [Feature(0, "hole", walls)], {0}, bc=lbc)
+    assert res["kinds"] == {0: "negative"} and all(abs(v) < 1e-12 for v in res["load_shift"].values())
+    # a hole inside the loaded end changes the load itself (it is spread over less material); the
+    # load-shift term keeps the bound valid there too
+    end_hole = BRepAlgoAPI_Cut(plate, BRepPrimAPI_MakeCylinder(gp_Ax2(gp_Pnt(L - 6, W / 2, -1), gp_Dir(0, 0, 1)), 4.0, T + 2).Shape()).Shape()
+    ew = [i for i, f in enumerate(occ.faces_of(end_hole)) if occ.surf_info(f).kind == "cylinder"]
+    re_ = estimator.bounds(s["p"], s["t"], s["U"], s["forms"], end_hole, plate, [Feature(0, "hole", ew)], {0}, bc=lbc)
+    # check the term against the original's own load vector applied to u0 carried onto its mesh
+    from skfem import Basis, ElementTetP2, ElementVector, MeshTet
+    so = solve(end_hole, lbc)["system"]
+    mo = MeshTet(np.asarray(so["p"], float).T, np.asarray(so["t"], int).T)
+    bo = Basis(mo, ElementVector(ElementTetP2()))
+    ms_ = MeshTet(np.asarray(s["p"], float).T, np.asarray(s["t"], int).T)
+    bs = Basis(ms_, ElementVector(ElementTetP2()))
+    sb, comp = bs.split_bases()[0], estimator._component_dofs(bs)
+    P = estimator._probes(sb, bo.doflocs.T)
+    which = np.empty(bo.N, int)
+    for c in range(3):
+        which[bo.nodal_dofs[c]] = c
+        which[bo.edge_dofs[c]] = c
+    for k in ("bend_thin", "bend_wide", "tension", "torsion"):
+        vals = np.stack([P @ s["U"][k][comp[c]] for c in range(3)])
+        u0_on_orig = vals[which, np.arange(bo.N)]
+        direct = 2 * (float(so["forms"][k] @ u0_on_orig) - res["J0"][k])
+        assert abs(re_["load_shift"][k] - direct) <= 0.15 * abs(direct) + 5e-4 * res["J0"][k], k   # 0.05% of J0: the meshes cut the loaded region differently
+    summ = estimator.summarize(res)
+    for k in rs["cases"]:
+        measured = 100 * (rh["cases"][k] - rs["cases"][k]) / rs["cases"][k]
+        assert summ[k]["lower_pct"] <= measured + 0.02
+        assert summ[k]["lower_pct"] + summ[k]["est_pct"] >= measured
+    theory = 100 * np.pi * a * a / (W * L)
+    assert abs(summ["tension"]["lower_pct"] / theory - 1) < 0.2
+    measured_t = 100 * (rh["cases"]["tension"] - rs["cases"]["tension"]) / rs["cases"]["tension"]
+    assert 2.4 < measured_t / summ["tension"]["lower_pct"] < 3.6
+
+
+def test_every_feature_reported_removed_is_gone_from_the_part(bracket):
+    """A removal elsewhere can drop the face count while a blend stays put. Only features whose faces
+    the kernel really deleted may be reported as removed."""
+    import igl
+    import numpy as np
+    from defeat import estimator, occ
+    from defeat.decide import Policy, decide
+    from defeat.execute import defeature
+    from defeat.immersed import boundary_triangles
+    shape, g, feats = bracket
+    dec = decide(feats, Policy("static", 2.0), g, occ.volume(shape))
+    for d in dec.values():
+        d.action = "remove"
+    er = defeature(shape, feats, dec, graph=g)
+    V, T = boundary_triangles(er.shape)
+    for f in feats:
+        if f.id in er.removed:
+            p, _, _, _ = estimator._wall_samples(shape, f.faces)
+            assert np.median(np.sqrt(igl.point_mesh_squared_distance(p, V, T)[0])) > 1e-3, f"{f.kind} #{f.id} is still there"
+    assert len(er.removed) + len(er.failed) == len(feats)
+
+
+def test_energy_bound_covers_removed_ribs_and_filled_holes_together():
+    """By minimum potential energy, J(u) - J(u0) >= a_neg(u0, u0) - a_pos(u_P, u_P) for any mix of
+    filled holes and removed ribs, all from the simplified solve plus a small solve on the removed rib."""
+    from OCP.BRepAlgoAPI import BRepAlgoAPI_Cut, BRepAlgoAPI_Fuse
+    from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox, BRepPrimAPI_MakeCylinder
+    from OCP.gp import gp_Ax2, gp_Dir, gp_Pnt
+    from defeat import estimator, fea, occ
+    from defeat.recognize import Feature
+    from defeat.validate import mesh_stats, step_bytes
+    L, W, T, h = 300.0, 100.0, 4.0, 5.0
+    plate = BRepPrimAPI_MakeBox(L, W, T).Shape()
+    ribbed = BRepAlgoAPI_Fuse(plate, BRepPrimAPI_MakeBox(gp_Pnt(100, 40, T), 100.0, 6.0, 8.0).Shape()).Shape()
+    part = BRepAlgoAPI_Cut(ribbed, BRepPrimAPI_MakeCylinder(gp_Ax2(gp_Pnt(150, 20, -1), gp_Dir(0, 0, 1)), 8.0, T + 2).Shape()).Shape()
+    bc = fea.load_case(occ.bbox(plate))
+
+    def solve(shape, bc):
+        m = mesh_stats(step_bytes(shape), h, keep_mesh=True)
+        return fea.solve(m["mesh"]["p"], m["mesh"]["t"], dict(bc, want_system=True))
+    rs = solve(plate, bc)
+    ro = solve(part, dict(bc, ends=rs["ends"], load_center=rs["load_center"]))
+    s = rs["system"]
+    walls = [i for i, f in enumerate(occ.faces_of(part)) if occ.surf_info(f).kind == "cylinder"]
+    res = estimator.bounds(s["p"], s["t"], s["U"], s["forms"], part, plate, [Feature(0, "hole", walls)], {0})
+    summ = estimator.summarize(res)
+    apos = estimator.removed_material_energy(part, plate, s["p"], s["t"], {k: s["U"][k] for k in rs["cases"]}, h / 2)
+    for k in rs["cases"]:
+        measured = 100 * (ro["cases"][k] - rs["cases"][k]) / rs["cases"][k]
+        assert summ[k]["lower_pct"] - 100 * apos[k] / res["J0"][k] <= measured + 0.05
+        assert apos[k] > 0
+
+
+def test_field_sampling_is_exact_inside_and_bounded_just_outside_the_mesh():
+    """Values and raw gradients of a quadratic field are reproduced exactly at interior points; a point
+    off the mesh takes the field's value at its nearest point on the mesh instead of an extrapolation."""
+    import numpy as np
+    from skfem import Basis, ElementTetP2, ElementVector, MeshTet
+    from defeat.estimator import _gradients, _probes
+    m = MeshTet().refined(2)
+    ib = Basis(m, ElementVector(ElementTetP2()))
+    u = ib.project(lambda x: np.array([x[0] ** 2, 2 * x[1] * x[2], x[2] + x[0] * x[1]]))
+    x = np.random.default_rng(0).random((3, 200)) * 0.98 + 0.01
+    g = _gradients(ib, {"a": u}, x)["a"]
+    ex = np.zeros_like(g)
+    ex[0, 0], ex[1, 1], ex[1, 2], ex[2, 2], ex[2, 0], ex[2, 1] = 2 * x[0], 2 * x[2], 2 * x[1], 1, x[1], x[0]
+    assert np.abs(g - ex).max() < 1e-8
+    sb = Basis(m, ElementTetP2())
+    v = sb.project(lambda x: x[0] ** 2 + x[1])
+    assert np.abs(_probes(sb, x) @ v - (sb.probes(x) @ v)).max() < 1e-8
+    off = np.array([[1.3, 0.5, 0.5]]).T                   # 0.3 past the face x = 1: value there is 1 + 0.5
+    assert abs((_probes(sb, off) @ v)[0] - 1.5) < 1e-6
+
+
+def test_lower_bound_resolves_a_feature_smaller_than_an_element():
+    """The dense fallback integrates exactly the material outside the original near the features, even
+    when the feature is a fraction of an element: here a 0.2 mm notch filled on a 2 mm mesh."""
+    import numpy as np
+    from OCP.BRepAlgoAPI import BRepAlgoAPI_Cut
+    from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox
+    from OCP.gp import gp_Pnt
+    from skfem import MeshTet
+    from defeat import estimator, occ
+    from defeat.immersed import boundary_triangles
+    from defeat.validate import mesh_stats, step_bytes
+    bar = BRepPrimAPI_MakeBox(40.0, 6.0, 6.0).Shape()
+    notch = BRepPrimAPI_MakeBox(gp_Pnt(19.9, -1, 5.8), 0.2, 8.0, 1.0).Shape()   # 0.2 x 6 x 0.2 slot on top
+    part = BRepAlgoAPI_Cut(bar, notch).Shape()
+    exact = occ.volume(bar) - occ.volume(part)
+    ms = mesh_stats(step_bytes(bar), 2.0, keep_mesh=True)
+    m = MeshTet(np.asarray(ms["mesh"]["p"], float).T, np.asarray(ms["mesh"]["t"], int).T)
+    Vo, To = boundary_triangles(part)
+    near = np.array([[20.0, y, 5.9] for y in np.linspace(0, 6, 13)])
+    x, w = estimator._dense_outside(m, Vo, To, near)
+    assert abs(w.sum() / exact - 1) < 0.1

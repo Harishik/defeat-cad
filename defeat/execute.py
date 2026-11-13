@@ -129,7 +129,10 @@ def _remove_faces(brep: bytes, face_ids: list[int], fuzzy: float = 0.0, limits=N
             mods = d.Modified(f)
             tgt = mods.First() if mods.Size() else f
             fmap.append(out.FindIndex(tgt) - 1)
-    return {"ok": True, "brep": _occ.to_brep_string(res), "map": fmap}
+    # which of the asked-for faces the kernel really deleted: a removal elsewhere can lower the face count
+    # while a blend stays in place, and only a feature whose faces are all gone counts as removed
+    return {"ok": True, "brep": _occ.to_brep_string(res), "map": fmap,
+            "deleted": [i for i in face_ids if d.IsDeleted(faces[i])]}
 
 
 def _dispatch(fn, args):
@@ -270,6 +273,9 @@ class ExecResult:
     strategy: str = ""
     seconds: float = 0.0
     log: list = field(default_factory=list)
+    # the kernel calls that were applied, in order, as lists of ORIGINAL face ids: the exported scripts
+    # replay exactly these, following faces through each one by the kernel's history like the app does
+    steps: list = field(default_factory=list)
 
 
 def _blend_neighbours(ft, graph, todo_by_face, owner_kind):
@@ -277,9 +283,10 @@ def _blend_neighbours(ft, graph, todo_by_face, owner_kind):
     faces such as corner patches) that the kernel may need to remove together with ft."""
     from .graph import SMOOTH
     extra = set()
-    for fid in ft.faces:
+    own = set(_removal_faces(ft))
+    for fid in own:
         for m, eids in graph.nodes[fid].neighbors.items():
-            if m in ft.faces:
+            if m in own:
                 continue
             other = todo_by_face.get(m)
             if other is not None and other.kind in ("fillet", "chamfer"):
@@ -287,6 +294,22 @@ def _blend_neighbours(ft, graph, todo_by_face, owner_kind):
             elif m not in owner_kind and graph.nodes[m].kind != "plane" and any(graph.edges[e].convexity == SMOOTH for e in eids):
                 extra.add(m)
     return extra
+
+
+def _removal_faces(ft):
+    """A feature's own faces plus its attached edge blends and chamfers: removing a boss removes its tip
+    chamfer too, whatever was decided for the chamfer on its own."""
+    return sorted(set(ft.faces) | set(getattr(ft, "attached", None) or []))
+
+
+def _credit_attached(res, features, todo, deleted):
+    """A feature that was to be kept but went with the feature it is attached to (a rim chamfer removed
+    with its hole) is gone from the part: report it as removed, and say why."""
+    ids = {f.id for f in todo}
+    for f in features:
+        if f.id not in ids and f.id not in res.removed and f.faces and all(i in deleted for i in f.faces):
+            res.removed.append(f.id)
+            res.log.append(f"{f.kind} #{f.id} went with the feature it sits on")
 
 
 def _limits(face_ids, size, areas, slack):
@@ -320,31 +343,46 @@ def defeature(shape, features, decisions, progress=None, timeout=30.0, graph=Non
         if progress:
             progress(msg)
 
-    all_faces = sorted({fid for f in todo for fid in f.faces})
+    all_faces = sorted({fid for f in todo for fid in _removal_faces(f)})
     areas = [occ.area(f) for f in occ.faces_of(shape)]
     box = occ.bbox(shape)
     diag = max(1.0, occ.norm(occ.sub(box[3:], box[:3])))
     slack = 1e-3 * diag
     vol_slack = slack * sum(areas) * 1e-3
     say(f"Removing {len(todo)} features ({len(all_faces)} faces) in one pass")
-    one_by_one = [_limits(f.faces, f.size, areas, 0) for f in todo]
+    one_by_one = [_limits(_removal_faces(f), f.size, areas, 0) for f in todo]
     batch = (sum(l[0] for l in one_by_one) + vol_slack, max(l[1] for l in one_by_one) + slack)
     r = w.call("_remove_faces", brep, all_faces, 0.0, batch, timeout=timeout)
+    start = None
     if r["ok"]:
-        res.shape = occ.from_brep_string(r["brep"])
-        res.removed = [f.id for f in todo]
-        res.strategy = "single pass"
-        _merge_split_faces(res, w, timeout)
-        res.seconds = time.time() - t0
-        return res
-
-    say(f"Single pass failed ({r['error']}); switching to feature-by-feature")
-    res.strategy = "feature-by-feature"
+        res.steps.append(list(all_faces))
+        deleted = set(r.get("deleted", all_faces))
+        left = [f for f in todo if not all(i in deleted for i in f.faces)]
+        if not left or r.get("map") is None:
+            res.shape = occ.from_brep_string(r["brep"])
+            res.removed = [f.id for f in todo if f not in left]
+            _credit_attached(res, features, todo, deleted)
+            for f in left:
+                res.failed[f.id] = "the kernel left it in place"
+            res.strategy = "single pass"
+            _merge_split_faces(res, w, timeout)
+            res.seconds = time.time() - t0
+            return res
+        # Most went in one call, but the kernel quietly left some in place: keep what it did and try those again
+        say(f"Single pass left {len(left)} features in place; trying them one by one")
+        res.removed = [f.id for f in todo if f not in left]
+        start, todo = r, left
+    else:
+        say(f"Single pass failed ({r['error']}); switching to feature-by-feature")
+    res.strategy = "feature-by-feature" if start is None else "single pass, then feature-by-feature"
     cur = shape
     cur_brep = brep
     faces = occ.faces_of(cur)
     sigs = [_signature(f) for f in faces]
     idmap = {i: i for i in range(len(faces))}   # original face id -> current face id
+    if start is not None:
+        cur, cur_brep = occ.from_brep_string(start["brep"]), start["brep"]
+        idmap = {i: c for i, c in enumerate(start["map"]) if c >= 0}
     tol = 1e-3 * diag
     todo_by_face = {fid: f for f in todo for fid in f.faces}
     owner_kind = {fid: f.kind for f in features for fid in f.faces}
@@ -369,10 +407,11 @@ def defeature(shape, features, decisions, progress=None, timeout=30.0, graph=Non
     def alone(ft):
         """One feature: by itself; then with its tangent blend neighbours. Retrying with a fuzzy tolerance was
         measured and dropped: 83 retries on 300 parts, none succeeded, about 2 s each."""
-        attempts = [set(ft.faces)]
-        if ft.kind in ("fillet", "chamfer") and graph is not None:
-            grp = set(ft.faces) | _blend_neighbours(ft, graph, todo_by_face, owner_kind)
-            if grp != set(ft.faces):
+        own = set(_removal_faces(ft))
+        attempts = [own]
+        if graph is not None:   # then with the tangent blend faces around it (corner patches, slivers)
+            grp = own | _blend_neighbours(ft, graph, todo_by_face, owner_kind)
+            if grp != own:
                 attempts.append(grp)
         last = "kernel returned the part unchanged"
         for grp in attempts:
@@ -381,10 +420,11 @@ def defeature(shape, features, decisions, progress=None, timeout=30.0, graph=Non
             if not cur_ids or any(c is None for c in cur_ids):
                 last = "geometry changed by an earlier removal"
                 continue
-            vol, grow = _limits(grp, ft.size, areas, 0)
+            vol, grow = _limits(grp, max(ft.size, max((todo_by_face[f].size for f in grp if f in todo_by_face), default=0)), areas, 0)
             r = w.call("_remove_faces", cur_brep, cur_ids, 0.0, (vol + vol_slack, grow + slack), timeout=timeout)
-            if r["ok"]:
+            if r["ok"] and set(cur_ids) <= set(r.get("deleted", cur_ids)):
                 apply(r)
+                res.steps.append(sorted(grp))
                 done.add(ft.id)
                 res.removed.append(ft.id)
                 # blend features removed as part of the group count as removed too
@@ -394,6 +434,9 @@ def defeature(shape, features, decisions, progress=None, timeout=30.0, graph=Non
                         done.add(other.id)
                         res.removed.append(other.id)
                 return
+            if r["ok"]:
+                last = "the kernel left it in place"
+                continue
             last = r["error"]
             if "timed out" in last or time.time() - t0 > budget:   # a hang won't clear with a larger tolerance
                 break
@@ -401,15 +444,19 @@ def defeature(shape, features, decisions, progress=None, timeout=30.0, graph=Non
 
     def together(group):
         """Asks the kernel for these features in one call: True, False, or "hang" if the call never came back."""
-        ids = sorted({f for ft in group for f in ft.faces if f in idmap})
+        ids = sorted({f for ft in group for f in _removal_faces(ft) if f in idmap})
         cur_ids = [idmap[f] for f in ids]
         if not cur_ids:
             return False
-        lim = [_limits(ft.faces, ft.size, areas, 0) for ft in group]
+        lim = [_limits(_removal_faces(ft), ft.size, areas, 0) for ft in group]
         r = w.call("_remove_faces", cur_brep, cur_ids, 0.0, (sum(x[0] for x in lim) + vol_slack, max(x[1] for x in lim) + slack), timeout=timeout / 2)
         if not r["ok"]:   # half the time: a group that will finish nearly always does so quickly, 116 of 117 measured
             return "hang" if "timed out" in r["error"] or "crashed" in r["error"] else False
+        deleted = set(r.get("deleted", cur_ids))
+        if not set(cur_ids) <= deleted:   # some of the group stayed: split it, so each feature is credited only when gone
+            return False
         apply(r)
+        res.steps.append(list(ids))
         for ft in group:
             done.add(ft.id)
             res.removed.append(ft.id)
@@ -444,6 +491,8 @@ def defeature(shape, features, decisions, progress=None, timeout=30.0, graph=Non
             half = len(group) // 2
             work[:0] = [group[:half], group[half:]]
     res.shape = cur
+    if exact_history:
+        _credit_attached(res, features, todo, {f for f in range(len(faces)) if f not in idmap})
     _merge_split_faces(res, w, timeout)
     res.seconds = time.time() - t0
     return res

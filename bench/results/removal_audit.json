@@ -1,0 +1,13 @@
+{
+ "parts": 300,
+ "parts_with_removals": 136,
+ "features_to_remove": 739,
+ "removed_now": 421,
+ "left_in_place_by_a_single_pass": 35,
+ "parts_affected": [
+  0.0512,
+  0.1479
+ ],
+ "old_overcount_share_of_reported": 0.07675438596491228,
+ "errors": 0
+}

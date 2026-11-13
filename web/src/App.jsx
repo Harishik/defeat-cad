@@ -428,11 +428,11 @@ function Results({ sid, res, onClose }) {
           </div>
           {res.metrics.guard_message && <div className={`fea-guard${guardOutside ? ' warn' : ''}`}><b>{analysis === 'static' ? 'Stress guard.' : 'Guard.'}</b> {res.metrics.guard_message}</div>}
           <div className="stats">
-            {worst != null && <Stat label={nCases > 1 ? `Worst of ${nCases} ${check.noun}` : 'Your case'} value={`${fmt(worst, 2)}%`} sub={nCases > 1 ? check.sub : 'with your supports and loads'} accent={worst <= 5 ? 'var(--green)' : '#ff9f0a'} />}
+            {worst != null && <Stat label={nCases > 1 ? `Worst of ${nCases} ${check.noun}` : 'Your case'} value={`${fmt(worst, 2)}%`} sub={nCases > 1 ? check.sub : 'with your supports and loads'} accent={worst <= (fea.method === 'grid' ? 3 : 5) ? 'var(--green)' : '#ff9f0a'} />}
             {analysis !== 'static' && Object.entries(fea.delta.cases_delta_pct || {}).map(([k, v]) => <Stat key={k} label={CASE_LABEL(k)} value={`${v >= 0 ? '+' : ''}${fmt(v, 2)}%`} sub={`${fmt(fea.original.cases[k], k.startsWith('mode') ? 0 : 3)} → ${fmt(fea.defeatured.cases[k], k.startsWith('mode') ? 0 : 3)}${k.startsWith('mode') ? ' Hz' : ''}`} />)}
             {analysis === 'static' && <Stat label="Tip deflection" value={`${fea.delta.tip_disp_delta_pct >= 0 ? '+' : ''}${fmt(fea.delta.tip_disp_delta_pct, 2)}%`} sub={`${fmt(fea.original.tip_disp, 4)} → ${fmt(fea.defeatured.tip_disp, 4)} mm`} accent={Math.abs(fea.delta.tip_disp_delta_pct) < 5 ? 'var(--green)' : '#ff9f0a'} />}
-            {analysis === 'static' && <Stat label="Peak stress (p99)" value={`${fea.delta.vm_p99_delta_pct >= 0 ? '+' : ''}${fmt(fea.delta.vm_p99_delta_pct, 2)}%`} sub={`${fmt(fea.original.vm_p99, 2)} → ${fmt(fea.defeatured.vm_p99, 2)} MPa`} accent={Math.abs(fea.delta.vm_p99_delta_pct) < 5 ? 'var(--green)' : '#ff9f0a'} />}
-            {!unchanged && solveSpeedup >= 1.1 && <Stat label="Solve time" value={`${fmt(solveSpeedup, 1)}× faster`} sub={`${fmt(fea.original.dofs, 0)} → ${fmt(fea.defeatured.dofs, 0)} DOFs`} />}
+            {analysis === 'static' && fea.delta.vm_p99_delta_pct != null && <Stat label="Peak stress (p99)" value={`${fea.delta.vm_p99_delta_pct >= 0 ? '+' : ''}${fmt(fea.delta.vm_p99_delta_pct, 2)}%`} sub={`${fmt(fea.original.vm_p99, 2)} → ${fmt(fea.defeatured.vm_p99, 2)} MPa`} accent={Math.abs(fea.delta.vm_p99_delta_pct) < 5 ? 'var(--green)' : '#ff9f0a'} />}
+            {!unchanged && fea.method !== 'grid' && solveSpeedup >= 1.1 && <Stat label="Solve time" value={`${fmt(solveSpeedup, 1)}× faster`} sub={`${fmt(fea.original.dofs, 0)} → ${fmt(fea.defeatured.dofs, 0)} DOFs`} />}
           </div>
         </div>
       )}

@@ -1,0 +1,1227 @@
+[
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 5.889,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/138790_dbbff3f3_3.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 5.876,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/27655_04ca3d07_6.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 5.687,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/21272_ab7bc3d4_1.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 2.663,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/145737_b22356cb_1.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": -0.13689710790960585,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "bend_wide": {
+    "measured_pct": 0.10381362693658247,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "tension": {
+    "measured_pct": -0.138920346296417,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "torsion": {
+    "measured_pct": 0.10654197490564445,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": null,
+    "general_lower_pct": null
+   }
+  },
+  "n_removed": 1,
+  "negative": 0,
+  "positive": 1,
+  "mixed": 0,
+  "tets": 10607,
+  "seconds_original": 53.017534255981445,
+  "seconds_simplified": 37.81501507759094,
+  "seconds_estimator": 5.587983846664429,
+  "ok": true,
+  "seconds": 103.574,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/23519_31078773_3.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.14,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/137485_a953e1be_2.stp"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 48.967,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/22106_db85f777_28.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.216,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/125745_cf468448_6.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 1.396,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/27679_501db761_9.stp"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 8.439,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/33529_756075a0_7.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 2.995,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/23120_f7c9092f_24.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": -0.0601854519171075,
+    "lower_pct": 0.012479854163881646,
+    "est_pct": 6.107385798550056,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.012479854163881646
+   },
+   "bend_wide": {
+    "measured_pct": -0.04984085932439235,
+    "lower_pct": 0.01213268528948085,
+    "est_pct": 4.614349331368745,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.01213268528948085
+   },
+   "tension": {
+    "measured_pct": -0.07099911454050614,
+    "lower_pct": 0.00388366647697007,
+    "est_pct": 3.972883047908114,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.00388366647697007
+   },
+   "torsion": {
+    "measured_pct": 0.08236587411169291,
+    "lower_pct": 0.00654816188315787,
+    "est_pct": 1.248587642646508,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.00654816188315787
+   }
+  },
+  "n_removed": 1,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 15652,
+  "seconds_original": 46.778674364089966,
+  "seconds_simplified": 31.4171781539917,
+  "seconds_estimator": 19.835803985595703,
+  "ok": true,
+  "seconds": 106.112,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/109576_3504cc04_0.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 1.133,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/21299_e9cd80a6_10.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": -1.716665756737711,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0
+   },
+   "bend_wide": {
+    "measured_pct": -2.096369339857955,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0
+   },
+   "tension": {
+    "measured_pct": -0.7018051441540585,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0
+   },
+   "torsion": {
+    "measured_pct": -0.8786255546248207,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0
+   }
+  },
+  "n_removed": 2,
+  "negative": 0,
+  "positive": 0,
+  "mixed": 2,
+  "tets": 38164,
+  "seconds_original": 421.955931186676,
+  "seconds_simplified": 3.9371566772460938,
+  "seconds_estimator": 0.8032629489898682,
+  "ok": true,
+  "seconds": 427.323,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/52890_d9c33062_10.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.138,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/22303_e9723631_4.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 0.9556102559737039,
+    "lower_pct": 1.2994831863900227,
+    "est_pct": 99.9919691461674,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.2994831863900227
+   },
+   "bend_wide": {
+    "measured_pct": 0.2920331852657023,
+    "lower_pct": 1.377136463087168,
+    "est_pct": 68.1250724064133,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.377136463087168
+   },
+   "tension": {
+    "measured_pct": 0.8570530447119751,
+    "lower_pct": 1.2361520621107858,
+    "est_pct": 36.56494098531811,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.2361520621107858
+   },
+   "torsion": {
+    "measured_pct": 0.620300524985462,
+    "lower_pct": 1.0028910523966585,
+    "est_pct": 52.61179052298259,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.0028910523966585
+   }
+  },
+  "n_removed": 1,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 11814,
+  "seconds_original": 33.858412981033325,
+  "seconds_simplified": 7.3600311279296875,
+  "seconds_estimator": 7.511266231536865,
+  "ok": true,
+  "seconds": 49.099,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/45312_89e95202_0.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.416,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/26386_fc896bb4_9.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 0.73607363910587,
+    "lower_pct": 1.2079875673383011,
+    "est_pct": 511.7743436400647,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.2079875673383011
+   },
+   "bend_wide": {
+    "measured_pct": 1.2048538003752611,
+    "lower_pct": 2.025178574241308,
+    "est_pct": 10.415252133065318,
+    "pos_pct": 0.0,
+    "general_lower_pct": 2.025178574241308
+   },
+   "tension": {
+    "measured_pct": 0.46920731671020754,
+    "lower_pct": 0.729874684974114,
+    "est_pct": 0.44300682092967825,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.729874684974114
+   },
+   "torsion": {
+    "measured_pct": 0.5863795216868274,
+    "lower_pct": 0.7885522366106354,
+    "est_pct": 1018.5011709105086,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.7885522366106354
+   }
+  },
+  "n_removed": 1,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 6335,
+  "seconds_original": 7.217056035995483,
+  "seconds_simplified": 7.084216833114624,
+  "seconds_estimator": 1.9257872104644775,
+  "ok": true,
+  "seconds": 18.001,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/41512_c1a779f2_6.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.954,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/128996_4317ea15_0.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": -0.978972519124516,
+    "lower_pct": 0.0022639426012461637,
+    "est_pct": 4.014347434514359,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0022639426012461637
+   },
+   "bend_wide": {
+    "measured_pct": -1.0702227226138517,
+    "lower_pct": 0.0022432746329634763,
+    "est_pct": 8.278156970328666,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0022432746329634763
+   },
+   "tension": {
+    "measured_pct": 0.038015238682484485,
+    "lower_pct": 0.03474254803704521,
+    "est_pct": 2.9714228947914534,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.03474254803704521
+   },
+   "torsion": {
+    "measured_pct": -0.47990116250091547,
+    "lower_pct": 0.06056505930528262,
+    "est_pct": 1.2456657822648018,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.06056505930528262
+   }
+  },
+  "n_removed": 1,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 3373,
+  "seconds_original": 4.436208963394165,
+  "seconds_simplified": 5.397536993026733,
+  "seconds_estimator": 1.8699448108673096,
+  "ok": true,
+  "seconds": 12.346,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/31855_b100a912_11.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.615,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/53601_59d3ecd2_0.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": -0.7752980609768219,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0
+   },
+   "bend_wide": {
+    "measured_pct": -0.03502133492057331,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0
+   },
+   "tension": {
+    "measured_pct": -0.9648763202368552,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0
+   },
+   "torsion": {
+    "measured_pct": -2.3415561424770783,
+    "lower_pct": 0.0,
+    "est_pct": 0.0,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0
+   }
+  },
+  "n_removed": 4,
+  "negative": 0,
+  "positive": 0,
+  "mixed": 4,
+  "tets": 2561,
+  "seconds_original": 3.0798211097717285,
+  "seconds_simplified": 1.6714680194854736,
+  "seconds_estimator": 0.4459540843963623,
+  "ok": true,
+  "seconds": 7.245,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/128043_9f8cd69e_0.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.813,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/48508_2ffb007a_17.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.254,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/135810_3d5e24a5_63.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 0.3841376369169695,
+    "lower_pct": 0.7826066754824268,
+    "est_pct": 30.193011621427566,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.7826066754824268
+   },
+   "bend_wide": {
+    "measured_pct": 0.5751804813715123,
+    "lower_pct": 0.7783569293928478,
+    "est_pct": 38.897551630928405,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.7783569293928478
+   },
+   "tension": {
+    "measured_pct": 0.1840660320645093,
+    "lower_pct": 0.25376462321528337,
+    "est_pct": 10.806440950882852,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.25376462321528337
+   },
+   "torsion": {
+    "measured_pct": 0.05182898843791843,
+    "lower_pct": 0.10802412799523943,
+    "est_pct": 11.21124655742571,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.10802412799523943
+   }
+  },
+  "n_removed": 1,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 30853,
+  "seconds_original": 340.3224971294403,
+  "seconds_simplified": 8.14494514465332,
+  "seconds_estimator": 4.172237157821655,
+  "ok": true,
+  "seconds": 354.195,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/121949_e10b5e85_9.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 0.653347254148937,
+    "lower_pct": 0.032747442751126066,
+    "est_pct": 52.48627427818859,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.032747442751126066
+   },
+   "bend_wide": {
+    "measured_pct": 0.07718374543355762,
+    "lower_pct": 0.0006550364838316619,
+    "est_pct": 355.4486205042444,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0006550364838316619
+   },
+   "tension": {
+    "measured_pct": 1.1692971253884852,
+    "lower_pct": 0.02270769363957446,
+    "est_pct": 38.93690476116897,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.02270769363957446
+   },
+   "torsion": {
+    "measured_pct": 4.1609910187057295,
+    "lower_pct": 0.17668201401163441,
+    "est_pct": 130.1607576427276,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.17668201401163441
+   }
+  },
+  "n_removed": 1,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 3014,
+  "seconds_original": 3.785701036453247,
+  "seconds_simplified": 2.300706148147583,
+  "seconds_estimator": 0.9378199577331543,
+  "ok": true,
+  "seconds": 8.016,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/42005_3da46d94_0.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": -0.01684986026529832,
+    "lower_pct": 0.2687168014417657,
+    "est_pct": 1.5687205711261984,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "bend_wide": {
+    "measured_pct": -8.366692724327684e-05,
+    "lower_pct": 0.07442089237843186,
+    "est_pct": 35.962358392933446,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "tension": {
+    "measured_pct": -1.8571140952381706,
+    "lower_pct": 1.5812268681259765,
+    "est_pct": 17.181539540140264,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "torsion": {
+    "measured_pct": 0.5097327304033463,
+    "lower_pct": 0.6305846539896499,
+    "est_pct": 18.335859809827213,
+    "pos_pct": null,
+    "general_lower_pct": null
+   }
+  },
+  "n_removed": 10,
+  "negative": 6,
+  "positive": 4,
+  "mixed": 0,
+  "tets": 42653,
+  "seconds_original": 192.6415753364563,
+  "seconds_simplified": 159.33447003364563,
+  "seconds_estimator": 42.926376819610596,
+  "ok": true,
+  "seconds": 405.82,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/124428_06582197_0.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 1.234,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/120469_dce81759_6.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 2.4301321907795654,
+    "lower_pct": 1.1618339777504079,
+    "est_pct": 31.79053833458424,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.1618339777504079
+   },
+   "bend_wide": {
+    "measured_pct": 2.685476501460433,
+    "lower_pct": 1.1538872566656193,
+    "est_pct": 11.480879468170102,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.1538872566656193
+   },
+   "tension": {
+    "measured_pct": 1.1047393036149822,
+    "lower_pct": 0.5060741101051565,
+    "est_pct": 4.658441332922876,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.5060741101051565
+   },
+   "torsion": {
+    "measured_pct": 1.906740887918442,
+    "lower_pct": 0.9490656954291844,
+    "est_pct": 11.22991010087213,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.9490656954291844
+   }
+  },
+  "n_removed": 1,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 9062,
+  "seconds_original": 14.465485095977783,
+  "seconds_simplified": 12.152761936187744,
+  "seconds_estimator": 3.6938979625701904,
+  "ok": true,
+  "seconds": 31.738,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/24470_21c25a2d_9.stp"
+ },
+ {
+  "ok": false,
+  "error": "native crash",
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/138454_c91f4eb9_0.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 3.722906731476566,
+    "lower_pct": 1.1212756178859609,
+    "est_pct": 11.136295960023206,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.1212756178859609
+   },
+   "bend_wide": {
+    "measured_pct": 3.848232843926631,
+    "lower_pct": 1.2336490987009283,
+    "est_pct": 21.950910388848385,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.2336490987009283
+   },
+   "tension": {
+    "measured_pct": 2.747163979113267,
+    "lower_pct": 0.9429569248204409,
+    "est_pct": 18.673727672096845,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.9429569248204409
+   },
+   "torsion": {
+    "measured_pct": 2.755927458986808,
+    "lower_pct": 1.1062136664824995,
+    "est_pct": 10.603729227560223,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.1062136664824995
+   }
+  },
+  "n_removed": 7,
+  "negative": 7,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 50273,
+  "seconds_original": 656.5511298179626,
+  "seconds_simplified": 290.62502121925354,
+  "seconds_estimator": 47.56889533996582,
+  "ok": true,
+  "seconds": 997.727,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/143823_1b04bf80_12.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.166,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/32074_105fccde_10.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 1.135,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/82996_b8dc67c9_8.stp"
+ },
+ {
+  "ok": false,
+  "error": "ValueError: Point is outside of the mesh.",
+  "seconds": 34.03,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/99836_9013c1e5_0.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 4.185,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/148051_66cb4858_13.stp"
+ },
+ {
+  "ok": false,
+  "error": "ValueError: Point is outside of the mesh.",
+  "seconds": 39.096,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/26394_b384e5f1_1.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": -0.30327525474097083,
+    "lower_pct": 0.1048554692246538,
+    "est_pct": 5.551486172126568,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "bend_wide": {
+    "measured_pct": -0.294849517312065,
+    "lower_pct": 0.03959582916719278,
+    "est_pct": 0.5881183943624194,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "tension": {
+    "measured_pct": 15.983828481933267,
+    "lower_pct": 6.912384012224653,
+    "est_pct": 34.80220633084546,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "torsion": {
+    "measured_pct": 16.57193425041103,
+    "lower_pct": 7.4195121416159076,
+    "est_pct": 20.08514734329908,
+    "pos_pct": null,
+    "general_lower_pct": null
+   }
+  },
+  "n_removed": 3,
+  "negative": 2,
+  "positive": 0,
+  "mixed": 1,
+  "tets": 13696,
+  "seconds_original": 29.74909281730652,
+  "seconds_simplified": 2.097414970397949,
+  "seconds_estimator": 3.8665771484375,
+  "ok": true,
+  "seconds": 42.293,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/130916_db1e9b1f_0.stp"
+ },
+ {
+  "skip": "original not solvable",
+  "ok": true,
+  "seconds": 4.274,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/137402_f4ea52c4_0.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.138,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/49110_42c8e273_1.stp"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 2.9,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/84024_5c75426c_0.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 1.9180131060272683,
+    "lower_pct": 0.7480900637693191,
+    "est_pct": 3988.1193135838603,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.7480900637693191
+   },
+   "bend_wide": {
+    "measured_pct": 0.07309363981782714,
+    "lower_pct": 0.04118767645555565,
+    "est_pct": 42.05978010818137,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.04118767645555565
+   },
+   "tension": {
+    "measured_pct": 6.992966197080577,
+    "lower_pct": 0.8506607730655837,
+    "est_pct": 71.42907383600456,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.8506607730655837
+   },
+   "torsion": {
+    "measured_pct": 11.913132197404611,
+    "lower_pct": 5.2511692189238,
+    "est_pct": 115.61200846797826,
+    "pos_pct": 0.0,
+    "general_lower_pct": 5.2511692189238
+   }
+  },
+  "n_removed": 2,
+  "negative": 2,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 22894,
+  "seconds_original": 32.54206323623657,
+  "seconds_simplified": 32.04879808425903,
+  "seconds_estimator": 9.089714050292969,
+  "ok": true,
+  "seconds": 77.186,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/70292_0a956492_7.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.201,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/21908_385686ec_3.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 0.11258774508936444,
+    "lower_pct": 0.09961683772686356,
+    "est_pct": 2.1424532344716445,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.09961683772686356
+   },
+   "bend_wide": {
+    "measured_pct": 0.1636273923083694,
+    "lower_pct": 0.10985233305261928,
+    "est_pct": 8.23102958261197,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.10985233305261928
+   },
+   "tension": {
+    "measured_pct": 0.1848656193886802,
+    "lower_pct": 0.16603863324319795,
+    "est_pct": 0.6970936692753582,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.16603863324319795
+   },
+   "torsion": {
+    "measured_pct": -0.03341804318610613,
+    "lower_pct": 0.11263388336555884,
+    "est_pct": 1.2319950423319432,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.11263388336555884
+   }
+  },
+  "n_removed": 2,
+  "negative": 2,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 8978,
+  "seconds_original": 22.357151985168457,
+  "seconds_simplified": 29.188866138458252,
+  "seconds_estimator": 4.231554746627808,
+  "ok": true,
+  "seconds": 56.781,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/23539_b3917f22_3.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.067,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/73652_23b21ef2_6.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.664,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/137098_0a45d1c8_19.stp"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 0.753,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/23731_3fe5b501_4.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.348,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/134284_28ba41df_4.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 0.16496791306679243,
+    "lower_pct": 0.27815067761686607,
+    "est_pct": 2.2344927364986553,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.27815067761686607
+   },
+   "bend_wide": {
+    "measured_pct": 0.0055005113708586715,
+    "lower_pct": 0.1467428456441567,
+    "est_pct": 0.02547067386109204,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.1467428456441567
+   },
+   "tension": {
+    "measured_pct": 0.2120373333045973,
+    "lower_pct": 0.3813169515686014,
+    "est_pct": 0.7500098181886125,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.3813169515686014
+   },
+   "torsion": {
+    "measured_pct": 0.3266250384085418,
+    "lower_pct": 0.2935814999740458,
+    "est_pct": 1.6688602520204265,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.2935814999740458
+   }
+  },
+  "n_removed": 18,
+  "negative": 14,
+  "positive": 0,
+  "mixed": 4,
+  "tets": 19046,
+  "seconds_original": 35.46491312980652,
+  "seconds_simplified": 16.76542592048645,
+  "seconds_estimator": 34.34947180747986,
+  "ok": true,
+  "seconds": 245.865,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/21566_1004b562_0.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.199,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/28312_ce519285_2.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.94,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/76298_af8ea172_14.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": -0.06645060653766462,
+    "lower_pct": 0.0010511903969967309,
+    "est_pct": 0.14108152981152547,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0010511903969967309
+   },
+   "bend_wide": {
+    "measured_pct": -0.08977763071205307,
+    "lower_pct": 0.00023292501753192625,
+    "est_pct": 0.007904207631395217,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.00023292501753192625
+   },
+   "tension": {
+    "measured_pct": -0.05151047543698887,
+    "lower_pct": 0.0006966244691633625,
+    "est_pct": 0.1043088392487889,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.0006966244691633625
+   },
+   "torsion": {
+    "measured_pct": -0.08737125596213244,
+    "lower_pct": 0.002484159478811683,
+    "est_pct": 0.002778523766533416,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.002484159478811683
+   }
+  },
+  "n_removed": 1,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 3059,
+  "seconds_original": 5.002801895141602,
+  "seconds_simplified": 4.818163871765137,
+  "seconds_estimator": 1.0618691444396973,
+  "ok": true,
+  "seconds": 12.587,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/98399_1b3b0f36_4.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 3.6631718335966155,
+    "lower_pct": 1.8217413242676388,
+    "est_pct": 36.968952264366585,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.8217413242676388
+   },
+   "bend_wide": {
+    "measured_pct": 255.61741234589576,
+    "lower_pct": 18.903426928282776,
+    "est_pct": 58.15898282901828,
+    "pos_pct": 0.0,
+    "general_lower_pct": 18.903426928282776
+   },
+   "tension": {
+    "measured_pct": 8.100987151880451,
+    "lower_pct": 0.8593056261105166,
+    "est_pct": 9.138869934291515,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.8593056261105166
+   },
+   "torsion": {
+    "measured_pct": 31.744361788297738,
+    "lower_pct": 5.589875332831326,
+    "est_pct": 7.254583184778967,
+    "pos_pct": 0.0,
+    "general_lower_pct": 5.589875332831326
+   }
+  },
+  "n_removed": 2,
+  "negative": 2,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 7454,
+  "seconds_original": 11.317378044128418,
+  "seconds_simplified": 13.83220887184143,
+  "seconds_estimator": 4.0575110912323,
+  "ok": true,
+  "seconds": 33.523,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/142246_0851be5e_1.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.199,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/22303_e9723631_5.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": -1.2462251483024378,
+    "lower_pct": 0.773848263449177,
+    "est_pct": 46.38321368496266,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.773848263449177
+   },
+   "bend_wide": {
+    "measured_pct": -1.1589663574338709,
+    "lower_pct": 0.8287798963146721,
+    "est_pct": 59.635741858372505,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.8287798963146721
+   },
+   "tension": {
+    "measured_pct": -0.20656754642308042,
+    "lower_pct": 0.20315335909960497,
+    "est_pct": 16.38963593065619,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.20315335909960497
+   },
+   "torsion": {
+    "measured_pct": 0.9804117675234979,
+    "lower_pct": 1.0542006858627062,
+    "est_pct": 28.625134030909226,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.0542006858627062
+   }
+  },
+  "n_removed": 2,
+  "negative": 2,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 157369,
+  "seconds_original": 620.0203728675842,
+  "seconds_simplified": 37.54211091995239,
+  "seconds_estimator": 14.564810991287231,
+  "ok": true,
+  "seconds": 672.717,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/34522_ed4af450_0.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.1,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/136842_9b96e4dc_8.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.655,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/55200_067161cc_0.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.34,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/24546_067ae037_0.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.201,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/101269_f084ba14_1.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.12,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/51606_b72fa3d6_23.stp"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 1.686,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/30375_4ff65965_21.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.326,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/26395_53ccf21b_29.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.257,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/116416_b2565d0a_10.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.213,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/92286_d48d120d_0.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 2.039,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/23251_3eb3d2e6_11.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.1,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/103284_e25015aa_16.stp"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 0.933,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/22756_fc3fdda5_9.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 1.237636687806109,
+    "lower_pct": 1.1110921937099911,
+    "est_pct": 82.84505547029036,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "bend_wide": {
+    "measured_pct": 1.4135769555013817,
+    "lower_pct": 1.1821976510894778,
+    "est_pct": 0.15054732810411114,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "tension": {
+    "measured_pct": -0.12339011694045277,
+    "lower_pct": 0.16928482504203035,
+    "est_pct": 0.26196111497155505,
+    "pos_pct": null,
+    "general_lower_pct": null
+   },
+   "torsion": {
+    "measured_pct": 2.3332348609289126,
+    "lower_pct": 1.0679893783051393,
+    "est_pct": 29.507742192148925,
+    "pos_pct": null,
+    "general_lower_pct": null
+   }
+  },
+  "n_removed": 2,
+  "negative": 1,
+  "positive": 0,
+  "mixed": 1,
+  "tets": 7119,
+  "seconds_original": 10.680672883987427,
+  "seconds_simplified": 8.889120101928711,
+  "seconds_estimator": 25.954472303390503,
+  "ok": true,
+  "seconds": 142.966,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/43866_908e0b9a_51.stp"
+ },
+ {
+  "cases": {
+   "bend_thin": {
+    "measured_pct": 1.642312005706934,
+    "lower_pct": 2.0037285131767613,
+    "est_pct": 12.293933668698829,
+    "pos_pct": 0.0,
+    "general_lower_pct": 2.0037285131767613
+   },
+   "bend_wide": {
+    "measured_pct": 0.6029728529151586,
+    "lower_pct": 0.6943541543796219,
+    "est_pct": 1.6018136868664319,
+    "pos_pct": 0.0,
+    "general_lower_pct": 0.6943541543796219
+   },
+   "tension": {
+    "measured_pct": 0.8951004727037929,
+    "lower_pct": 1.4021125423718745,
+    "est_pct": 1.7281159684370693,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.4021125423718745
+   },
+   "torsion": {
+    "measured_pct": 0.9514206580647374,
+    "lower_pct": 1.3636849855578825,
+    "est_pct": 6.410795355464569,
+    "pos_pct": 0.0,
+    "general_lower_pct": 1.3636849855578825
+   }
+  },
+  "n_removed": 2,
+  "negative": 2,
+  "positive": 0,
+  "mixed": 0,
+  "tets": 2341,
+  "seconds_original": 2.9815568923950195,
+  "seconds_simplified": 2.594895124435425,
+  "seconds_estimator": 1.1113107204437256,
+  "ok": true,
+  "seconds": 7.505,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/22124_6f71410e_7.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.647,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/141735_3dafd6cf_1.stp"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 1.958,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/22998_00817368_0.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.198,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/23682_efa5429b_2.stp"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.282,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/53053_d6b4d71c_15.stp"
+ },
+ {
+  "ok": false,
+  "error": "timeout",
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/142076_08d80e12_20.stp"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 0.572,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/23660_42d7ea67_1.stp"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 0.29,
+  "item": "/Users/harishikjamwal/defeat-data/fusion_ext/s2.0.1_extended_step/breps/step/23953_ab633029_2.stp"
+ }
+]

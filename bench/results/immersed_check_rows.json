@@ -1,0 +1,756 @@
+[
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 3.18,
+  "item": "138790_dbbff3f3_3"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 3.319,
+  "item": "27655_04ca3d07_6"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 2.986,
+  "item": "21272_ab7bc3d4_1"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 1.286,
+  "item": "145737_b22356cb_1"
+ },
+ {
+  "tet": {
+   "bend_thin": 0.13708477299922625,
+   "bend_wide": -0.10370596601191588,
+   "tension": 0.13911360339600015,
+   "torsion": -0.10642858379060982
+  },
+  "grid": {
+   "bend_thin": 0.06447932879000257,
+   "bend_wide": 0.02667461342925067,
+   "tension": 0.042302617965143424,
+   "torsion": 0.0026740642510879454
+  },
+  "tets": 10607,
+  "cells": 3902,
+  "grid_volume_err_pct": -0.2560963909997411,
+  "seconds_tet": 51.00188183784485,
+  "seconds_grid": 757.3699929714203,
+  "ok": true,
+  "seconds": 812.225,
+  "item": "23519_31078773_3"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.086,
+  "item": "137485_a953e1be_2"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 33.354,
+  "item": "22106_db85f777_28"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.146,
+  "item": "125745_cf468448_6"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.494,
+  "item": "27679_501db761_9"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 2.115,
+  "item": "33529_756075a0_7"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.263,
+  "item": "23120_f7c9092f_24"
+ },
+ {
+  "tet": {
+   "bend_thin": 0.060221696617368814,
+   "bend_wide": 0.04986571282417215,
+   "tension": 0.07104955909835091,
+   "torsion": -0.08229808857166364
+  },
+  "grid": {
+   "bend_thin": -0.026597453338603652,
+   "bend_wide": -0.02908704660593636,
+   "tension": -0.0069665129130193635,
+   "torsion": -0.014878274690654884
+  },
+  "tets": 15652,
+  "cells": 3476,
+  "grid_volume_err_pct": -0.5954681672385683,
+  "seconds_tet": 50.91395401954651,
+  "seconds_grid": 377.5742530822754,
+  "ok": true,
+  "seconds": 432.911,
+  "item": "109576_3504cc04_0"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.207,
+  "item": "21299_e9cd80a6_10"
+ },
+ {
+  "skip": "tet check unavailable",
+  "ok": true,
+  "seconds": 44.138,
+  "item": "52890_d9c33062_10"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.124,
+  "item": "22303_e9723631_4"
+ },
+ {
+  "tet": {
+   "bend_thin": -0.9465647858011526,
+   "bend_wide": -0.2911828347584104,
+   "tension": -0.8497700645011174,
+   "torsion": -0.6164765179084637
+  },
+  "grid": {
+   "bend_thin": -1.4844755533900598,
+   "bend_wide": -1.8049991028728711,
+   "tension": -1.1000123806996087,
+   "torsion": 18.432209392567323
+  },
+  "tets": 11814,
+  "cells": 3490,
+  "grid_volume_err_pct": -0.16112893090807465,
+  "seconds_tet": 41.2825448513031,
+  "seconds_grid": 327.36604380607605,
+  "ok": true,
+  "seconds": 369.042,
+  "item": "45312_89e95202_0"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.564,
+  "item": "26386_fc896bb4_9"
+ },
+ {
+  "tet": {
+   "bend_thin": -0.7306951844707646,
+   "bend_wide": -1.1905098966417296,
+   "tension": -0.4670160432649977,
+   "torsion": -0.5829611568437073
+  },
+  "grid": {
+   "bend_thin": -0.9577842484593546,
+   "bend_wide": -1.5480849957000151,
+   "tension": -0.5854354252529278,
+   "torsion": -0.7154154299341943
+  },
+  "tets": 6335,
+  "cells": 5262,
+  "grid_volume_err_pct": 1.1917063018612954,
+  "seconds_tet": 14.061845064163208,
+  "seconds_grid": 358.0250687599182,
+  "ok": true,
+  "seconds": 374.258,
+  "item": "41512_c1a779f2_6"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.722,
+  "item": "128996_4317ea15_0"
+ },
+ {
+  "tet": {
+   "bend_thin": 0.9886511421158408,
+   "bend_wide": 1.081800396268039,
+   "tension": -0.038000792590479976,
+   "torsion": 0.48221531942459156
+  },
+  "grid": {
+   "bend_thin": 1.0082588686200802,
+   "bend_wide": 1.0134026850130005,
+   "tension": -0.07780462071164167,
+   "torsion": 20.8723360328173
+  },
+  "tets": 3373,
+  "cells": 3111,
+  "grid_volume_err_pct": -0.5400989781166771,
+  "seconds_tet": 8.173046112060547,
+  "seconds_grid": 345.4351477622986,
+  "ok": true,
+  "seconds": 354.416,
+  "item": "31855_b100a912_11"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.6,
+  "item": "53601_59d3ecd2_0"
+ },
+ {
+  "tet": {
+   "bend_thin": 0.7813558981041514,
+   "bend_wide": 0.03503360415641968,
+   "tension": 0.9742768872151348,
+   "torsion": 2.397699625332194
+  },
+  "grid": {
+   "bend_thin": 0.28404553000370497,
+   "bend_wide": 0.0014376523709250357,
+   "tension": 0.4416015260299876,
+   "torsion": -0.8034818017896725
+  },
+  "tets": 2561,
+  "cells": 2716,
+  "grid_volume_err_pct": -1.841481400587798,
+  "seconds_tet": 4.430145978927612,
+  "seconds_grid": 122.59692907333374,
+  "ok": true,
+  "seconds": 129.806,
+  "item": "128043_9f8cd69e_0"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.873,
+  "item": "48508_2ffb007a_17"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.539,
+  "item": "135810_3d5e24a5_63"
+ },
+ {
+  "tet": {
+   "bend_thin": -0.38266766638606875,
+   "bend_wide": -0.5718910755303561,
+   "tension": -0.18372785149845872,
+   "torsion": -0.05180213991281243
+  },
+  "grid": {
+   "bend_thin": -0.8680301550019907,
+   "bend_wide": -0.8789858962696449,
+   "tension": -0.33945965159027686,
+   "torsion": -5.5176525747496425
+  },
+  "tets": 30853,
+  "cells": 3244,
+  "grid_volume_err_pct": 0.2605812863386249,
+  "seconds_tet": 290.8677580356598,
+  "seconds_grid": 363.2128999233246,
+  "ok": true,
+  "seconds": 655.437,
+  "item": "121949_e10b5e85_9"
+ },
+ {
+  "tet": {
+   "bend_thin": -0.6491063357279516,
+   "bend_wide": -0.07712421807341222,
+   "tension": -1.1557825927556529,
+   "torsion": -3.9947690378238416
+  },
+  "grid": {
+   "bend_thin": -0.4844083538377116,
+   "bend_wide": -0.09783858039803757,
+   "tension": -0.8258933651793665,
+   "torsion": -1.33233187350402
+  },
+  "tets": 3014,
+  "cells": 3714,
+  "grid_volume_err_pct": -1.6045987653389069,
+  "seconds_tet": 4.845825910568237,
+  "seconds_grid": 149.77812004089355,
+  "ok": true,
+  "seconds": 155.791,
+  "item": "42005_3da46d94_0"
+ },
+ {
+  "skip": "tet check unavailable",
+  "ok": true,
+  "seconds": 26.945,
+  "item": "124428_06582197_0"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 1.106,
+  "item": "120469_dce81759_6"
+ },
+ {
+  "tet": {
+   "bend_thin": -2.372477842997764,
+   "bend_wide": -2.6152447190740156,
+   "tension": -1.0926681688951079,
+   "torsion": -1.871064535382954
+  },
+  "grid": {
+   "bend_thin": -2.3884592098209034,
+   "bend_wide": -2.7918194447141045,
+   "tension": -1.1803139804683334,
+   "torsion": -1.895296044841685
+  },
+  "tets": 9062,
+  "cells": 3816,
+  "grid_volume_err_pct": 1.3300422292419802,
+  "seconds_tet": 22.598057985305786,
+  "seconds_grid": 305.4480838775635,
+  "ok": true,
+  "seconds": 329.44,
+  "item": "24470_21c25a2d_9"
+ },
+ {
+  "skip": "tet check unavailable",
+  "ok": true,
+  "seconds": 35.937,
+  "item": "138454_c91f4eb9_0"
+ },
+ {
+  "skip": "tet check unavailable",
+  "ok": true,
+  "seconds": 14.506,
+  "item": "143823_1b04bf80_12"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.13,
+  "item": "32074_105fccde_10"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 1.199,
+  "item": "82996_b8dc67c9_8"
+ },
+ {
+  "tet": {
+   "bend_thin": 169.32594849763584,
+   "bend_wide": 90.32589480928534,
+   "tension": 147.39894929897838,
+   "torsion": 152.26385554584837
+  },
+  "grid": {
+   "bend_thin": 158.20547677894828,
+   "bend_wide": 74.91808194450236,
+   "tension": 142.88266735561862,
+   "torsion": 136.41505355211217
+  },
+  "tets": 9998,
+  "cells": 5087,
+  "grid_volume_err_pct": 4.502974958980515,
+  "seconds_tet": 27.395592212677002,
+  "seconds_grid": 311.27155208587646,
+  "ok": true,
+  "seconds": 342.438,
+  "item": "99836_9013c1e5_0"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.603,
+  "item": "148051_66cb4858_13"
+ },
+ {
+  "tet": {
+   "bend_thin": -11.373615742300325,
+   "bend_wide": -3.891694554513002,
+   "tension": -2.9115249393699414,
+   "torsion": -3.816996880892776
+  },
+  "grid": {
+   "bend_thin": -12.045506116679055,
+   "bend_wide": -4.4059993460748785,
+   "tension": -2.928464658940867,
+   "torsion": -5.625545340915424
+  },
+  "tets": 5758,
+  "cells": 5483,
+  "grid_volume_err_pct": 7.676978167385777,
+  "seconds_tet": 16.46545696258545,
+  "seconds_grid": 379.2896728515625,
+  "ok": true,
+  "seconds": 404.16,
+  "item": "26394_b384e5f1_1"
+ },
+ {
+  "tet": {
+   "bend_thin": 0.3041978114284971,
+   "bend_wide": 0.29572145058169336,
+   "tension": -13.781083700322117,
+   "torsion": -14.216058399453551
+  },
+  "grid": {
+   "bend_thin": 0.07239488064554378,
+   "bend_wide": -0.09514903556461382,
+   "tension": -9.158168640307343,
+   "torsion": -13.582583738440631
+  },
+  "tets": 13696,
+  "cells": 4755,
+  "grid_volume_err_pct": -0.4890516465180582,
+  "seconds_tet": 35.0133159160614,
+  "seconds_grid": 184.34951400756836,
+  "ok": true,
+  "seconds": 226.597,
+  "item": "130916_db1e9b1f_0"
+ },
+ {
+  "skip": "tet check unavailable",
+  "ok": true,
+  "seconds": 5.425,
+  "item": "137402_f4ea52c4_0"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.185,
+  "item": "49110_42c8e273_1"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 2.906,
+  "item": "84024_5c75426c_0"
+ },
+ {
+  "tet": {
+   "bend_thin": -1.8819176783125886,
+   "bend_wide": -0.07304025203907967,
+   "tension": -6.535912075004598,
+   "torsion": -10.644981481164272
+  },
+  "grid": {
+   "bend_thin": -2.427016942633874,
+   "bend_wide": -0.10859086165267305,
+   "tension": -8.160863253846795,
+   "torsion": -14.624119837590563
+  },
+  "tets": 22894,
+  "cells": 5692,
+  "grid_volume_err_pct": 3.8694949612880936,
+  "seconds_tet": 75.57176518440247,
+  "seconds_grid": 195.04021501541138,
+  "ok": true,
+  "seconds": 274.296,
+  "item": "70292_0a956492_7"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.689,
+  "item": "21908_385686ec_3"
+ },
+ {
+  "tet": {
+   "bend_thin": -0.11246112764165063,
+   "bend_wide": -0.16336009045228972,
+   "tension": -0.18452449703431387,
+   "torsion": 0.03342921457546974
+  },
+  "grid": {
+   "bend_thin": -0.2405624942041709,
+   "bend_wide": -0.24026542534348122,
+   "tension": -0.19907108916165564,
+   "torsion": 2.762922127550643
+  },
+  "tets": 8978,
+  "cells": 5428,
+  "grid_volume_err_pct": -0.1693906557282945,
+  "seconds_tet": 57.78411817550659,
+  "seconds_grid": 417.488933801651,
+  "ok": true,
+  "seconds": 476.63,
+  "item": "23539_b3917f22_3"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.284,
+  "item": "73652_23b21ef2_6"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.729,
+  "item": "137098_0a45d1c8_19"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 0.773,
+  "item": "23731_3fe5b501_4"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.336,
+  "item": "134284_28ba41df_4"
+ },
+ {
+  "tet": {
+   "bend_thin": -0.013780553311271855,
+   "bend_wide": 0.043024775002519666,
+   "tension": -0.1617493154727935,
+   "torsion": -0.28200407745707856
+  },
+  "grid": {
+   "bend_thin": -0.09116251288346906,
+   "bend_wide": 0.1413492754598974,
+   "tension": -1.0114515387443477,
+   "torsion": -2.254062992840805
+  },
+  "tets": 19046,
+  "cells": 3657,
+  "grid_volume_err_pct": 1.2704959907240547,
+  "seconds_tet": 57.00208926200867,
+  "seconds_grid": 214.8454761505127,
+  "ok": true,
+  "seconds": 356.01,
+  "item": "21566_1004b562_0"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.28,
+  "item": "28312_ce519285_2"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.867,
+  "item": "76298_af8ea172_14"
+ },
+ {
+  "tet": {
+   "bend_thin": 0.06649479273075017,
+   "bend_wide": 0.08985830336781474,
+   "tension": 0.051537022402254336,
+   "torsion": 0.08744766008105474
+  },
+  "grid": {
+   "bend_thin": 0.0,
+   "bend_wide": 0.0,
+   "tension": 0.0,
+   "torsion": 0.0
+  },
+  "tets": 3059,
+  "cells": 3234,
+  "grid_volume_err_pct": -0.3310156249999659,
+  "seconds_tet": 8.839830875396729,
+  "seconds_grid": 315.8431830406189,
+  "ok": true,
+  "seconds": 326.119,
+  "item": "98399_1b3b0f36_4"
+ },
+ {
+  "tet": {
+   "bend_thin": -3.533725400064793,
+   "bend_wide": -71.87989211767456,
+   "tension": -7.4939067304710845,
+   "torsion": -24.095423407423155
+  },
+  "grid": {
+   "bend_thin": -3.4972681594502792,
+   "bend_wide": -73.77909329711672,
+   "tension": -8.274465129585376,
+   "torsion": -31.44460662161438
+  },
+  "tets": 7454,
+  "cells": 4092,
+  "grid_volume_err_pct": -0.4823827234230758,
+  "seconds_tet": 22.477503061294556,
+  "seconds_grid": 316.71546268463135,
+  "ok": true,
+  "seconds": 342.854,
+  "item": "142246_0851be5e_1"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.275,
+  "item": "22303_e9723631_5"
+ },
+ {
+  "skip": "tet check unavailable",
+  "ok": true,
+  "seconds": 29.099,
+  "item": "34522_ed4af450_0"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.254,
+  "item": "136842_9b96e4dc_8"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.776,
+  "item": "55200_067161cc_0"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.346,
+  "item": "24546_067ae037_0"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.198,
+  "item": "101269_f084ba14_1"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.117,
+  "item": "51606_b72fa3d6_23"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 1.762,
+  "item": "30375_4ff65965_21"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.305,
+  "item": "26395_53ccf21b_29"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.232,
+  "item": "116416_b2565d0a_10"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.208,
+  "item": "92286_d48d120d_0"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 1.856,
+  "item": "23251_3eb3d2e6_11"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.124,
+  "item": "103284_e25015aa_16"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 0.882,
+  "item": "22756_fc3fdda5_9"
+ },
+ {
+  "tet": {
+   "bend_thin": -1.2225064988653376,
+   "bend_wide": -1.3938734811825406,
+   "tension": 0.12354255624507479,
+   "torsion": -2.2800362600672046
+  },
+  "grid": {
+   "bend_thin": -0.9921099453855265,
+   "bend_wide": -1.3685832494877939,
+   "tension": -0.005137558275689479,
+   "torsion": -1.9746229911755047
+  },
+  "tets": 7119,
+  "cells": 4012,
+  "grid_volume_err_pct": -1.3108497872248333,
+  "seconds_tet": 19.87851595878601,
+  "seconds_grid": 192.12361121177673,
+  "ok": true,
+  "seconds": 308.717,
+  "item": "43866_908e0b9a_51"
+ },
+ {
+  "tet": {
+   "bend_thin": -1.6157759237262557,
+   "bend_wide": -0.599358881567769,
+   "tension": -0.8871595037917166,
+   "torsion": -0.9424539564305091
+  },
+  "grid": {
+   "bend_thin": -1.3470231404371185,
+   "bend_wide": -0.41999645856123935,
+   "tension": -0.7739208535296691,
+   "torsion": -0.8778098790860643
+  },
+  "tets": 2341,
+  "cells": 3531,
+  "grid_volume_err_pct": -0.6271528023805978,
+  "seconds_tet": 5.2623748779296875,
+  "seconds_grid": 270.9951469898224,
+  "ok": true,
+  "seconds": 276.925,
+  "item": "22124_6f71410e_7"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.886,
+  "item": "141735_3dafd6cf_1"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 2.331,
+  "item": "22998_00817368_0"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.24,
+  "item": "23682_efa5429b_2"
+ },
+ {
+  "skip": "nothing to remove",
+  "ok": true,
+  "seconds": 0.29,
+  "item": "53053_d6b4d71c_15"
+ },
+ {
+  "skip": "tet check unavailable",
+  "ok": true,
+  "seconds": 718.406,
+  "item": "142076_08d80e12_20"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 0.583,
+  "item": "23660_42d7ea67_1"
+ },
+ {
+  "skip": "nothing removed",
+  "ok": true,
+  "seconds": 0.329,
+  "item": "23953_ab633029_2"
+ }
+]

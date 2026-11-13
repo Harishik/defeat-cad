@@ -26,11 +26,15 @@ class Feature:
     source: str = "rules"
     confidence: float = 0.9
     note: str = ""
+    # the feature's own edge blends and chamfers (a boss's tip chamfer, the blend at a hole's bottom):
+    # listed as separate features so they can be kept or removed alone, but they must go whenever this
+    # feature goes, or the kernel is asked to remove half a boss
+    attached: list = field(default_factory=list)
 
     def to_dict(self):
         return {"id": self.id, "kind": self.kind, "faces": self.faces, "params": self.params,
                 "size": round(self.size, 4), "host": self.host, "source": self.source,
-                "confidence": round(self.confidence, 3), "note": self.note}
+                "confidence": round(self.confidence, 3), "note": self.note, "attached": self.attached}
 
 
 def _faces_bbox(g: FaceGraph, fids):
@@ -83,6 +87,7 @@ class Recognizer:
 
     def _add(self, kind, faces, **kw):
         faces = sorted(set(f for f in faces if f not in self.owner))
+        attached = []
         if kind in self.SPLIT_KINDS:
             # edge blends and chamfers on a feature are their own (separately removable) features,
             # e.g. keep a large hole but drop its rim chamfer
@@ -91,10 +96,11 @@ class Recognizer:
                 return kind in ("hole", "slot") and n.kind in ("cylinder", "cone") and n.concave_axis
             core = [f for f in faces if wall(f) or not (self.is_blend(f) or self.is_chamfer_like(f))]
             if core:
+                attached = [f for f in faces if f not in core]
                 faces = core
         if not faces:
             return None
-        ft = Feature(len(self.features), kind, faces, **kw)
+        ft = Feature(len(self.features), kind, faces, attached=attached, **kw)
         for f in faces:
             self.owner[f] = ft.id
         self.features.append(ft)

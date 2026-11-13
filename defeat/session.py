@@ -20,7 +20,7 @@ from .execute import defeature
 from .graph import build_graph
 from .recognize import recognize
 from .tessellate import tessellate
-from .validate import geometry_report, mesh_compare
+from .validate import geometry_report, grid_compare, mesh_compare, prewarm_original
 
 ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "runs")
 
@@ -71,6 +71,15 @@ class Session:
         except Exception:
             self.net = None
         self.status.update(stage="ready", busy=False, progress=1.0)
+
+    def prewarm(self):
+        """Solve the original part in the background now, so a run only has to solve the simplified one."""
+        if not getattr(self, "_prewarm_ok", False):   # app sessions only (new_session): benchmarks run kernels in-process
+            return
+        try:
+            prewarm_original(self.shape, self.policy.h, self.policy.preset, self.policy.boundary, want_field=bool(self.guard_tol))
+        except Exception:
+            pass
 
     # ------------------------------------------------------------ status
     def _step(self, msg, progress=None):
@@ -136,6 +145,8 @@ class Session:
             p.boundary = {"fixed": [int(i) for i in boundary.get("fixed") or []], "loaded": [int(i) for i in boundary.get("loaded") or []],
                           "force": [float(v) for v in boundary.get("force") or [0, 0, -100]]}
         self.decisions = decide(self.features, p, self.graph, self.part_volume)
+        if preset or h or boundary is not None:   # the original's solve depends on these: start the new one now
+            self.prewarm()
         self.log.append({"op": "policy", "source": source, "preset": p.preset, "h": p.h,
                          "overrides": dict(p.overrides), "feature_overrides": dict(p.feature_overrides)})
         return self.summary()
@@ -159,6 +170,8 @@ class Session:
             self.status = {"stage": "running", "steps": [], "progress": 0.02, "busy": True}
             self.unchecked = False
             self.unchecked_why = None
+            if with_mesh and getattr(self, "_prewarm_ok", False):
+                self.prewarm()   # runs alongside the kernel's removals; a no-op when already solved
             try:
                 if self.policy.verified != bool(with_mesh):  # no stress check to judge it: the volume budget steps in
                     self.policy.verified = bool(with_mesh)
@@ -195,6 +208,11 @@ class Session:
                             mesh = mesh_compare(self.shape, er.shape, self.policy.h, want_field=bool(self.guard_tol), analysis=self.policy.preset,
                                                 boundary=self.policy.boundary, budget=0.5 * max(self._end - time.time(), 60.0))
                     if not (mesh.get("fea") or {}).get("delta"):
+                        # No tetrahedral mesh: try the same load cases on a fixed grid, which needs no mesh.
+                        grid = self._grid_check(er)
+                        if grid and fea.worst_case(grid["delta"]) <= self.grid_tol:
+                            mesh = dict(mesh or {}, fea=grid)
+                    if not (mesh.get("fea") or {}).get("delta"):
                         # No comparison came back: never leave a physics-based removal unchecked. Fall back to
                         # what is safe without one, the volume budget, and check that smaller removal if the
                         # original itself could be solved. Otherwise say what stopped the check.
@@ -215,6 +233,10 @@ class Session:
                             # describe the shipped part. Nothing removed means the part is the original; otherwise
                             # the smaller removal was never meshed, so report no mesh change rather than a stale one.
                             mesh = self._mesh_after_fallback(mesh, er)
+                        if not (mesh.get("fea") or {}).get("delta") and er.removed:
+                            grid = self._grid_check(er)
+                            if grid:
+                                mesh = dict(mesh or {}, fea=grid)
                         if not (mesh.get("fea") or {}).get("delta"):
                             self.unchecked = bool(er.removed)
                             self.unchecked_why = why[1] if er.removed else None
@@ -222,7 +244,8 @@ class Session:
                     for side in ("defeatured",):
                         ((mesh or {}).get("fea") or {}).get(side, {}).pop("field", None)
                 guard = None
-                if with_mesh and self.guard_tol and (mesh or {}).get("fea"):
+                on_grid = ((mesh or {}).get("fea") or {}).get("method") == "grid"
+                if with_mesh and self.guard_tol and (mesh or {}).get("fea") and not on_grid:
                     guard = self._stress_guard(er, mesh)
                     if guard and guard.get("accepted"):
                         er, mesh = self.result, guard["mesh"]
@@ -233,7 +256,8 @@ class Session:
                                 "unchecked": self.unchecked,
                                 "unchecked_why": self.unchecked_why,
                                 "guard_message": (f"{self.unchecked_why} Only small removals were kept. Run your own check on it."
-                                                  if self.unchecked else fea.guard_message(guard, self.policy.preset)),
+                                                  if self.unchecked else self._grid_message(mesh) if on_grid
+                                                  else fea.guard_message(guard, self.policy.preset)),
                                 "failed": {str(k): v for k, v in er.failed.items()},
                                 "strategy": er.strategy, "seconds": er.seconds}
                 self._export()
@@ -250,6 +274,7 @@ class Session:
     guard_seconds = 240.0
     finer_share = 0.5   # results above this share of the tolerance get a second look on a finer mesh
     finer_ratio = 1.4
+    grid_tol = 3.0   # % the fixed-grid check accepts; tighter than guard_tol because the grid understates changes
 
     def _features_at_ends(self, original):
         """Features with a face reaching into the clamped or loaded end regions of the original's check."""
@@ -280,6 +305,22 @@ class Session:
             return ("This part is too heavy to stress-check here", "This part was too heavy to stress-check here.")
         return ("This part can't be meshed", "The mesher could not build a volume mesh of this part, so it has no stress check.")
 
+    def _grid_check(self, er):
+        """The default static check on a fixed grid, when the mesher fails. None if it can't run."""
+        if not er.removed or self.policy.preset != "static":
+            return None
+        self._step("No mesh could be built: checking on a fixed grid instead", 0.76)
+        return grid_compare(self.shape, er.shape, self.policy.preset, self.policy.boundary, timeout=self._left())
+
+    def _grid_message(self, mesh):
+        d = fea.worst_case(((mesh or {}).get("fea") or {}).get("delta"))
+        if d is None:
+            return None
+        msg = f"No mesh could be built for this part, so the stress check ran on a fixed grid: worst load case {d:.1f}%."
+        if d > self.grid_tol:
+            msg += " That is more than the grid check accepts. Review this part before you rely on it."
+        return msg
+
     def _judge(self, delta):
         """The stress peak only means something for a stress analysis; the other presets have their own quantity."""
         return fea.judged(delta, self.guard_tol) if self.policy.preset == "static" else fea.worst_case(delta)
@@ -294,8 +335,9 @@ class Session:
         from .validate import step_bytes
         hf = h_fea / self.finer_ratio
         fine = dict(bc, h_fea=hf, want_field=False, max_tets=int(1.6 * fea.MAX_TETS))
-        if self._finer_orig is None:
-            r = worker().call("defeat.fea:mesh_and_solve", step_bytes(self.shape), hf, fine, timeout=self._left())
+        if self._finer_orig is None:   # cached across runs, and usually already started in the background
+            from .validate import solve_original
+            r = solve_original(worker(), self.shape, step_bytes(self.shape), hf, fine, self._left())
             self._finer_orig = (r.get("fea") if r.get("ok") else None) or False
         if not (self._finer_orig and self._finer_orig.get("ok")):
             return None
@@ -328,6 +370,12 @@ class Session:
         if d0 is None:
             return {"triggered": False, "worst_case_pct": d0}
         removed = [f for f in self.features if f.id in er.removed]
+        if d0 > self.finer_share * self.guard_tol and getattr(self, "_prewarm_ok", False):
+            # anything near or past the limit gets confirmed on a finer mesh: start the original's finer
+            # solve now, in its own worker, so it runs alongside the trials instead of before them
+            from .validate import prewarm_solve
+            hf = h_fea / self.finer_ratio
+            prewarm_solve(self.shape, hf, dict(bc, h_fea=hf, want_field=False, max_tets=int(1.6 * fea.MAX_TETS)), self._left())
         finer0 = None
         if d0 <= self.guard_tol:
             if d0 <= self.finer_share * self.guard_tol:
@@ -429,9 +477,11 @@ class Session:
         out_step = os.path.join(self.dir, f"{stem}_defeatured.step")
         occ.write_step(self.result.shape, out_step)
         feats = codegen.feature_signatures(self.graph.faces, self.features, set(self.result.removed))
+        face_sigs, steps = codegen.step_signatures(self.graph.faces, self.features, set(self.result.removed),
+                                                   getattr(self.result, "steps", None) or [])
         tol = 2e-3 * self.graph.char_len
-        py = codegen.python_script(self.name, self.policy.preset, self.policy.h, feats, tol)
-        cpp = codegen.cpp_program(self.name, self.policy.preset, self.policy.h, feats, tol)
+        py = codegen.python_script(self.name, self.policy.preset, self.policy.h, feats, tol, face_sigs, steps)
+        cpp = codegen.cpp_program(self.name, self.policy.preset, self.policy.h, face_sigs, steps, tol)
         py_path = os.path.join(self.dir, f"defeature_{stem}.py")
         cpp_path = os.path.join(self.dir, f"defeature_{stem}.cpp")
         open(py_path, "w", encoding="utf-8").write(py)
@@ -464,6 +514,8 @@ MAX_SESSIONS = int(os.environ.get("DEFEAT_MAX_SESSIONS", "24"))   # open parts k
 def new_session(path, name=None) -> Session:
     s = Session(path, name)
     SESSIONS[s.id] = s
+    s._prewarm_ok = True
+    s.prewarm()   # the app only: solve the original while the user reviews the features
     # oldest idle parts go first, so a long-running server's memory stays bounded
     while len(SESSIONS) > MAX_SESSIONS:
         old = next((k for k, v in SESSIONS.items() if not (v.status or {}).get("busy")), None)

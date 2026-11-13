@@ -1,0 +1,73 @@
+{
+ "parts": 75,
+ "compared": 19,
+ "skipped": {
+  "nothing to remove": 40,
+  "nothing removed": 9,
+  "tet check unavailable": 7
+ },
+ "grid_failed": 0,
+ "timeouts_or_errors": 0,
+ "case_abs_diff_pts": {
+  "median": 0.20322574349755979,
+  "p90": 4.569598501687266
+ },
+ "worst_case_abs_diff_pts": [
+  0.3054,
+  2.6624
+ ],
+ "worst_ratio_grid_over_tet_median": 1.0427481724038346,
+ "grid_volume_err_pct_median": -0.2560963909997411,
+ "seconds_grid_median": 315.8431830406189,
+ "seconds_tet_median": 22.598057985305786,
+ "tolerance_table": {
+  "2.0": {
+   "tet_fails": 5,
+   "grid_passes_a_tet_fail": 0,
+   "tet_passes_kept_by_grid": [
+    0.3259,
+    0.7862
+   ]
+  },
+  "2.5": {
+   "tet_fails": 5,
+   "grid_passes_a_tet_fail": 0,
+   "tet_passes_kept_by_grid": [
+    0.3876,
+    0.8366
+   ]
+  },
+  "3.0": {
+   "tet_fails": 5,
+   "grid_passes_a_tet_fail": 0,
+   "tet_passes_kept_by_grid": [
+    0.5241,
+    0.9243
+   ]
+  },
+  "3.5": {
+   "tet_fails": 5,
+   "grid_passes_a_tet_fail": 0,
+   "tet_passes_kept_by_grid": [
+    0.5241,
+    0.9243
+   ]
+  },
+  "4.0": {
+   "tet_fails": 5,
+   "grid_passes_a_tet_fail": 0,
+   "tet_passes_kept_by_grid": [
+    0.5241,
+    0.9243
+   ]
+  },
+  "5.0": {
+   "tet_fails": 5,
+   "grid_passes_a_tet_fail": 0,
+   "tet_passes_kept_by_grid": [
+    0.5241,
+    0.9243
+   ]
+  }
+ }
+}

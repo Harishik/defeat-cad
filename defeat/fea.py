@@ -264,7 +264,7 @@ def solve(p, t, bc, order=2):
     export = None
     if bc.get("want_system"):   # the discrete problem, so an outside solver can be handed exactly the same one
         export = {"p": p, "t": t, "edges": m.t2e.T, "edge_nodes": m.edges.T, "nodal": ib.nodal_dofs, "edge": ib.edge_dofs,
-                  "fixed": D, "forms": forms}
+                  "fixed": D, "forms": forms, "U": U}
     return {"ok": True, "field": field, "system": export, "dofs": int(ib.N), "order": order, "solver": "multigrid" if lu.iterative else "direct", "max_disp": float(np.abs(u).max()), "tip_disp": tip,
             "stiffness": F / tip, "cases": cases,
             "vm_p99": float(vm[o][np.searchsorted(cum, 0.99)]), "vm_p95": float(vm[o][np.searchsorted(cum, 0.95)]),

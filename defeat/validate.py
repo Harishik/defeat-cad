@@ -191,6 +191,121 @@ def _mesh_rounds(h, diag):
             (max(2 * h, diag / 10), 0, "cad", 1.0))
 
 
+def grid_compare(orig, new, analysis="static", boundary=None, timeout=300.0):
+    """The stress check on a fixed grid (defeat.immersed), for parts no tetrahedral mesh can be built
+    for. Only the default static load cases; None when it does not apply or does not solve."""
+    from . import fea
+    from .execute import worker
+    if analysis != "static" or (boundary and boundary.get("fixed")):
+        return None
+    bc = fea.load_case(occ.bbox(orig), analysis)
+    r = worker().call("defeat.immersed:solve_pair", occ.to_brep_string(orig), occ.to_brep_string(new), bc, timeout=timeout)
+    if not r.get("ok"):
+        return None
+    return {"method": "grid", "load_case": bc["text"] + ". Solved on a fixed grid, without a mesh",
+            "material": fea.MATERIAL, "original": r["original"], "defeatured": r["defeatured"], "delta": r["delta"]}
+
+
+# ---------------------------------------------------------------- the original's solve, computed once
+# The original part's mesh and stress solve depend only on its geometry, the mesh size and the load
+# settings, never on which features are removed. So it is solved once (in the background as soon as a
+# part is opened) and reused by every run and every stress-guard re-check on that part.
+_ORIG = {}             # key -> {"done": threading.Event, "result": dict | None}
+_ORIG_LOCK = None
+_ORIG_MAX = 24
+
+
+def _orig_lock():
+    global _ORIG_LOCK
+    if _ORIG_LOCK is None:
+        import threading
+        _ORIG_LOCK = threading.Lock()
+    return _ORIG_LOCK
+
+
+def _orig_key(shape, size: float, bc: dict):
+    """By the exact geometry (the BREP text; STEP files carry a time stamp), mesh size and load settings."""
+    import hashlib
+    import json
+    return (hashlib.sha1(occ.to_brep_string(shape)).hexdigest(), round(float(size), 9), json.dumps(bc, sort_keys=True, default=str))
+
+
+def _orig_bc(orig, analysis, boundary, want_field, curve, rt):
+    from . import fea
+    bc = fea.load_case(occ.bbox(orig), analysis)
+    if boundary and boundary.get("fixed"):
+        fea.user_case(occ.faces_of(orig), boundary, bc)
+    bc["want_field"] = want_field
+    bc["stat_curvature"] = curve
+    bc["mesh_route"] = rt
+    return bc
+
+
+def solve_original(w, shape, data: bytes, size: float, bc: dict, timeout: float):
+    """mesh_and_solve for the original part, through the cache: a finished result is reused, one being
+    computed in the background is waited for, and only a missing one is computed here."""
+    import copy
+    import threading
+    key = _orig_key(shape, size, bc)
+    with _orig_lock():
+        ent = _ORIG.get(key)
+        mine = ent is None
+        if mine:
+            ent = _ORIG[key] = {"done": threading.Event(), "result": None}
+    if not mine:
+        if ent["done"].wait(timeout) and ent["result"] is not None:
+            return copy.deepcopy(ent["result"])
+        if not ent["done"].is_set():
+            return {"ok": False, "error": f"kernel timed out after {timeout:.0f}s"}
+        # the background solve failed: fall through and try here, in the main worker
+        with _orig_lock():
+            ent = _ORIG[key] = {"done": threading.Event(), "result": None}
+    try:
+        r = w.call("defeat.fea:mesh_and_solve", data, size, bc, timeout=timeout)
+    except Exception as e:  # noqa
+        r = {"ok": False, "error": f"{type(e).__name__}: {e}"}
+    with _orig_lock():
+        if (r.get("fea") or {}).get("ok"):
+            ent["result"] = copy.deepcopy(r)
+            while len(_ORIG) > _ORIG_MAX:
+                _ORIG.pop(next(iter(_ORIG)))
+        else:
+            _ORIG.pop(key, None)
+        ent["done"].set()
+    return r
+
+
+def prewarm_solve(shape, size, bc, timeout=240.0):
+    """solve_original for this shape, size and load settings in a thread with its own worker process.
+    A no-op when that solve is already cached or running."""
+    import threading
+    from .execute import Worker
+    with _orig_lock():
+        if _orig_key(shape, size, bc) in _ORIG:
+            return
+    data = step_bytes(shape)
+
+    def job():
+        w = Worker()
+        try:
+            solve_original(w, shape, data, size, bc, timeout)
+        finally:
+            w.close()
+    threading.Thread(target=job, daemon=True, name="prewarm-solve").start()
+
+
+def prewarm_original(orig, h, analysis="static", boundary=None, want_field=False, timeout=240.0):
+    """Start solving the original at the first mesh round mesh_compare will try, in its own worker
+    process and thread, so it runs while the user reviews features and while the kernel defeatures."""
+    import threading
+    from .execute import Worker
+    if analysis not in ("static", "modal", "thermal", "cfd"):
+        return
+    box = occ.bbox(orig)
+    size, curve, rt, _ = _mesh_rounds(h, occ.norm(occ.sub(box[3:], box[:3])))[0]
+    prewarm_solve(orig, size, _orig_bc(orig, analysis, boundary, want_field, curve, rt), timeout)
+
+
 def mesh_compare(orig, new, h, timeout=300.0, with_fea=True, want_field=False, analysis="static", boundary=None, budget=300.0):
     """budget: seconds for the whole comparison, shared out so a coarser mesh always gets its turn."""
     from . import fea
@@ -211,13 +326,8 @@ def mesh_compare(orig, new, h, timeout=300.0, with_fea=True, want_field=False, a
             if size <= timed_out_at:
                 continue   # a round at the same size would time out again: go straight to a coarser mesh
             timeout = left * share / 2
-            bc = fea.load_case(occ.bbox(orig), analysis)
-            if boundary and boundary.get("fixed"):
-                fea.user_case(occ.faces_of(orig), boundary, bc)
-            bc["want_field"] = want_field
-            bc["stat_curvature"] = curve
-            bc["mesh_route"] = rt
-            a = w.call("defeat.fea:mesh_and_solve", step_bytes(orig), size, bc, timeout=timeout)
+            bc = _orig_bc(orig, analysis, boundary, want_field, curve, rt)
+            a = solve_original(w, orig, step_bytes(orig), size, bc, timeout)
             if "timed out" in str(a.get("error", "")):
                 timed_out_at = size
             if not (a.get("fea") or {}).get("ok"):
