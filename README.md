@@ -217,6 +217,21 @@ So the grid mostly errs toward caution: it never let through a part the regular 
 
 Both are checked on the larger working mesh (the chassis's is 46,000 elements) and re-measured for this release. The bracket now really removes its blends and chamfers (earlier releases reported 22 removed while leaving 6 blend faces in place, ending at 32 faces), so its removals matter more: the guard saw 7.8% and put 2 back. The chassis's 0.6% in the previous README was out of date: release 1.1 itself gives 3.3% (bending about the wide axis), the same as now.
 
+### Real parts from open collections (not used for training or tuning)
+
+DeFeat run end to end, exactly as the app runs it, on openly licensed real parts it had never seen: the 21 NIST engineering test parts, 60 random parts from the FreeCAD library's mechanical and industrial-design folders, and 60 KiCad connector and switch models (mostly injection-molded housings). No face labels exist for these, so this measures what a user sees rather than recognition accuracy. See [`docs/open-cad-datasets.md`](docs/open-cad-datasets.md) for the licenses.
+
+| | NIST | FreeCAD | KiCad |
+|---|---|---|---|
+| Parts opened | 20 of 21 (one crashed the kernel) | 60 of 60 | 60 of 60 |
+| With something to remove | 18 | 14 | 54 |
+| Output is a valid solid | all | all | all |
+| Targeted features removed | **44%** (264 of 599) | **40%** (235 of 588) | **49%** (719 of 1,468) |
+| Within 5% on every load case, where the stress check ran | all | all | all |
+| Median time per part, with the stress check | 7.0 min | 6.5 min | 3.7 min |
+
+This is the weakest result in this README, and the one closest to everyday use. DeFeat never handed back a broken part or a part that moved a load case by more than 5%, but on real parts it removed only 40–49% of what it targeted. The rest are kept and reported for three reasons: the part's time budget for removals runs out on large parts (the two largest NIST parts, 484 and 637 faces, had nothing removed), the kernel returns the part unchanged, or the kernel's rebuild is refused because it changed far more material than the feature holds. On one NIST part, removing a single 6 mm hole made OpenCASCADE drop an unrelated face 75 mm away and fill about 30% of the part; the check refuses that, correctly. Making removal hold up on such parts is the next piece of work.
+
 ### Assistant
 
 Scored on a fourth held-out set ([`bench/heldout_v4.py`](bench/heldout_v4.py)): 80 commands and 40 part descriptions, written before any of this release's assistant changes were run on them. "Before" is the previous release on the same set, "after" is this one. Each was scored once.
@@ -309,6 +324,7 @@ python -m bench.convergence --n 400 --workers 8           # does the stress chec
 python -m bench.solver_check --n 40                       # stress solver vs CalculiX and beam theory
 python -m bench.immersed_check --n 75 --workers 3         # grid check vs tetrahedral check (validation parts)
 python -m bench.removal_audit --n 300                     # are features reported removed really gone? (validation parts)
+python -m bench.real_parts --set nist                     # real parts from open collections (also freecad, kicad; data in ~/defeat-data/real)
 python -m bench.assistant
 python -m bench.assistant_v4 --tag after                  # fourth held-out set, scored once
 python docs/make_charts.py          # regenerate the charts above
@@ -329,6 +345,7 @@ Version 1.1 takes ideas from work published in the last few months and adapts th
 - **The stress check is a comparison tool, not a replacement for the real CAE run.** It's linear and isotropic, and the automatic supports and loads are a stand-in for yours. Choose your own in the app when you know them.
 - **A pass isn't a guarantee.** 3 of 42 checked parts that passed on the working mesh failed on a finer one, and that check only reaches parts small enough for the finer mesh.
 - **Parts gmsh can't mesh now get the slower grid check.** On the real-part run, 9 of 206 had no stress check; the grid check was added after that run, so how many of them it now covers hasn't been scored on test parts. It is calibrated on validation parts only, and a few parts can still fail both.
+- **On real parts from open collections, only 40–49% of the targeted features are removed** (see *Real parts from open collections*). Every output is still a valid solid within the stress tolerance; the rest are kept and reported.
 - **Recognition isn't perfect.** Fillets and chamfers are near 0.97–0.99 F1, but no model here is at 1.0. Rare labels such as revolve ends are weak (IoU 0.32).
 - **The segmentation comparison isn't exact.** The published scores use an earlier version of the dataset.
 - **NX files need exporting to STEP first.** There's no open-source `.prt` reader, and the NX journal hasn't run in a real NX install.

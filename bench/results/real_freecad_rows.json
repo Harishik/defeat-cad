@@ -1,0 +1,1071 @@
+[
+ {
+  "opened": true,
+  "seconds_open": 13.907687902450562,
+  "faces": 9,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "hole"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 13.949,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Washers/Metric/DIN93_M24TabWasher.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 14.148725032806396,
+  "faces": 11,
+  "solids": 1,
+  "features": 0,
+  "kinds": [],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 14.204,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Profiles EN/EN10056 Equal Angle Bars/Angle Bar L200x200x20 EN10056 S235JR.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 13.850145101547241,
+  "faces": 15,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 13.884,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolts & Screws/Metric/ISO4762 Hexagon socket head cap screws/Screw M1,6x16 ISO4762 8,8 A2K.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 10.80897307395935,
+  "faces": 287,
+  "solids": 1,
+  "features": 53,
+  "kinds": [
+   "hole",
+   "pocket"
+  ],
+  "targeted": 52,
+  "removed": 0,
+  "failed": 52,
+  "failed_reasons": [
+   "kept: the part's time budget for removals ran out",
+   "kernel returned the part unchanged"
+  ],
+  "valid": true,
+  "faces_after": 287,
+  "kernel_seconds": 317.4354100227356,
+  "seconds_run": 535.7468822002411,
+  "unchecked": false,
+  "check_method": "tet",
+  "worst_case_pct": 0.0,
+  "guard_triggered": false,
+  "tet_reduction_pct": 0.0,
+  "ok": true,
+  "seconds": 546.641,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Chains/Sprocket/ISO 606/Simplex 8x3,0/Sprocket ISO606 simplex 8x3,0 z31.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.4882969856262207,
+  "faces": 18,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "slot"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.492,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Profiles EN/EN10219 Square Hollow Sections/Square hollow section 400x400x10 EN10219 S235JRH.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 8.644933700561523,
+  "faces": 218,
+  "solids": 1,
+  "features": 31,
+  "kinds": [
+   "hole",
+   "pocket"
+  ],
+  "targeted": 30,
+  "removed": 0,
+  "failed": 30,
+  "failed_reasons": [
+   "kernel returned the part unchanged"
+  ],
+  "valid": true,
+  "faces_after": 218,
+  "kernel_seconds": 285.86501693725586,
+  "seconds_run": 467.9490749835968,
+  "unchecked": false,
+  "check_method": "tet",
+  "worst_case_pct": 0.0,
+  "guard_triggered": false,
+  "tet_reduction_pct": 0.0,
+  "ok": true,
+  "seconds": 476.714,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Chains/Sprocket/ISO 606/Simplex 8x3,0/Sprocket ISO606 simplex 8x3,0 z30.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.4456021785736084,
+  "faces": 16,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "slot"
+  ],
+  "targeted": 1,
+  "removed": 0,
+  "failed": 0,
+  "failed_reasons": [],
+  "valid": true,
+  "faces_after": 16,
+  "kernel_seconds": 0.0,
+  "seconds_run": 95.88330388069153,
+  "unchecked": false,
+  "check_method": "tet",
+  "worst_case_pct": 0.0,
+  "guard_triggered": true,
+  "tet_reduction_pct": 0.0,
+  "ok": true,
+  "seconds": 96.371,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolts & Screws/Metric/ISO4762_Hex_Socket_Head_Cap_Screw_M3x10.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 5.996137857437134,
+  "faces": 182,
+  "solids": 1,
+  "features": 33,
+  "kinds": [
+   "hole"
+  ],
+  "targeted": 16,
+  "removed": 16,
+  "failed": 0,
+  "failed_reasons": [],
+  "valid": true,
+  "faces_after": 149,
+  "kernel_seconds": 14.564778089523315,
+  "seconds_run": 273.2427730560303,
+  "unchecked": false,
+  "check_method": "tet",
+  "worst_case_pct": 2.3636502786568303,
+  "guard_triggered": false,
+  "tet_reduction_pct": -17.889182058047492,
+  "ok": true,
+  "seconds": 279.344,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Chains/Sprocket/ISO 606/Simplex \u00bex\u2077\u2044\u2081\u2086/Sprocket ANSI simplex \u00bex\u2077\u2044\u2081\u2086 z16.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 10.979171991348267,
+  "faces": 327,
+  "solids": 1,
+  "features": 60,
+  "kinds": [
+   "fillet",
+   "hole"
+  ],
+  "targeted": 29,
+  "removed": 28,
+  "failed": 1,
+  "failed_reasons": [
+   "kernel crashed on this geometry"
+  ],
+  "valid": true,
+  "faces_after": 299,
+  "kernel_seconds": 183.09304523468018,
+  "seconds_run": 413.9938039779663,
+  "unchecked": false,
+  "check_method": "tet",
+  "worst_case_pct": 1.1056219605039403,
+  "guard_triggered": false,
+  "tet_reduction_pct": 8.179581795817958,
+  "ok": true,
+  "seconds": 425.089,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Chains/Sprocket/ISO 606/Simplex \u215cx\u2077\u2044\u2083\u2082/Sprocket ANSI simplex \u215cx\u2077\u2044\u2083\u2082 z29.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.7422599792480469,
+  "faces": 6,
+  "solids": 1,
+  "features": 0,
+  "kinds": [],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.745,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Profiles EN/EN10058 Flat steel bars/Flat Bar 100x20 EN10058 S235JR.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.36612701416015625,
+  "faces": 15,
+  "solids": 1,
+  "features": 2,
+  "kinds": [
+   "pocket",
+   "rib"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.368,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolts & Screws/Metric/ISO4762 Hexagon socket head cap screws/Screw M5x110 ISO4762 8,8 A2K.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.36531996726989746,
+  "faces": 14,
+  "solids": 3,
+  "features": 3,
+  "kinds": [
+   "hole"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.367,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Bearings/623ZZ_Ball_Bearing.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.10642194747924805,
+  "faces": 4,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "hole"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.108,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Washers/Metric/ISO7091_CLASS_C_M3.5.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.302217960357666,
+  "faces": 15,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.305,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolts & Screws/Metric/ISO4762 Hexagon socket head cap screws/Screw M24x190 ISO4762 8,8 A2K.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.16623711585998535,
+  "faces": 6,
+  "solids": 1,
+  "features": 0,
+  "kinds": [],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.168,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Profiles EN/EN10058 Flat steel bars/Flat Bar 30x4 EN10058 S235JR.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 24.42945170402527,
+  "faces": 1051,
+  "solids": 1,
+  "features": 191,
+  "kinds": [
+   "hole",
+   "pocket"
+  ],
+  "targeted": 190,
+  "removed": 0,
+  "failed": 130,
+  "failed_reasons": [
+   "kept: the part's time budget for removals ran out"
+  ],
+  "valid": true,
+  "faces_after": 1051,
+  "kernel_seconds": 40.78802800178528,
+  "seconds_run": 901.147558927536,
+  "unchecked": false,
+  "check_method": null,
+  "worst_case_pct": null,
+  "guard_triggered": false,
+  "tet_reduction_pct": null,
+  "ok": true,
+  "seconds": 925.869,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Chains/Sprocket/ISO 606/Simplex \u00bdx\u2075\u2044\u2081\u2086/Sprocket ANSI simplex \u00bdx\u2075\u2044\u2081\u2086 z95.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.6324551105499268,
+  "faces": 7,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.634,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Washers/Metric/DIN440_CLASS_V_M20.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 8.240807294845581,
+  "faces": 393,
+  "solids": 1,
+  "features": 72,
+  "kinds": [
+   "fillet",
+   "hole"
+  ],
+  "targeted": 70,
+  "removed": 34,
+  "failed": 36,
+  "failed_reasons": [
+   "kept: the part's time budget for removals ran out",
+   "kernel crashed on this geometry",
+   "kernel returned the part unchanged"
+  ],
+  "valid": true,
+  "faces_after": 359,
+  "kernel_seconds": 315.9718987941742,
+  "seconds_run": 575.5152068138123,
+  "unchecked": false,
+  "check_method": "tet",
+  "worst_case_pct": 1.5048767147771784,
+  "guard_triggered": false,
+  "tet_reduction_pct": -5.895411938825851,
+  "ok": true,
+  "seconds": 583.869,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Chains/Sprocket/ISO 606/Simplex \u215cx\u2077\u2044\u2083\u2082/Sprocket ANSI simplex \u215cx\u2077\u2044\u2083\u2082 z35.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.455981969833374,
+  "faces": 13,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "hole"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.457,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Washers/Metric/DIN463_M48TabWasher.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.3622579574584961,
+  "faces": 12,
+  "solids": 1,
+  "features": 0,
+  "kinds": [],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.394,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Profiles EN/DIN1026-2 UPE-Profiles/UPE-Profile 160 DIN1026-2 S235JR.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.2388322353363037,
+  "faces": 6,
+  "solids": 1,
+  "features": 0,
+  "kinds": [],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.24,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Profiles EN/EN10058 Flat steel bars/Flat Bar 150x16 EN10058 S235JR.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 6.399287939071655,
+  "faces": 371,
+  "solids": 1,
+  "features": 68,
+  "kinds": [
+   "fillet",
+   "hole"
+  ],
+  "targeted": 33,
+  "removed": 32,
+  "failed": 1,
+  "failed_reasons": [
+   "kernel crashed on this geometry"
+  ],
+  "valid": true,
+  "faces_after": 339,
+  "kernel_seconds": 101.67424893379211,
+  "seconds_run": 293.2196238040924,
+  "unchecked": false,
+  "check_method": "tet",
+  "worst_case_pct": 0.5559973420212206,
+  "guard_triggered": false,
+  "tet_reduction_pct": -3.038561111868102,
+  "ok": true,
+  "seconds": 299.689,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Chains/Sprocket/ISO 606/Simplex \u215cx\u2077\u2044\u2083\u2082/Sprocket ANSI simplex \u215cx\u2077\u2044\u2083\u2082 z33.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.40349292755126953,
+  "faces": 15,
+  "solids": 1,
+  "features": 2,
+  "kinds": [
+   "pocket",
+   "rib"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.405,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolts & Screws/Metric/ISO4762 Hexagon socket head cap screws/Screw M6x100 ISO4762 8,8 A2K.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 8.004253387451172,
+  "faces": 427,
+  "solids": 1,
+  "features": 79,
+  "kinds": [
+   "fillet",
+   "hole"
+  ],
+  "targeted": 38,
+  "removed": 0,
+  "failed": 1,
+  "failed_reasons": [
+   "kernel crashed on this geometry"
+  ],
+  "valid": true,
+  "faces_after": 427,
+  "kernel_seconds": 0.0,
+  "seconds_run": 605.4223618507385,
+  "unchecked": false,
+  "check_method": "tet",
+  "worst_case_pct": 0.0,
+  "guard_triggered": true,
+  "tet_reduction_pct": 0.0,
+  "ok": true,
+  "seconds": 613.497,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Chains/Sprocket/ISO 606/Simplex \u00bdx\u00bc/Sprocket ANSI simplex \u00bdx\u00bc z38.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 7.1402199268341064,
+  "faces": 272,
+  "solids": 1,
+  "features": 4,
+  "kinds": [
+   "hole",
+   "pocket",
+   "rib"
+  ],
+  "targeted": 2,
+  "removed": 0,
+  "failed": 0,
+  "failed_reasons": [],
+  "valid": true,
+  "faces_after": 272,
+  "kernel_seconds": 0.0,
+  "seconds_run": 371.2473919391632,
+  "unchecked": false,
+  "check_method": "tet",
+  "worst_case_pct": 0.0,
+  "guard_triggered": true,
+  "tet_reduction_pct": 0.0,
+  "ok": true,
+  "seconds": 378.425,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Profiles EN/Generic/Profile-20x40-B-Type_Slot6.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 1.0332002639770508,
+  "faces": 18,
+  "solids": 1,
+  "features": 0,
+  "kinds": [],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 1.035,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Profiles EN/DIN1025-4 HE-M-Profiles/HE-M-Profile 320x305 DIN1025-4 S235JR.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.8724899291992188,
+  "faces": 11,
+  "solids": 1,
+  "features": 0,
+  "kinds": [],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.873,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Profiles EN/EN10056 Unequal Angle Bars/Angle Bar 100x75x7 EN10056 S235JR.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 6.830116033554077,
+  "faces": 358,
+  "solids": 1,
+  "features": 65,
+  "kinds": [
+   "boss",
+   "hole"
+  ],
+  "targeted": 32,
+  "removed": 32,
+  "failed": 0,
+  "failed_reasons": [],
+  "valid": true,
+  "faces_after": 326,
+  "kernel_seconds": 62.52766299247742,
+  "seconds_run": 279.94172501564026,
+  "unchecked": false,
+  "check_method": "tet",
+  "worst_case_pct": 0.14010606875914244,
+  "guard_triggered": false,
+  "tet_reduction_pct": 5.264097073518915,
+  "ok": true,
+  "seconds": 286.883,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Chains/Sprocket/ISO 606/Simplex 2x1\u00bc/Sprocket ANSI simplex 2x1\u00bc z32.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.24375295639038086,
+  "faces": 3,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.245,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolt Clearance Hole Cylinders/Unified/Loose/U_5s8/U_5s8LooseMin.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.24478936195373535,
+  "faces": 15,
+  "solids": 1,
+  "features": 2,
+  "kinds": [
+   "pocket",
+   "rib"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.246,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolts & Screws/Metric/ISO4762 Hexagon socket head cap screws/Screw M16x280 ISO4762 8,8 A2K.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.06021285057067871,
+  "faces": 3,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.061,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolt Clearance Hole Cylinders/Metric/Close/M2/M2CloseMean.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.06263899803161621,
+  "faces": 3,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.064,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Profiles EN/EN10060 Round steel bars/Round Bar 45 EN10060 S235JR.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.22672009468078613,
+  "faces": 15,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.228,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolts & Screws/Metric/ISO4762 Hexagon socket head cap screws/Screw M10x25 ISO4762 8,8 A2K.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.21603107452392578,
+  "faces": 11,
+  "solids": 1,
+  "features": 0,
+  "kinds": [],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.217,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Profiles EN/EN10056 Unequal Angle Bars/Angle Bar 80x60x8 EN10056 S235JR.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.3364088535308838,
+  "faces": 18,
+  "solids": 1,
+  "features": 0,
+  "kinds": [],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.338,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Profiles EN/DIN1025-2 HE-B-Profiles/HE-B-Profile 300 DIN1025-2 S235JR.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.22540712356567383,
+  "faces": 15,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.227,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolts & Screws/Metric/ISO4762 Hexagon socket head cap screws/Screw M3x12 ISO4762 8,8 A2K.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.056407928466796875,
+  "faces": 3,
+  "solids": 1,
+  "features": 0,
+  "kinds": [],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.058,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolt Clearance Hole Cylinders/Unified/Loose/U_1_1s2/U_1_1s2LooseMin.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 4.675670862197876,
+  "faces": 303,
+  "solids": 1,
+  "features": 55,
+  "kinds": [
+   "hole",
+   "pocket"
+  ],
+  "targeted": 54,
+  "removed": 53,
+  "failed": 1,
+  "failed_reasons": [
+   "kernel returned the part unchanged"
+  ],
+  "valid": true,
+  "faces_after": 171,
+  "kernel_seconds": 202.89494609832764,
+  "seconds_run": 529.3012502193451,
+  "unchecked": false,
+  "check_method": "tet",
+  "worst_case_pct": 4.408715327000459,
+  "guard_triggered": false,
+  "tet_reduction_pct": -20.57776560788609,
+  "ok": true,
+  "seconds": 534.032,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Chains/Sprocket/ISO 606/Simplex \u00bdx\u215b/Sprocket ANSI simplex \u00bdx\u215b z27.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.3866591453552246,
+  "faces": 3,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.389,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolt Clearance Hole Cylinders/Metric/Loose/M20/M20LooseMean.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.10874485969543457,
+  "faces": 4,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "hole"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.11,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Washers/Metric/ISO7090_M3_flat_washer.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.06507110595703125,
+  "faces": 3,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.066,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolt Clearance Hole Cylinders/Unified/Loose/U_Number_10/U_Number_10LooseMin.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.27319812774658203,
+  "faces": 15,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.275,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolts & Screws/Metric/ISO4762 Hexagon socket head cap screws/Screw M30x60 ISO4762 8,8 A2K.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 1.5404798984527588,
+  "faces": 94,
+  "solids": 1,
+  "features": 17,
+  "kinds": [
+   "hole"
+  ],
+  "targeted": 8,
+  "removed": 8,
+  "failed": 0,
+  "failed_reasons": [],
+  "valid": true,
+  "faces_after": 86,
+  "kernel_seconds": 4.3284690380096436,
+  "seconds_run": 66.42468881607056,
+  "unchecked": false,
+  "check_method": "tet",
+  "worst_case_pct": 0.39344147378597416,
+  "guard_triggered": false,
+  "tet_reduction_pct": -1.3920362576885723,
+  "ok": true,
+  "seconds": 67.975,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Chains/Sprocket/ISO 606/Simplex 1\u00bex1\u00bc/Sprocket ANSI simplex 1\u00bex1\u00bc z08.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.582374095916748,
+  "faces": 15,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.584,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolts & Screws/Metric/ISO4762 Hexagon socket head cap screws/Screw M56x300 ISO4762 8,8 A2K.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.4399709701538086,
+  "faces": 18,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "slot"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.441,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Profiles EN/EN10219 Rectangular Hollow Sections/Rectangular hollow section 60x40x6.3 EN10219 S235JRH.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.07731199264526367,
+  "faces": 3,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.078,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolt Clearance Hole Cylinders/Unified/Close/U_Number_6/U_Number_6CloseMin.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.06068706512451172,
+  "faces": 3,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.062,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolt Clearance Hole Cylinders/Metric/Normal/M24/M24NormalMean.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.25081324577331543,
+  "faces": 15,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.252,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolts & Screws/Metric/ISO4762 Hexagon socket head cap screws/Screw M8x55 ISO4762 8,8 A2K.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.05980801582336426,
+  "faces": 3,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.061,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolt Clearance Hole Cylinders/Unified/Normal/U_Number_6/U_Number_6NormalMean.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.22417974472045898,
+  "faces": 15,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.226,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolts & Screws/Metric/ISO4762 Hexagon socket head cap screws/Screw M30x80 ISO4762 8,8 A2K.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 6.819256782531738,
+  "faces": 371,
+  "solids": 1,
+  "features": 68,
+  "kinds": [
+   "fillet",
+   "hole"
+  ],
+  "targeted": 33,
+  "removed": 32,
+  "failed": 1,
+  "failed_reasons": [
+   "kernel crashed on this geometry"
+  ],
+  "valid": true,
+  "faces_after": 339,
+  "kernel_seconds": 82.67478585243225,
+  "seconds_run": 236.71661806106567,
+  "unchecked": false,
+  "check_method": "tet",
+  "worst_case_pct": 0.1324618274691204,
+  "guard_triggered": false,
+  "tet_reduction_pct": 0.09568767542740494,
+  "ok": true,
+  "seconds": 243.594,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Chains/Sprocket/ISO 606/Simplex \u00bdx\u2075\u2044\u2081\u2086/Sprocket ANSI simplex \u00bdx\u2075\u2044\u2081\u2086 z33.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.05863499641418457,
+  "faces": 3,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.06,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolt Clearance Hole Cylinders/Unified/Normal/U_1s4/U_1s4NormalMean.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.06843876838684082,
+  "faces": 3,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.069,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolt Clearance Hole Cylinders/Unified/Normal/U_Number_0/U_Number_0NormalMean.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.08522391319274902,
+  "faces": 4,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "hole"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.087,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Washers/Metric/ISO7091DIN126_CLASS_C_M60FlatWasher.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.2312641143798828,
+  "faces": 15,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.232,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolts & Screws/Metric/ISO4762 Hexagon socket head cap screws/Screw M8x45 ISO4762 8,8 A2K.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.23829364776611328,
+  "faces": 15,
+  "solids": 1,
+  "features": 2,
+  "kinds": [
+   "pocket",
+   "rib"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.239,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolts & Screws/Metric/ISO4762 Hexagon socket head cap screws/Screw M3x40 ISO4762 8,8 A2K.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.057649850845336914,
+  "faces": 3,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.059,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolt Clearance Hole Cylinders/Unified/Loose/U_Number_6/U_Number_6LooseMean.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.2315659523010254,
+  "faces": 15,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.233,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolts & Screws/Metric/ISO4762 Hexagon socket head cap screws/Screw M14x55 ISO4762 8,8 A2K.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.0553441047668457,
+  "faces": 3,
+  "solids": 1,
+  "features": 1,
+  "kinds": [
+   "pocket"
+  ],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.056,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Fasteners/Bolt Clearance Hole Cylinders/Metric/Normal/M24/M24NormalMin.step"
+ },
+ {
+  "opened": true,
+  "seconds_open": 0.217576265335083,
+  "faces": 11,
+  "solids": 1,
+  "features": 0,
+  "kinds": [],
+  "targeted": 0,
+  "nothing_to_remove": true,
+  "ok": true,
+  "seconds": 0.219,
+  "item": "real/freecad/FreeCAD-library/Mechanical Parts/Profiles EN/EN10056 Equal Angle Bars/Angle Bar L90x90x8 EN10056 S235JR.step"
+ }
+]

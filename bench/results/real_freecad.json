@@ -1,0 +1,46 @@
+{
+ "parts": 60,
+ "opened": [
+  0.9398,
+  1.0
+ ],
+ "opened_count": 60,
+ "crashed_or_timed_out": 0,
+ "nothing_to_remove": 46,
+ "ran": 14,
+ "valid_output": [
+  0.7847,
+  1.0
+ ],
+ "targeted_features": 588,
+ "removed_features": 235,
+ "removed_share": 0.39965986394557823,
+ "kernel_refusals": 253,
+ "refusal_reasons": [
+  "kept: the part's time budget for removals ran out",
+  "kernel crashed on this geometry",
+  "kernel returned the part unchanged"
+ ],
+ "stress_checked": [
+  0.6853,
+  0.9873
+ ],
+ "within_5pct_after_guard": [
+  0.7719,
+  1.0
+ ],
+ "guard_triggered": 3,
+ "median_seconds": {
+  "seconds_open": 6.985167980194092,
+  "kernel_seconds": 72.60122442245483,
+  "seconds_run": 392.62059795856476
+ },
+ "feature_kinds_seen": [
+  "boss",
+  "fillet",
+  "hole",
+  "pocket",
+  "rib",
+  "slot"
+ ]
+}

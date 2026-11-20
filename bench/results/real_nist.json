@@ -1,0 +1,53 @@
+{
+ "parts": 21,
+ "opened": [
+  0.7733,
+  0.9915
+ ],
+ "opened_count": 20,
+ "crashed_or_timed_out": 1,
+ "nothing_to_remove": 2,
+ "ran": 18,
+ "valid_output": [
+  0.8241,
+  1.0
+ ],
+ "targeted_features": 599,
+ "removed_features": 264,
+ "removed_share": 0.44073455759599334,
+ "kernel_refusals": 268,
+ "refusal_reasons": [
+  "kept: the part's time budget for removals ran out",
+  "kernel returned the part unchanged",
+  "kernel timed out after 30s",
+  "result was not a valid solid",
+  "the kernel left it in place",
+  "the kernel rebuilt far more material than the feature holds"
+ ],
+ "stress_checked": [
+  0.4913,
+  0.875
+ ],
+ "within_5pct_after_guard": [
+  0.7719,
+  1.0
+ ],
+ "guard_triggered": 8,
+ "median_seconds": {
+  "seconds_open": 3.2900925874710083,
+  "kernel_seconds": 25.824947476387024,
+  "seconds_run": 421.89845860004425
+ },
+ "feature_kinds_seen": [
+  "boss",
+  "chamfer",
+  "emboss",
+  "fillet",
+  "hole",
+  "pocket",
+  "protrusion",
+  "rib",
+  "slot",
+  "step"
+ ]
+}
