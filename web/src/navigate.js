@@ -33,6 +33,8 @@ export class SimpleControls {
     dom.addEventListener('pointercancel', this._up)
     dom.addEventListener('wheel', this._wheel, { passive: false })
     dom.addEventListener('contextmenu', this._menu)
+    this._blur = () => { this.mode = null; this.vel.set(0, 0) }
+    window.addEventListener('blur', this._blur)   // switching windows mid-drag ends the drag
   }
 
   addEventListener(type, fn) { (this.listeners[type] ||= []).push(fn) }
@@ -101,6 +103,8 @@ export class SimpleControls {
 
   _move(e) {
     if (!this.mode) return
+    // a release the page never saw (over another element, outside the window): no button held means no drag
+    if (e.pointerType !== 'touch' && e.buttons === 0) { this.mode = null; this.vel.set(0, 0); return }
     if (e.pointerType === 'touch') {
       if (!this.touches.has(e.pointerId)) return
       this.touches.set(e.pointerId, [e.clientX, e.clientY])
@@ -166,5 +170,6 @@ export class SimpleControls {
     d.removeEventListener('pointercancel', this._up)
     d.removeEventListener('wheel', this._wheel)
     d.removeEventListener('contextmenu', this._menu)
+    window.removeEventListener('blur', this._blur)
   }
 }

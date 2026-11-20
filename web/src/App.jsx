@@ -73,7 +73,8 @@ function SampleCard({ s, i, onOpen, busy, dark }) {
       <div className="card-foot">
         <div>
           <div className="card-title">{s.title}</div>
-          <div className="card-meta mono">{s.name} · {data ? `${data.faces} faces` : '—'} · {s.kb} KB</div>
+          {s.blurb && <div className="card-blurb">{s.blurb}</div>}
+          <div className="card-meta mono">{data ? `${data.faces} faces` : '—'} · {s.kb} KB</div>
         </div>
         <span className="arrow">↗</span>
       </div>
@@ -83,12 +84,20 @@ function SampleCard({ s, i, onOpen, busy, dark }) {
 
 function Welcome({ onOpen, onUpload, onCreate, busy, llm, dark }) {
   const [samples, setSamples] = useState([])
+  const [cats, setCats] = useState([])
+  const [cat, setCat] = useState('starter')
   const [drag, setDrag] = useState(false)
   const [prompt, setPrompt] = useState('')
   const file = useRef()
   const promptRef = useRef()
   const hero = usePreview('l_bracket.step')
-  useEffect(() => { api.samples().then(setSamples).catch(() => {}) }, [])
+  useEffect(() => {
+    api.library().then((l) => { setSamples(l.parts); setCats(l.categories) })
+      .catch(() => api.samples().then(setSamples).catch(() => {}))
+  }, [])
+  // one category at a time: every card draws its own 3D preview, and browsers allow only so many at once
+  const shown = cats.length ? samples.filter((s) => s.category === cat) : samples
+  const catInfo = cats.find((c) => c.id === cat)
   useEffect(() => {
     const k = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); promptRef.current?.focus() } }
     window.addEventListener('keydown', k)
@@ -151,9 +160,19 @@ function Welcome({ onOpen, onUpload, onCreate, busy, llm, dark }) {
       </motion.section>
 
       <section className="cards">
-        <div className="section-head"><span className="mono dim">01</span><h2>Try a sample part</h2><span className="mono dim">{samples.length} parts</span></div>
+        <div className="section-head"><span className="mono dim">01</span><h2>Parts library</h2><span className="mono dim">{samples.length} parts to try</span></div>
+        {cats.length > 0 && (
+          <div className="lib-tabs" role="tablist" aria-label="Library categories">
+            {cats.map((c) => (
+              <button key={c.id} role="tab" aria-selected={cat === c.id} className={cat === c.id ? 'on' : ''} onClick={() => setCat(c.id)}>
+                {c.label}<span>{samples.filter((s) => s.category === c.id).length}</span>
+              </button>
+            ))}
+          </div>
+        )}
+        {catInfo && <p className="lib-blurb">{catInfo.blurb}</p>}
         <div className="card-grid">
-          {samples.map((s, i) => <SampleCard key={s.name} s={s} i={i} onOpen={onOpen} busy={busy} dark={dark} />)}
+          {shown.map((s, i) => <SampleCard key={s.name} s={s} i={i} onOpen={onOpen} busy={busy} dark={dark} />)}
         </div>
       </section>
       <AnimatePresence>{busy && <Loader steps={busy.steps} title={busy.title} />}</AnimatePresence>
@@ -183,6 +202,55 @@ function DotLoader() {
         return <span key={i} style={{ animationDelay: `${d * 0.11}s`, opacity: d > 3.4 ? 0 : 1 }} />
       })}
     </div>
+  )
+}
+
+// Every shortcut in one place (press ? anywhere in the workspace)
+const KEYS = [
+  ['Turn the part', 'drag'], ['Move the part', 'Shift-drag · right-drag'], ['Zoom', 'scroll · pinch'], ['Centre on a point', 'double-click'],
+  ['Fit / 3D / front / top / side', 'F · 0 · 1 · 2 · 3'], ['Choose keep or remove', 'click a feature'],
+  ['Remove / keep the clicked feature', 'R · K'], ['Show or hide the feature list', ']'], ['Command palette', '⌘K'], ['Close / show all', 'Esc'],
+]
+function KeysSheet({ onClose }) {
+  return (
+    <motion.div className="keys-scrim" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      <motion.div className="keys glass" role="dialog" aria-label="Keyboard shortcuts" onClick={(e) => e.stopPropagation()}
+        initial={{ y: 10, opacity: 0, scale: 0.98 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 6, opacity: 0 }} transition={spring}>
+        <div className="keys-head"><b>Shortcuts</b><button onClick={onClose} aria-label="Close">×</button></div>
+        {KEYS.map(([what, key]) => <div key={what} className="keys-row"><span>{what}</span><kbd>{key}</kbd></div>)}
+      </motion.div>
+    </motion.div>
+  )
+}
+
+// Opens where a feature on the part is clicked: what it is, why, and the choice.
+function FeatureCard({ f, at, onChoose, onClose, onShow }) {
+  const rm = f.decision.action === 'remove'
+  const meta = CLASS_META[f.kind] || { label: f.kind, color: '#999' }
+  const W = 300, H = 190
+  const left = Math.min(Math.max(12, at.x + 14), window.innerWidth - W - 12)
+  const top = Math.min(Math.max(12, at.y - 24), window.innerHeight - H - 12)
+  useEffect(() => {
+    const away = (e) => { if (!e.target.closest?.('.fcard')) onClose() }
+    const t = setTimeout(() => window.addEventListener('pointerdown', away), 0)
+    return () => { clearTimeout(t); window.removeEventListener('pointerdown', away) }
+  }, [onClose])
+  return (
+    <motion.div className="fcard glass" role="dialog" aria-label={f.note} style={{ left, top, width: W }}
+      initial={{ opacity: 0, y: 6, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={spring}>
+      <div className="fcard-head">
+        <span className="swatch" style={{ background: meta.color }} />
+        <span className="fcard-kind">{meta.label}</span>
+        <button className="fcard-x" onClick={onClose} aria-label="Close">×</button>
+      </div>
+      <div className="fcard-title">{f.note}<span className="fid">#{f.id}</span></div>
+      <div className="fcard-why">{f.decision.reason}</div>
+      <div className="fcard-actions">
+        <button className={`fbtn rm ${rm ? 'on' : ''}`} onClick={() => onChoose('remove')}>Remove <kbd>R</kbd></button>
+        <button className={`fbtn kp ${!rm ? 'on' : ''}`} onClick={() => onChoose('keep')}>Keep <kbd>K</kbd></button>
+      </div>
+      <button className="fcard-link" onClick={onShow}>Show in the feature list</button>
+    </motion.div>
   )
 }
 
@@ -627,6 +695,11 @@ function Workspace({ initial, onExit, dark, llm }) {
   // Click a feature on the part to flip it between remove and keep. The colour changes at once; the server
   // gets the same override the panel's switch sends, so the next Simplify uses it.
   const [flash, setFlash] = useState(null)
+  const [pop, setPop] = useState(null)   // the card that opens where you click a feature on the part
+  const [tip, setTip] = useState(null)   // pointer position while hovering a feature
+  const [keysOpen, setKeysOpen] = useState(false)
+  const [panel, setPanel] = useState(() => { try { return localStorage.getItem('defeat-panel') !== 'hidden' } catch { return true } })
+  useEffect(() => { try { localStorage.setItem('defeat-panel', panel ? 'shown' : 'hidden') } catch {} }, [panel])
   const flipFeature = useCallback((id, action, at) => {
     const f = sum.features.find((x) => x.id === id)
     if (!f) return
@@ -637,11 +710,28 @@ function Workspace({ initial, onExit, dark, llm }) {
   }, [sum, applyPolicy])
   const pickToggle = useCallback((id, at) => {
     setSelected(id)
-    if (id == null) return
-    setTab('features')
-    const f = sum.features.find((x) => x.id === id)
-    if (f) flipFeature(id, f.decision.action === 'remove' ? 'keep' : 'remove', at)
-  }, [sum, flipFeature])
+    setFlash(null)
+    setPop(id == null ? null : { id, x: at?.x ?? window.innerWidth / 2, y: at?.y ?? window.innerHeight / 2 })
+  }, [])
+  const choose = useCallback((action) => {
+    if (!pop) return
+    const f = sum.features.find((x) => x.id === pop.id)
+    if (f && f.decision.action !== action) flipFeature(pop.id, action, { x: pop.x, y: pop.y })
+    setPop(null)
+  }, [pop, sum, flipFeature])
+  useEffect(() => {
+    const k = (e) => {
+      if (e.target.closest?.('input, textarea, [contenteditable]') || e.metaKey || e.ctrlKey || e.altKey) return
+      if (e.key === ']') { e.preventDefault(); setPanel((v) => !v) }
+      else if (e.key === '?') { e.preventDefault(); setKeysOpen((v) => !v) }
+      else if (keysOpen && e.key === 'Escape') setKeysOpen(false)
+      else if (pop && (e.key === 'r' || e.key === 'R')) { e.preventDefault(); choose('remove') }
+      else if (pop && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); choose('keep') }
+      else if (pop && e.key === 'Escape') setPop(null)
+    }
+    window.addEventListener('keydown', k)
+    return () => window.removeEventListener('keydown', k)
+  }, [pop, choose, keysOpen])
   useEffect(() => {
     if (!flash) return
     const t = setTimeout(() => setFlash(null), 2600)
@@ -705,8 +795,26 @@ function Workspace({ initial, onExit, dark, llm }) {
       <div className="ws-grid" aria-hidden />
       <Viewer original={orig} result={resMesh} features={viewFeatures} mode={mode} wipe={wipe} dark={dark} wipeApi={wipeApi}
         boundary={boundary} faceMode={faceMode} onFace={toggleFace}
-        selected={selected} hovered={hovered} onPick={pickToggle} onHover={setHovered} />
+        selected={selected} hovered={hovered} onPick={pickToggle} onHover={(id, at) => { setHovered(id); setTip(id == null ? null : at) }} panel={panel} />
       <AnimatePresence>{flash && <FlipChip key={flash.n} flash={flash} onUndo={() => flipFeature(flash.id, flash.prev, null)} />}</AnimatePresence>
+      {tip && hovered != null && !pop && (() => {
+        const f = sum.features.find((x) => x.id === hovered)
+        if (!f) return null
+        const rm = f.decision.action === 'remove'
+        return (
+          <div className="hovertip" style={{ left: tip.x, top: tip.y }} aria-hidden>
+            <span className="swatch" style={{ background: (CLASS_META[f.kind] || {}).color }} />
+            {f.note}<b className={rm ? 'rm' : 'kp'}>{rm ? 'will be removed' : 'kept'}</b>
+          </div>
+        )
+      })()}
+      <AnimatePresence>{keysOpen && <KeysSheet onClose={() => setKeysOpen(false)} />}</AnimatePresence>
+      <button className="keys-btn glass" onClick={() => setKeysOpen(true)} title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
+      <AnimatePresence>{pop && (() => {
+        const f = sum.features.find((x) => x.id === pop.id)
+        return f ? <FeatureCard key={pop.id} f={f} at={pop} onChoose={choose} onClose={() => setPop(null)}
+          onShow={() => { setPanel(true); setTab('features'); setSelected(f.id); setPop(null) }} /> : null
+      })()}</AnimatePresence>
       {mode === 'compare' && resMesh && (
         <>
           <div className="wipe-line"><span>Original</span><span>Simplified</span>
@@ -789,12 +897,20 @@ function Workspace({ initial, onExit, dark, llm }) {
         <motion.button className={`chip ${faceMode ? 'on' : ''}`} whileTap={{ scale: 0.95 }} onClick={() => { setFaceMode(faceMode ? null : 'fixed'); if (!faceMode) setMode('original') }}>
           <span className="swatch" style={{ background: '#0A84FF' }} />Supports &amp; loads{(boundary.fixed?.length || 0) > 0 && <b className="mono">{boundary.fixed.length + (boundary.loaded?.length || 0)}</b>}
         </motion.button>
-        <span className="chip muted">{isolate ? 'Esc to show all' : 'Click a feature to keep or remove it · bright = removed'}</span>
+        <span className="chip muted">{isolate ? 'Esc to show all' : 'Click a feature to choose keep or remove · bright = will be removed'}</span>
       </div>
       </div>
 
-      {/* side panel */}
-      <motion.div className="side glass" initial={{ x: 30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ ...spring, delay: 0.05 }}>
+      {/* side panel: hide it to work on the part alone; the pill brings it back */}
+      <AnimatePresence>{!panel && (
+        <motion.button key="side-pill" className="side-pill glass" onClick={() => setPanel(true)} title="Show the feature list (])"
+          initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={spring}>
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden><path d="M4 6h16M4 12h16M4 18h10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+          Features · {sum.features.length}<span className="side-pill-n">{rmCount} to remove</span>
+        </motion.button>
+      )}</AnimatePresence>
+      <AnimatePresence>{panel && (
+      <motion.div key="side" className="side glass" initial={{ x: 30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 30, opacity: 0 }} transition={spring}>
         <div className="side-tabs">
           <LayoutGroup id="tabs">
             {[['features', `Features`], ['chat', 'Assistant']].map(([k, l]) => (
@@ -804,6 +920,9 @@ function Workspace({ initial, onExit, dark, llm }) {
               </button>
             ))}
           </LayoutGroup>
+          <button className="side-hide" onClick={() => setPanel(false)} title="Hide the panel (])" aria-label="Hide the panel">
+            <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </button>
         </div>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div key={tab} className="side-body" initial={{ opacity: 0, x: tab === 'chat' ? 16 : -16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: tab === 'chat' ? 16 : -16 }} transition={spring}>
@@ -823,6 +942,7 @@ function Workspace({ initial, onExit, dark, llm }) {
           </motion.div>
         </AnimatePresence>
       </motion.div>
+      )}</AnimatePresence>
 
       <CommandPalette open={palette} onClose={() => setPalette(false)} commands={commands}
         onAsk={(t) => { setTab('chat'); setQueued(t) }} />

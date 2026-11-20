@@ -38,7 +38,7 @@ function paint(g, faceColor, dark) {
   g.attributes.color.needsUpdate = true
 }
 
-export default function Viewer({ original, result, features, mode, wipe, selected, hovered, onPick, onHover, dark, boundary, faceMode, onFace, wipeApi }) {
+export default function Viewer({ original, result, features, mode, wipe, selected, hovered, onPick, onHover, dark, boundary, faceMode, onFace, wipeApi, panel }) {
   const host = useRef(null)
   const S = useRef({})
 
@@ -98,6 +98,7 @@ export default function Viewer({ original, result, features, mode, wipe, selecte
       camera.updateProjectionMatrix()
     }
     resize()
+    S.current.resize = resize
     const ro = new ResizeObserver(resize)
     ro.observe(el)
     const side = el.parentElement?.querySelector('.side')
@@ -281,6 +282,12 @@ export default function Viewer({ original, result, features, mode, wipe, selecte
     S.current.wipeLine = host.current?.parentElement?.querySelector('.wipe-line')
   })
 
+  // the feature panel opened or closed: re-centre the part in the space it leaves (after its slide)
+  useEffect(() => {
+    const t = [0, 120, 380].map((ms) => setTimeout(() => S.current.resize?.(), ms))
+    return () => t.forEach(clearTimeout)
+  }, [panel])
+
   // ---------------------------------------------------------------- navigation
   // Glide the camera to look at `target` from direction `dir` at distance `dist` (critically damped feel).
   const glide = (target, dir, dist, ms = 520) => {
@@ -379,7 +386,8 @@ export default function Viewer({ original, result, features, mode, wipe, selecte
           if (faceMode) { const f = pick(e, true); if (f != null) onFace?.(f) } else onPick?.(pick(e), { x: e.clientX, y: e.clientY })
         }
       }}
-      onPointerMove={(e) => { if (e.buttons === 0 && !faceMode) onHover?.(pick(e)) }}
+      onPointerMove={(e) => { if (e.buttons === 0 && !faceMode) onHover?.(pick(e), { x: e.clientX, y: e.clientY }) }}
+      onPointerLeave={() => onHover?.(null)}
     />
     </>
   )

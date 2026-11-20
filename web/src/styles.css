@@ -478,3 +478,63 @@ button.chip:hover { border-color: var(--line2); }
 .navhint { position: absolute; left: 68px; top: 88px; z-index: 12; padding: 7px 14px; border-radius: 12px;
   font-size: 12px; color: var(--ink2); background: var(--glass); pointer-events: none; white-space: nowrap; }
 @media (max-width: 760px) { .navhint { display: none; } }
+
+/* hide / show the feature panel */
+.side-tabs { align-items: center; }
+.side-hide { flex: none !important; width: 30px; height: 30px; margin-left: 3px; display: grid; place-items: center; padding: 0 !important;
+  border-radius: 8px; color: var(--ink2); }
+.side-hide:hover { background: var(--fill2, rgba(127,127,127,.15)); color: var(--ink); }
+.side-pill { position: absolute; top: 88px; right: 14px; z-index: 9; display: flex; align-items: center; gap: 8px;
+  padding: 9px 14px; border-radius: 14px; background: var(--glass-strong); font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; }
+.side-pill:hover { transform: translateY(-1px); }
+.side-pill-n { font-weight: 500; color: var(--accent); }
+
+/* the card that opens where a feature on the part is clicked */
+.fcard { position: fixed; z-index: 45; padding: 12px 14px 10px; border-radius: 16px; background: var(--glass-strong);
+  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, .45); }
+.fcard-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink2); }
+.fcard-kind { flex: 1; font-weight: 500; }
+.fcard-x { border: 0; background: transparent; color: var(--ink3); font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; }
+.fcard-x:hover { color: var(--ink); }
+.fcard-title { margin-top: 6px; font-size: 15px; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+.fcard-title .fid { margin-left: 6px; font-weight: 400; color: var(--ink3); font-size: 12px; }
+.fcard-why { margin-top: 3px; font-size: 12.5px; line-height: 1.4; color: var(--ink2); }
+.fcard-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.fbtn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 10px; border-radius: 11px; border: 1px solid transparent;
+  font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; background: var(--fill); color: var(--ink); transition: background .15s, border-color .15s; }
+.fbtn kbd { font: 500 11px ui-monospace, SFMono-Regular, Menlo, monospace; padding: 1px 5px; border-radius: 5px; background: rgba(127, 127, 127, .18); color: var(--ink2); }
+.fbtn.rm.on { background: color-mix(in srgb, var(--accent) 22%, transparent); border-color: var(--accent); color: var(--accent); }
+.fbtn.kp.on { background: color-mix(in srgb, var(--green) 20%, transparent); border-color: var(--green); color: var(--green); }
+.fbtn:hover { border-color: var(--ink3); }
+.fcard-link { margin-top: 8px; border: 0; background: transparent; padding: 2px 0; font: inherit; font-size: 12px; color: var(--ink2); cursor: pointer; }
+.fcard-link:hover { color: var(--ink); text-decoration: underline; }
+
+/* parts library */
+.lib-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 10px; }
+.lib-tabs button { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line, rgba(127,127,127,.25));
+  background: transparent; color: var(--ink2); font: inherit; font-size: 13.5px; font-weight: 500; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+.lib-tabs button span { font-size: 12px; color: var(--ink3); }
+.lib-tabs button:hover { color: var(--ink); border-color: var(--ink3); }
+.lib-tabs button.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.lib-tabs button.on span { color: inherit; opacity: .7; }
+.lib-blurb { margin: 0 0 16px; font-size: 14px; color: var(--ink2); max-width: 70ch; }
+.card-blurb { margin-top: 3px; font-size: 13px; line-height: 1.4; color: var(--ink2); text-align: left; }
+
+/* name of the feature under the pointer */
+.hovertip { position: fixed; z-index: 35; translate: 14px 14px; pointer-events: none; display: flex; align-items: center; gap: 7px;
+  padding: 5px 10px; border-radius: 10px; background: var(--head-solid); box-shadow: 0 8px 20px -10px rgba(0,0,0,.5);
+  font-size: 12px; color: var(--ink); white-space: nowrap; }
+.hovertip b { font-weight: 600; }
+.hovertip b.rm { color: var(--accent); }
+.hovertip b.kp { color: var(--green); }
+
+/* keyboard shortcuts */
+.keys-btn { position: absolute; left: 14px; bottom: 96px; z-index: 12; width: 36px; height: 36px; border-radius: 12px; border: 0;
+  background: var(--glass); color: var(--ink2); font: 600 15px/1 inherit; cursor: pointer; }
+.keys-btn:hover { color: var(--ink); }
+.keys-scrim { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(0, 0, 0, .35); }
+.keys { width: min(440px, calc(100% - 32px)); padding: 14px 18px 12px; border-radius: 18px; background: var(--glass-strong); }
+.keys-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 15px; }
+.keys-head button { border: 0; background: transparent; color: var(--ink3); font-size: 20px; cursor: pointer; }
+.keys-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 7px 0; border-top: 1px solid rgba(127,127,127,.15); font-size: 13px; color: var(--ink2); }
+.keys-row kbd { font: 500 12px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); background: var(--fill); padding: 3px 8px; border-radius: 7px; white-space: nowrap; }

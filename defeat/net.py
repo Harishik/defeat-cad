@@ -201,6 +201,15 @@ def predict_part(g):
     models = load_ensemble()
     if not models or not g.nodes:
         return None
+    disk = _cache_path(g)
+    if disk and os.path.exists(disk):
+        try:
+            z = np.load(disk)
+            if len(z["p9"]) == len(g.nodes):
+                g._net_pred = z["p9"], z["p8"]
+                return g._net_pred
+        except Exception:
+            pass
     d = {"x": node_features(g)[0], "yy": np.full(len(g.nodes), -1), "y88": np.full(len(g.nodes), -1)}
     d.update(brep_tensors(g))
     b = collate([d])
@@ -209,7 +218,36 @@ def predict_part(g):
         l9, l8 = m(b)
         P9, P8 = P9 + torch.softmax(l9, 1), P8 + torch.softmax(l8, 1)
     g._net_pred = (P9 / len(models)).numpy(), (P8 / len(models)).numpy()
+    if disk:
+        try:
+            os.makedirs(os.path.dirname(disk), exist_ok=True)
+            np.savez_compressed(disk, p9=g._net_pred[0], p8=g._net_pred[1])
+        except Exception:
+            pass
     return g._net_pred
+
+
+def _cache_path(g):
+    """Where the app keeps the network's answer for this exact part (faces in their own order), so
+    reopening a part or opening a library part skips the network. Off unless DEFEAT_NET_CACHE is set:
+    the app sets it, benchmarks never do."""
+    root = os.environ.get("DEFEAT_NET_CACHE")
+    if not root:
+        return None
+    try:
+        import hashlib
+        from OCP.BRepGProp import BRepGProp
+        from OCP.GProp import GProp_GProps
+        h = hashlib.sha1()
+        for f in g.faces:
+            pr = GProp_GProps()
+            BRepGProp.SurfaceProperties_s(f, pr)
+            c = pr.CentreOfMass()
+            h.update(f"{pr.Mass():.9e}:{c.X():.7e}:{c.Y():.7e}:{c.Z():.7e}|".encode())
+        h.update(":".join(os.path.basename(p) + str(os.path.getmtime(p)) for p in model_paths()).encode())   # new models, new answers
+        return os.path.join(root, h.hexdigest() + ".npz")
+    except Exception:
+        return None
 
 
 # rule class -> network label that counts as agreement

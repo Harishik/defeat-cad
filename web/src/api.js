@@ -10,6 +10,7 @@ const j = async (r) => {
 export const api = {
   health: () => fetch('/api/health').then(j),
   samples: () => fetch('/api/samples').then(j),
+  library: () => fetch('/api/library').then(j),
   openSample: (name) => fetch(`/api/sample/${encodeURIComponent(name)}`, { method: 'POST' }).then(j),
   upload: (file) => {
     const fd = new FormData()

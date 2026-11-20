@@ -17,6 +17,9 @@ from . import __version__, agent, occ
 from .decide import PRESETS
 from .session import ROOT, SESSIONS, mesh_payload, new_session
 
+# the app keeps the network's answer per part (benchmarks never set this, so they always run the network)
+os.environ.setdefault("DEFEAT_NET_CACHE", os.path.join(ROOT, ".netcache"))
+
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SAMPLES = os.path.join(HERE, "samples")
 WEB = os.path.join(HERE, "web", "dist")
@@ -44,28 +47,73 @@ def health():
             "chat_model": agent.CHAT_MODEL, "cad_model": agent.CAD_MODEL}
 
 
+def _library():
+    """samples/library.json: titles, descriptions and categories for the bundled parts library."""
+    try:
+        import json
+        return json.load(open(os.path.join(SAMPLES, "library.json"), encoding="utf-8"))
+    except Exception:
+        return {"categories": [], "parts": []}
+
+
 @app.get("/api/samples")
 def samples():
+    lib = _library()
+    meta = {p["file"]: p for p in lib.get("parts", [])}
+    order = {p["file"]: i for i, p in enumerate(lib.get("parts", []))}
     out = []
-    for f in sorted(os.listdir(SAMPLES)):
+    for f in sorted(os.listdir(SAMPLES), key=lambda f: (order.get(f, 1e9), f)):
         if f.lower().endswith((".step", ".stp")):
-            out.append({"name": f, "title": f.rsplit(".", 1)[0].replace("_", " ").title(),
+            m = meta.get(f, {})
+            out.append({"name": f, "title": m.get("title") or f.rsplit(".", 1)[0].replace("_", " ").title(),
+                        "blurb": m.get("blurb", ""), "category": m.get("category", "showcase"),
                         "kb": round(os.path.getsize(os.path.join(SAMPLES, f)) / 1024)})
     return out
 
 
+@app.get("/api/library")
+def library():
+    return {"categories": _library().get("categories", []), "parts": samples()}
+
+
 _PREVIEWS: dict[str, dict] = {}
+_PREVIEW_LOCKS: dict[str, threading.Lock] = {}
+_PREVIEW_DIR = os.path.join(ROOT, ".previews")   # under runs/, which is never committed
 
 
 @app.get("/api/preview/{name}")
 def preview(name: str):
-    """Lightweight mesh + which faces would be removed, for the welcome-page dot renders (cached)."""
+    """Lightweight mesh + which faces would be removed, for the library cards' dot renders. Cached in
+    memory and on disk, so a card renders at once on every start after the first."""
+    import json
     name = os.path.basename(name)
     if name in _PREVIEWS:
         return _PREVIEWS[name]
     p = os.path.join(SAMPLES, name)
     if not os.path.exists(p):
         raise HTTPException(404)
+    lock = _PREVIEW_LOCKS.setdefault(name, threading.Lock())
+    with lock:   # the startup warm-up and a card asking for the same part compute it once
+        if name in _PREVIEWS:
+            return _PREVIEWS[name]
+        disk = os.path.join(_PREVIEW_DIR, name + ".json")
+        if os.path.exists(disk) and os.path.getmtime(disk) >= os.path.getmtime(p):
+            try:
+                _PREVIEWS[name] = json.load(open(disk))
+                return _PREVIEWS[name]
+            except Exception:
+                pass
+        out = _compute_preview(p)
+        _PREVIEWS[name] = out
+        try:
+            os.makedirs(_PREVIEW_DIR, exist_ok=True)
+            json.dump(out, open(disk, "w"))
+        except Exception:
+            pass
+        return out
+
+
+def _compute_preview(p):
     from .decide import Policy, decide, default_h
     from .graph import build_graph
     from .recognize import recognize
@@ -74,10 +122,8 @@ def preview(name: str):
     _, feats = recognize(shape, g)   # the same rules + network the session uses, so the card matches the run
     d = decide(feats, Policy("static", default_h(g.char_len)), g, occ.volume(shape))
     removable = sorted({fid for f in feats if d[f.id].action == "remove" for fid in f.faces})
-    out = {"mesh": mesh_payload(shape), "removable": removable, "features": len(feats),
-           "faces": len(g.nodes), "remove": sum(1 for f in feats if d[f.id].action == "remove")}
-    _PREVIEWS[name] = out
-    return out
+    return {"mesh": mesh_payload(shape), "removable": removable, "features": len(feats),
+            "faces": len(g.nodes), "remove": sum(1 for f in feats if d[f.id].action == "remove")}
 
 
 @app.post("/api/sample/{name}")
@@ -374,6 +420,22 @@ def dl_fluid(sid: str):
 @app.on_event("startup")
 def _warm():
     threading.Thread(target=agent.warmup, daemon=True).start()
+    threading.Thread(target=_warm_engine, daemon=True).start()
+
+
+def _warm_engine():
+    """Load the recognition network and run the whole opening path once on a sample, so the first part a
+    user opens doesn't pay several seconds of loading; then render the library cards' previews."""
+    try:
+        from .net import load_ensemble
+        load_ensemble()
+    except Exception:
+        pass
+    for s in samples():
+        try:
+            preview(s["name"])
+        except Exception:
+            pass
 
 
 # ---------------------------------------------------------------- web app

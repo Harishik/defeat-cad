@@ -341,4 +341,10 @@ Version 1.1 takes ideas from work published in the last few months and adapts th
 
 ## License
 
-MIT. See [`LICENSE`](LICENSE). Datasets used for training and benchmarks keep their own licenses: the Fusion 360 Gallery and MFCAD are not redistributed here.
+MIT for the code. See [`LICENSE`](LICENSE). Datasets used for training and benchmarks keep their own licenses and are not redistributed here:
+
+- **Fusion 360 Gallery** is licensed for **non-commercial research only**, and most of the recognition network's training parts come from it. Treat the shipped network weights the same way: before any commercial use, retrain on permissively licensed parts or clear the terms with Autodesk.
+- **MFCAD** is MIT-licensed.
+- The parts bundled in [`samples/`](samples/) were modelled or generated for DeFeat and are covered by this repository's license.
+
+[`docs/open-cad-datasets.md`](docs/open-cad-datasets.md) lists CAD datasets that can be used and shared openly, sorted by what their licenses allow.

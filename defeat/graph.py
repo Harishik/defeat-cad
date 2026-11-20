@@ -139,17 +139,21 @@ def build_graph(shape, curvature=True) -> FaceGraph:
         nodes.append(node)
 
     emap = occ.edge_face_map(shape)
+    # Which faces meet at each edge, built by walking every face's own edges. Reading the same lists out
+    # of the kernel's edge-to-face map through the Python binding costs seconds on a few hundred faces.
+    edge_faces = {}
+    for i, f in enumerate(faces):
+        for e in occ.sub_shapes(f, TopAbs_EDGE):
+            k = emap.FindIndex(e)
+            if k > 0:
+                lst = edge_faces.setdefault(k, [])
+                if i not in lst:
+                    lst.append(i)
     edges = []
     edge_index = {}
     for k in range(1, emap.Extent() + 1):
         e = emap.FindKey(k)
-        lst = emap.FindFromIndex(k)
-        fs = []
-        it = lst.cbegin() if hasattr(lst, "cbegin") else None
-        for fshape in lst:
-            fi = fmap.FindIndex(fshape) - 1
-            if fi >= 0 and fi not in fs:
-                fs.append(fi)
+        fs = edge_faces.get(k, [])
         if len(fs) != 2:
             continue  # seam or free edge
         if BRep_Tool.Degenerated_s(TopoDS.Edge_s(e)):

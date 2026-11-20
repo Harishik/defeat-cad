@@ -1,0 +1,111 @@
+{
+ "categories": [
+  {
+   "id": "starter",
+   "label": "Start here",
+   "blurb": "Two parts that show the whole flow in under a minute."
+  },
+  {
+   "id": "showcase",
+   "label": "Showcase parts",
+   "blurb": "Typical injection-molded and machined parts, modelled for DeFeat's demos."
+  },
+  {
+   "id": "mold",
+   "label": "Generated mold parts",
+   "blurb": "From the same procedural generator that produced 2,790 of the 43,698 training parts, each with its own mix of features."
+  }
+ ],
+ "parts": [
+  {
+   "file": "l_bracket.step",
+   "title": "L-bracket",
+   "category": "starter",
+   "blurb": "Holes, a slot, ribs, an embossed logo, chamfers and fillets. The stress guard has real work to do here."
+  },
+  {
+   "file": "printer_chassis.step",
+   "title": "Printer chassis",
+   "category": "starter",
+   "blurb": "A dense molded housing with 261 faces: bosses, ribs, pockets, holes, embossed text and fillets."
+  },
+  {
+   "file": "mold_plate.step",
+   "title": "Mold cavity plate",
+   "category": "showcase",
+   "blurb": "A cavity plate with 7 holes, 10 pockets, edge chamfers and a fillet."
+  },
+  {
+   "file": "gearbox_cover.step",
+   "title": "Gearbox cover",
+   "category": "showcase",
+   "blurb": "Ten bolt holes, six stiffening ribs, a pocket and a chamfer."
+  },
+  {
+   "file": "flanged_hub.step",
+   "title": "Flanged hub",
+   "category": "showcase",
+   "blurb": "A flanged hub with a bolt circle of holes, a rib and a chamfer."
+  },
+  {
+   "file": "heat_sink.step",
+   "title": "Heat sink",
+   "category": "showcase",
+   "blurb": "Thin fins, slots and pockets on a base plate. Compare the Static and Thermal presets on it."
+  },
+  {
+   "file": "robot_link.step",
+   "title": "Robot arm link",
+   "category": "showcase",
+   "blurb": "Bores, slots and blends on a lightweight link."
+  },
+  {
+   "file": "mold_part_02.step",
+   "title": "Mold part A",
+   "category": "mold",
+   "blurb": "Bosses, ribs, holes, a pocket, fillets and embossed text."
+  },
+  {
+   "file": "mold_part_04.step",
+   "title": "Mold part B",
+   "category": "mold",
+   "blurb": "Bosses, ribs, holes, pockets, chamfers, fillets and an emboss in one part."
+  },
+  {
+   "file": "mold_part_06.step",
+   "title": "Mold part C",
+   "category": "mold",
+   "blurb": "25 features on 103 faces, with ribs and bosses side by side."
+  },
+  {
+   "file": "mold_part_10.step",
+   "title": "Mold part D",
+   "category": "mold",
+   "blurb": "Pockets, a boss, a rib, chamfers and eight fillets."
+  },
+  {
+   "file": "mold_part_12.step",
+   "title": "Mold part E",
+   "category": "mold",
+   "blurb": "Ribs, bosses and holes with chamfered and filleted edges."
+  },
+  {
+   "file": "mold_part_16.step",
+   "title": "Mold part F",
+   "category": "mold",
+   "blurb": "Fillets, chamfers, ribs, holes and embossed text."
+  },
+  {
+   "file": "mold_part_17.step",
+   "title": "Mold part G",
+   "category": "mold",
+   "blurb": "The busiest generated part: 27 features on 197 faces."
+  },
+  {
+   "file": "mold_part_21.step",
+   "title": "Mold part H",
+   "category": "mold",
+   "blurb": "Bosses, ribs, a pocket, fillets and embossed text."
+  }
+ ]
+}
