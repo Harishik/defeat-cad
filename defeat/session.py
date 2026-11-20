@@ -35,6 +35,10 @@ def mesh_payload(shape):
             "faceIds": _b64(F.astype(np.uint32)), "nv": int(len(V)), "nt": int(len(T))}
 
 
+class _Stale(Exception):
+    """A newer run replaced this one: it stops without writing anything."""
+
+
 class Session:
     def __init__(self, path: str, name: str | None = None):
         self.id = uuid.uuid4().hex[:10]
@@ -53,6 +57,10 @@ class Session:
         self.chat = []
         self._field = None
         self._finer_orig = None
+        self._gen = 0                 # bumped by cancel(): a run that sees a newer value stops quietly
+        self._tls = threading.local()
+        self._worker = None           # this part's own kernel worker (app sessions), killed by cancel()
+        self._spare = None            # a second one, already loaded, swapped in when cancel() kills the first
 
         self._step("Reading geometry")
         shape = occ.read_cad(self.src)
@@ -77,12 +85,60 @@ class Session:
         if not getattr(self, "_prewarm_ok", False):   # app sessions only (new_session): benchmarks run kernels in-process
             return
         try:
-            prewarm_original(self.shape, self.policy.h, self.policy.preset, self.policy.boundary, want_field=bool(self.guard_tol))
+            prewarm_original(self.shape, self.policy.h, self.policy.preset, self.policy.boundary, want_field=bool(self.guard_tol),
+                             finer=(self.finer_ratio, int(1.6 * fea.MAX_TETS)) if self.guard_tol else None)
         except Exception:
             pass
 
     # ------------------------------------------------------------ status
+    def _check_stale(self):
+        g = getattr(self._tls, "gen", None)
+        if g is not None and g != self._gen:
+            raise _Stale()
+
+    def own_worker(self):
+        from .execute import Worker
+        if self._worker is None or self._worker.dead:
+            self._worker = Worker()
+        return self._worker
+
+    def warm(self):
+        """Start this part's worker and a spare, and load the kernel in both now, so neither the first
+        Simplify nor one that replaces a running check waits for a worker to start."""
+        from .execute import Worker
+        if self._spare is None:
+            self._spare = Worker()
+        targets = [self.own_worker(), self._spare]
+
+        def job():
+            for w in targets:
+                try:
+                    w.call("defeat.execute:warm", timeout=120)
+                except Exception:
+                    pass
+        threading.Thread(target=job, daemon=True, name="warm-worker").start()
+
+    def cancel(self):
+        """Stop the run in progress at once (its worker is killed mid-call), so a new one can start, on
+        the spare worker that is already loaded."""
+        from .execute import Worker
+        self._gen += 1
+        if self._worker is not None:
+            self._worker.cancel()
+        self._worker, self._spare = self._spare, None
+        if getattr(self, "_prewarm_ok", False):
+            self._spare = Worker()
+            spare = self._spare
+
+            def job():
+                try:
+                    spare.call("defeat.execute:warm", timeout=120)
+                except Exception:
+                    pass
+            threading.Thread(target=job, daemon=True, name="warm-spare").start()
+
     def _step(self, msg, progress=None):
+        self._check_stale()
         self.status["steps"].append({"t": time.time(), "msg": msg})
         self.status["message"] = msg
         if progress is not None:
@@ -167,7 +223,22 @@ class Session:
     # ------------------------------------------------------------ run
     def run(self, with_mesh=True):
         with self.lock:
+            from .execute import use_worker
+            self._tls.gen = self._gen
+            if getattr(self, "_prewarm_ok", False):   # app sessions: a worker of its own, which cancel() can kill
+                use_worker(self.own_worker())
+            try:
+                return self._run(with_mesh)
+            except _Stale:
+                return None
+            finally:
+                use_worker(None)
+                self._tls.gen = None
+
+    def _run(self, with_mesh=True):
+        if True:
             self.status = {"stage": "running", "steps": [], "progress": 0.02, "busy": True}
+            self._preview = None
             self.unchecked = False
             self.unchecked_why = None
             if with_mesh and getattr(self, "_prewarm_ok", False):
@@ -181,7 +252,14 @@ class Session:
                 self._end = time.time() + self.run_seconds
                 er = defeature(self.shape, self.features, self.decisions, graph=self.graph, budget=0.35 * self.run_seconds,
                                progress=lambda m: self._step(m, min(0.55, self.status["progress"] + 0.03)))
+                self._check_stale()
                 self.result = er
+                # show the simplified part now; the stress check below runs on while the user looks at it
+                self._preview = mesh_payload(er.shape)
+                self.status["preview"] = {"n": self.status.get("preview", {}).get("n", 0) + 1, "removed": len(er.removed),
+                                          "failed": len(er.failed), "seconds": round(er.seconds, 1)}
+                if with_mesh:
+                    self.status["stage"] = "checking"   # the result stands; the stress check follows
                 self._step(f"Rebuilt watertight solid ({er.strategy}, {er.seconds:.1f}s)", 0.6)
                 self._step("Measuring geometric deviation", 0.65)
                 geo = geometry_report(self.shape, er.shape)
@@ -263,12 +341,17 @@ class Session:
                 self._export()
                 self.log.append({"op": "defeature", "removed": er.removed, "failed": list(er.failed)})
                 self._step("Done", 1.0)
+                self._check_stale()
                 self.status.update(stage="done", busy=False)
+            except _Stale:
+                raise
             except Exception as e:  # noqa
+                self._check_stale()
                 self.status.update(stage="error", busy=False, error=f"{type(e).__name__}: {e}")
                 raise
 
     guard_tol = 5.0   # % change in any load case the stress guard accepts (None/0 disables it)
+    addback = "field"   # how the guard prices what to put back: "field" (original's stress field) or "estimate" (+ one-solve estimate)
     run_seconds = 900.0   # one whole run on one part, on a laptop: every stage below shares this
     guard_evals = 7   # most trial solves it spends looking for the largest removal that passes
     guard_seconds = 240.0
@@ -370,6 +453,12 @@ class Session:
         if d0 is None:
             return {"triggered": False, "worst_case_pct": d0}
         removed = [f for f in self.features if f.id in er.removed]
+        est = None
+        if self.addback == "estimate" and self.policy.preset == "static" and not self.policy.boundary.get("fixed") and d0 > self.guard_tol * self.finer_share:
+            from .estimator import system_tag
+            r = worker().call("defeat.estimator:feature_estimates", occ.to_brep_string(self.shape), occ.to_brep_string(er.shape),
+                              self.features, list(er.removed), system_tag(er.shape), timeout=min(90.0, self._left()))
+            est = r.get("pct") if r.get("ok") else None
         if d0 > self.finer_share * self.guard_tol and getattr(self, "_prewarm_ok", False):
             # anything near or past the limit gets confirmed on a finer mesh: start the original's finer
             # solve now, in its own worker, so it runs alongside the trials instead of before them
@@ -386,6 +475,11 @@ class Session:
         first = max(d0, finer0 or 0.0)
         self._step("Stress guard: the result moved past its tolerance, working out what must stay", 0.8)
         scores = feature_scores(removed, self.graph, field, h_fea) if field else {f.id: {"cost": est_volume(f, self.graph), "benefit": 0} for f in removed}
+        self._est_used = sum(1 for f in removed if est and f.id in est)
+        if est:   # one-solve estimate where it applies (material filled in); the field price elsewhere, same units
+            for f in removed:
+                if f.id in est:
+                    scores[f.id]["cost"] = est[f.id] / 100.0
         order = restore_order(removed, scores)
         n = len(order)
         stiff0 = fea.worst_case(delta0)
@@ -396,6 +490,7 @@ class Session:
             order = [f for f in order if f.id in hot] + [f for f in order if f.id not in hot]
 
         def trial(k):
+            self._check_stale()
             keep = {f.id for f in order[:k]}
             dec = {i: (Decision(i, "keep", "Kept by the stress guard: removing it changed the part's stiffness")
                        if i in keep else d) for i, d in self.decisions.items()}
@@ -436,6 +531,7 @@ class Session:
                 lo = k
             k = (lo + hi) // 2
         if best is None:      # only the full part passed: nothing to compare, the original stands
+            self._check_stale()
             r0 = ExecResult(self.shape)
             r0.strategy = "undone by the stress guard"
             r0.failed = dict(er.failed)
@@ -450,6 +546,7 @@ class Session:
             m2["fea"] = dict(mesh["fea"], defeatured=orig_fea, delta=same)
             return {"triggered": True, "accepted": True, "restored": n, "of": n, "before_pct": first, "stiffness_before_pct": stiff0, "after_pct": 0.0,
                     "peak_before_pct": peak_before, "within_tol": True, "undone": True, "mesh": m2, "trials": evals}
+        self._check_stale()
         self.result, self.decisions = best["er"], best["dec"]
         m2 = dict(mesh)
         m2["defeatured"] = best["mesh_stats"]
@@ -508,13 +605,14 @@ class Session:
 SESSIONS: dict[str, Session] = {}
 
 
-MAX_SESSIONS = int(os.environ.get("DEFEAT_MAX_SESSIONS", "24"))   # open parts kept in memory
+MAX_SESSIONS = int(os.environ.get("DEFEAT_MAX_SESSIONS", "8"))   # open parts kept in memory (two worker processes each)
 
 
 def new_session(path, name=None) -> Session:
     s = Session(path, name)
     SESSIONS[s.id] = s
     s._prewarm_ok = True
+    s.warm()      # the app only: this part's own worker, kernel loaded before the first click
     s.prewarm()   # the app only: solve the original while the user reviews the features
     # oldest idle parts go first, so a long-running server's memory stays bounded
     while len(SESSIONS) > MAX_SESSIONS:
@@ -522,5 +620,8 @@ def new_session(path, name=None) -> Session:
         if old is None:
             break
         gone = SESSIONS.pop(old)
+        for w in (gone._worker, gone._spare):   # its own worker processes go with it
+            if w is not None:
+                w.cancel()
         shutil.rmtree(gone.dir, ignore_errors=True)
     return s

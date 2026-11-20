@@ -430,3 +430,30 @@ def summarize(res):
         e2 = sum(r["est2"][name] for r in res["features"].values())
         out[name] = {"lower_pct": 100 * lo / j0, "est_pct": 100 * e2 / j0}
     return out
+
+
+def system_tag(shape):
+    """Names one simplified part, so the guard never prices features from another part's solve."""
+    return occ.shape_key(shape)
+
+
+def feature_estimates(orig_brep: bytes, simple_brep: bytes, features, removed, tag, C=0.3):
+    """Worker entry for the stress guard: from the last simplified solve this worker kept (fea.LAST_SYSTEM),
+    each removed feature's estimated share of the change, in percent of the simplified compliance and
+    worst over the load cases: its filled-in strain energy plus C times its Antolin-Chanon estimator.
+    Only features that filled material in get a number; the rest are left to the guard's other price.
+    An estimate, not a bound: the guard still measures every trial."""
+    from . import fea
+    S = fea.LAST_SYSTEM
+    if not S or S.get("tag") != tag:
+        return {"ok": False, "error": "no kept solve of this part"}
+    orig, simple = occ.from_brep_string(orig_brep), occ.from_brep_string(simple_brep)
+    bc = dict(S["bc"], ends=S["ends"], load_center=S["load_center"])
+    try:
+        res = bounds(S["p"], S["t"], S["U"], S["forms"], orig, simple, features, set(removed), bc=bc)
+    except Exception as e:  # noqa
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+    out = {}
+    for fid, row in res["features"].items():
+        out[int(fid)] = max(100 * (row["lower"][k] + C * row["est2"][k]) / res["J0"][k] for k in res["J0"])
+    return {"ok": True, "pct": out, "kinds": {int(k): v for k, v in res["kinds"].items()}}

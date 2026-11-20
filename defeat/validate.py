@@ -224,10 +224,10 @@ def _orig_lock():
 
 
 def _orig_key(shape, size: float, bc: dict):
-    """By the exact geometry (the BREP text; STEP files carry a time stamp), mesh size and load settings."""
-    import hashlib
+    """By the exact geometry (occ.shape_key: STEP files carry a time stamp and BREP text the display
+    meshes), mesh size and load settings."""
     import json
-    return (hashlib.sha1(occ.to_brep_string(shape)).hexdigest(), round(float(size), 9), json.dumps(bc, sort_keys=True, default=str))
+    return (occ.shape_key(shape), round(float(size), 9), json.dumps(bc, sort_keys=True, default=str))
 
 
 def _orig_bc(orig, analysis, boundary, want_field, curve, rt):
@@ -253,7 +253,13 @@ def solve_original(w, shape, data: bytes, size: float, bc: dict, timeout: float)
         if mine:
             ent = _ORIG[key] = {"done": threading.Event(), "result": None}
     if not mine:
-        if ent["done"].wait(timeout) and ent["result"] is not None:
+        # wait for the background solve, but give up at once if this run is cancelled meanwhile
+        import time as _t
+        end = _t.time() + timeout
+        while not ent["done"].wait(0.5):
+            if getattr(w, "dead", False) or _t.time() > end:
+                return {"ok": False, "error": "cancelled" if getattr(w, "dead", False) else f"kernel timed out after {timeout:.0f}s"}
+        if ent["result"] is not None:
             return copy.deepcopy(ent["result"])
         if not ent["done"].is_set():
             return {"ok": False, "error": f"kernel timed out after {timeout:.0f}s"}
@@ -286,7 +292,7 @@ def prewarm_solve(shape, size, bc, timeout=240.0):
     data = step_bytes(shape)
 
     def job():
-        w = Worker()
+        w = Worker(nice=10)   # background: the user's own run comes first
         try:
             solve_original(w, shape, data, size, bc, timeout)
         finally:
@@ -294,16 +300,59 @@ def prewarm_solve(shape, size, bc, timeout=240.0):
     threading.Thread(target=job, daemon=True, name="prewarm-solve").start()
 
 
-def prewarm_original(orig, h, analysis="static", boundary=None, want_field=False, timeout=240.0):
+def finer_bc(orig, analysis, boundary, orig_fea, h_mesh, curve, rt, finer_ratio, max_tets):
+    """The load settings the stress guard uses to confirm a near-limit result on a finer mesh
+    (Session._finer_delta), built the same way so a solve made ahead of time is found in the cache."""
+    from . import fea
+    bc = fea.load_case(occ.bbox(orig), analysis)
+    if boundary and boundary.get("fixed"):
+        fea.user_case(occ.faces_of(orig), boundary, bc)
+    bc["stat_curvature"] = curve
+    bc["mesh_route"] = rt
+    fea.lock(bc, orig_fea)
+    hf = (orig_fea.get("h_fea") or h_mesh) / finer_ratio
+    return hf, dict(bc, h_fea=hf, want_field=False, max_tets=max_tets)
+
+
+def prewarm_original(orig, h, analysis="static", boundary=None, want_field=False, timeout=240.0, finer=None):
     """Start solving the original at the first mesh round mesh_compare will try, in its own worker
-    process and thread, so it runs while the user reviews features and while the kernel defeatures."""
+    process and thread, so it runs while the user reviews features and while the kernel defeatures.
+    finer = (ratio, max_tets): then also solve it on the stress guard's finer confirmation mesh, which
+    a run that lands near the limit needs and which otherwise costs the longest wait of the run."""
     import threading
     from .execute import Worker
     if analysis not in ("static", "modal", "thermal", "cfd"):
         return
     box = occ.bbox(orig)
     size, curve, rt, _ = _mesh_rounds(h, occ.norm(occ.sub(box[3:], box[:3])))[0]
-    prewarm_solve(orig, size, _orig_bc(orig, analysis, boundary, want_field, curve, rt), timeout)
+    bc = _orig_bc(orig, analysis, boundary, want_field, curve, rt)
+    with _orig_lock():
+        ent = _ORIG.get(_orig_key(orig, size, bc))
+    if ent is not None:
+        if not finer or analysis != "static":
+            return   # solved or being solved
+        if not ent["done"].is_set():
+            return   # the thread solving it goes on to the finer one
+        fa = (ent["result"] or {}).get("fea") or {}
+        if not fa.get("ok"):
+            return
+        hf, fb = finer_bc(orig, analysis, boundary, fa, size, curve, rt, *finer)
+        with _orig_lock():
+            if _orig_key(orig, hf, fb) in _ORIG:
+                return
+    data = step_bytes(orig)
+
+    def job():
+        w = Worker(nice=10)   # background: the user's own run comes first
+        try:
+            a = solve_original(w, orig, data, size, bc, timeout)
+            fa = a.get("fea") or {}
+            if finer and fa.get("ok") and analysis == "static":
+                hf, fb = finer_bc(orig, analysis, boundary, fa, size, curve, rt, *finer)
+                solve_original(w, orig, data, hf, fb, timeout)
+        finally:
+            w.close()
+    threading.Thread(target=job, daemon=True, name="prewarm-original").start()
 
 
 def mesh_compare(orig, new, h, timeout=300.0, with_fea=True, want_field=False, analysis="static", boundary=None, budget=300.0):
@@ -334,6 +383,9 @@ def mesh_compare(orig, new, h, timeout=300.0, with_fea=True, want_field=False, a
                 continue
             bc["want_field"] = False
             fea.lock(bc, a.get("fea"))   # same mesh size and same end regions for both models
+            if analysis == "static" and not (boundary and boundary.get("fixed")):
+                from .estimator import system_tag
+                bc["keep_system"] = system_tag(new)   # the guard may price features from this solve
             b = w.call("defeat.fea:mesh_and_solve", step_bytes(new), size, bc, timeout=max(timeout, 5.0))
             if "timed out" in str(b.get("error", "")):
                 timed_out_at = size

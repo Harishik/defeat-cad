@@ -50,7 +50,7 @@ const STATS = [
   { v: '0.988', l: 'fillet F1 on 6,454 real designer parts' },
   { v: '500', l: 'fresh real-world parts run end to end' },
   { v: '100%', l: 'valid solids out on those 500 parts' },
-  { v: '−50%', l: 'mesh elements on the sample bracket' },
+  { v: '−46%', l: 'mesh elements on the sample bracket' },
 ]
 
 function usePreview(name) {
@@ -183,6 +183,37 @@ function DotLoader() {
         return <span key={i} style={{ animationDelay: `${d * 0.11}s`, opacity: d > 3.4 ? 0 : 1 }} />
       })}
     </div>
+  )
+}
+
+// Confirms a click on the part: what changed, and a way back.
+function FlipChip({ flash, onUndo }) {
+  const rm = flash.action === 'remove'
+  return (
+    <motion.div className={`flipchip glass ${rm ? 'rm' : 'kp'}`} role="status" aria-live="polite"
+      style={{ left: flash.x, top: flash.y }}
+      initial={{ opacity: 0, y: 6, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 4 }} transition={spring}>
+      <span className="dot" />
+      <span className="flip-label">{flash.label}</span>
+      <b>{rm ? 'will be removed' : 'will be kept'}</b>
+      <button onClick={onUndo}>Undo</button>
+    </motion.div>
+  )
+}
+
+// The simplified part is already on screen; the stress check carries on without blocking the view.
+function CheckingPill({ run }) {
+  const last = run.steps[run.steps.length - 1] || ''
+  return (
+    <motion.div className="checking glass" role="status" aria-live="polite"
+      initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 12, opacity: 0 }} transition={spring}>
+      <span className="pulse" />
+      <div className="checking-text">
+        <b>{run.removed != null ? `${run.removed} removed · ` : ''}checking stiffness</b>
+        <span>{last}</span>
+      </div>
+      <div className="bar"><motion.div className="bar-fill" animate={{ width: `${Math.max(4, run.progress * 100)}%` }} transition={spring} /></div>
+    </motion.div>
   )
 }
 
@@ -557,16 +588,29 @@ function Workspace({ initial, onExit, dark, llm }) {
     return job
   }, [sid])
 
+  const pollId = useRef(0)   // a newer Simplify takes over: older polling loops stop
   const poll = useCallback(async () => {
+    const me = ++pollId.current
     setRun({ steps: ['Starting'], progress: 0.02 })
+    let preview = false   // the simplified part is on screen while the stress check runs on
     for (;;) {
-      await new Promise((r) => setTimeout(r, 350))
+      await new Promise((r) => setTimeout(r, preview ? 600 : 200))
+      if (me !== pollId.current) return
       const st = await api.status(sid)
+      if (me !== pollId.current) return
       const s = st.status
-      setRun({ steps: s.steps.map((x) => x.msg), progress: s.progress })
+      if (s.busy && s.preview && !preview && (s.stage === 'checking' || s.stage === 'running')) {
+        preview = true
+        try {
+          const m = await api.mesh(sid, 'preview')
+          setResMesh(m); setMode('compare'); setWipe(0.5)
+        } catch { preview = false }
+      }
+      setRun({ steps: s.steps.map((x) => x.msg), progress: s.progress, background: preview, removed: s.preview?.removed })
       if (!s.busy) {
         if (s.stage === 'done') {
           const [r, m] = await Promise.all([api.result(sid), api.mesh(sid, 'result')])
+          if (me !== pollId.current) return
           setRes(r); setResMesh(m); setSum(r.summary)
           setRun(null); setShowRes(true); setMode('compare'); setWipe(0.5)
         } else {
@@ -579,6 +623,30 @@ function Workspace({ initial, onExit, dark, llm }) {
   }, [sid])
 
   const runNow = async () => { await api.run(sid); poll() }
+
+  // Click a feature on the part to flip it between remove and keep. The colour changes at once; the server
+  // gets the same override the panel's switch sends, so the next Simplify uses it.
+  const [flash, setFlash] = useState(null)
+  const flipFeature = useCallback((id, action, at) => {
+    const f = sum.features.find((x) => x.id === id)
+    if (!f) return
+    const prev = f.decision.action
+    setSum((s) => ({ ...s, features: s.features.map((x) => (x.id === id ? { ...x, decision: { ...x.decision, action } } : x)) }))
+    applyPolicy({ feature_overrides: { [id]: action } })
+    setFlash(at ? { n: Date.now(), id, action, prev, label: f.note, x: at.x, y: at.y } : null)
+  }, [sum, applyPolicy])
+  const pickToggle = useCallback((id, at) => {
+    setSelected(id)
+    if (id == null) return
+    setTab('features')
+    const f = sum.features.find((x) => x.id === id)
+    if (f) flipFeature(id, f.decision.action === 'remove' ? 'keep' : 'remove', at)
+  }, [sum, flipFeature])
+  useEffect(() => {
+    if (!flash) return
+    const t = setTimeout(() => setFlash(null), 2600)
+    return () => clearTimeout(t)
+  }, [flash])
 
   const onChatResult = (r) => {
     if (r.summary) setSum(r.summary)
@@ -637,7 +705,8 @@ function Workspace({ initial, onExit, dark, llm }) {
       <div className="ws-grid" aria-hidden />
       <Viewer original={orig} result={resMesh} features={viewFeatures} mode={mode} wipe={wipe} dark={dark} wipeApi={wipeApi}
         boundary={boundary} faceMode={faceMode} onFace={toggleFace}
-        selected={selected} hovered={hovered} onPick={(id) => { setSelected(id); if (id != null) setTab('features') }} onHover={setHovered} />
+        selected={selected} hovered={hovered} onPick={pickToggle} onHover={setHovered} />
+      <AnimatePresence>{flash && <FlipChip key={flash.n} flash={flash} onUndo={() => flipFeature(flash.id, flash.prev, null)} />}</AnimatePresence>
       {mode === 'compare' && resMesh && (
         <>
           <div className="wipe-line"><span>Original</span><span>Simplified</span>
@@ -685,7 +754,7 @@ function Workspace({ initial, onExit, dark, llm }) {
           <span className="hval">{fmt(sum.policy.h, 1)} mm</span>
         </div>
         <button className="kbtn" onClick={() => setPalette(true)} title="Command palette"><kbd>⌘K</kbd></button>
-        <Pressable className="run" onClick={runNow} disabled={!!run || rmCount === 0}>
+        <Pressable className="run" onClick={runNow} disabled={(!!run && !run.background) || rmCount === 0}>
           {I.play}<span>Simplify {rmCount}</span>
         </Pressable>
       </motion.div>
@@ -720,7 +789,7 @@ function Workspace({ initial, onExit, dark, llm }) {
         <motion.button className={`chip ${faceMode ? 'on' : ''}`} whileTap={{ scale: 0.95 }} onClick={() => { setFaceMode(faceMode ? null : 'fixed'); if (!faceMode) setMode('original') }}>
           <span className="swatch" style={{ background: '#0A84FF' }} />Supports &amp; loads{(boundary.fixed?.length || 0) > 0 && <b className="mono">{boundary.fixed.length + (boundary.loaded?.length || 0)}</b>}
         </motion.button>
-        <span className="chip muted">{isolate ? 'Esc to show all' : 'Bright = removed · faded = kept · click to isolate'}</span>
+        <span className="chip muted">{isolate ? 'Esc to show all' : 'Click a feature to keep or remove it · bright = removed'}</span>
       </div>
       </div>
 
@@ -757,7 +826,8 @@ function Workspace({ initial, onExit, dark, llm }) {
 
       <CommandPalette open={palette} onClose={() => setPalette(false)} commands={commands}
         onAsk={(t) => { setTab('chat'); setQueued(t) }} />
-      <AnimatePresence>{run && <Loader title="Simplifying" steps={run.steps} progress={run.progress} />}</AnimatePresence>
+      <AnimatePresence>{run && !run.background && <Loader title="Simplifying" steps={run.steps} progress={run.progress} />}</AnimatePresence>
+      <AnimatePresence>{run && run.background && <CheckingPill run={run} />}</AnimatePresence>
       <AnimatePresence>{showRes && res && <Results sid={sid} res={res} onClose={() => setShowRes(false)} />}</AnimatePresence>
     </motion.div>
   )

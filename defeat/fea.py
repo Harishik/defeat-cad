@@ -261,6 +261,11 @@ def solve(p, t, bc, order=2):
             field["w"] = _thermal_field(Ut)
         elif analysis == "cfd":
             field["w"] = {"volume": field["v"] / max(float(field["v"].sum()), 1e-30)}
+    global LAST_SYSTEM
+    if bc.get("keep_system") and not user:   # held in this worker for the guard's one-solve feature estimate
+        LAST_SYSTEM = {"tag": bc["keep_system"], "p": p, "t": t, "U": {k: v for k, v in U.items() if not k.startswith("_")}, "forms": forms,
+                       "bc": {k: bc.get(k) for k in ("axis", "load_dir", "wide_dir", "force", "length")},
+                       "ends": [float(lo), float(hi)], "load_center": [float(v) for v in c]}
     export = None
     if bc.get("want_system"):   # the discrete problem, so an outside solver can be handed exactly the same one
         export = {"p": p, "t": t, "edges": m.t2e.T, "edge_nodes": m.edges.T, "nodal": ib.nodal_dofs, "edge": ib.edge_dofs,
@@ -411,6 +416,8 @@ def mesh_and_solve(step_bytes: bytes, h: float, bc: dict):
     st["fea"] = r
     return st
 
+
+LAST_SYSTEM = None   # the last static solve asked to keep its system (see estimator.feature_estimates)
 
 PEAK_TOL = 10.0     # stress peak, percent. Twice the stiffness tolerance: a peak depends far more on the mesh
 

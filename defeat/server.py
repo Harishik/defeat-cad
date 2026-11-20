@@ -126,6 +126,10 @@ def session_mesh(sid: str, which: str):
         if not s.result:
             raise HTTPException(404, "no result yet")
         return s.result_payload()
+    if which == "preview":   # the kernel's result while the stress check is still running
+        if getattr(s, "_preview", None) is None:
+            raise HTTPException(404, "no preview yet")
+        return s._preview
     raise HTTPException(400)
 
 
@@ -151,7 +155,9 @@ def session_policy(sid: str, body: PolicyIn):
 def session_run(sid: str, mesh: bool = True):
     s = get(sid)
     if s.status.get("busy"):
-        raise HTTPException(409, "already running")
+        if not getattr(s, "_prewarm_ok", False):
+            raise HTTPException(409, "already running")
+        s.cancel()   # a new Simplify replaces the run in progress (usually a stress check still running)
     s.run_async(with_mesh=mesh)
     return {"ok": True}
 

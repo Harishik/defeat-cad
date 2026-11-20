@@ -215,6 +215,25 @@ class SurfInfo:
     normal: tuple | None = None  # plane normal (geometric, orientation-corrected)
 
 
+def shape_key(shape) -> str:
+    """A fingerprint of the exact geometry: every face's surface type, area and centre, plus the volume.
+    Unlike the BREP text it ignores display meshes that viewing or measuring attaches to the faces, so the
+    same part always gets the same key. Used to cache solves and to match a kept solve to its part."""
+    import hashlib
+    from OCP.BRepAdaptor import BRepAdaptor_Surface
+    from OCP.BRepGProp import BRepGProp
+    from OCP.GProp import GProp_GProps
+    rows = []
+    for f in faces_of(shape):
+        p = GProp_GProps()
+        BRepGProp.SurfaceProperties_s(f, p)
+        c = p.CentreOfMass()
+        rows.append(f"{int(BRepAdaptor_Surface(f, False).GetType())}:{p.Mass():.9e}:{c.X():.7e}:{c.Y():.7e}:{c.Z():.7e}")
+    rows.sort()
+    rows.append(f"v{volume(shape):.9e}")
+    return hashlib.sha1("|".join(rows).encode()).hexdigest()
+
+
 def surf_info(face) -> SurfInfo:
     a = BRepAdaptor_Surface(face, True)
     t = a.GetType()

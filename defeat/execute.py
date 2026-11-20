@@ -162,8 +162,13 @@ def _exit_with_parent():
     threading.Thread(target=watch, daemon=True).start()
 
 
-def _worker_loop(conn):
+def _worker_loop(conn, nice=0):
     _exit_with_parent()
+    if nice:
+        try:
+            os.nice(nice)
+        except Exception:
+            pass
     while True:
         msg = conn.recv()
         if msg is None:
@@ -184,19 +189,30 @@ def _worker_loop(conn):
 class Worker:
     """A persistent OCCT worker process that is killed and respawned on timeout."""
 
-    def __init__(self, daemon=True):
+    def __init__(self, daemon=True, nice=0):
         self.proc = None
         self.conn = None
         self.daemon = daemon   # non-daemon workers may start their own kernel worker (benchmarks)
+        self.nice = nice       # background solves run at lower priority, so the user's own run comes first
+        self.dead = False      # cancelled: every further call returns at once instead of restarting it
+        self._lock = threading.Lock()   # one call at a time on the pipe (a warm-up may still be running)
 
     def _start(self):
         ctx = mp.get_context("spawn")
         a, b = ctx.Pipe()
-        self.proc = ctx.Process(target=_worker_loop, args=(b,), daemon=self.daemon)
+        self.proc = ctx.Process(target=_worker_loop, args=(b, self.nice), daemon=self.daemon)
         self.proc.start()
         self.conn = a
 
     def call(self, fn, *args, timeout=30.0):
+        if self.dead:
+            return {"ok": False, "error": "cancelled: a newer run replaced this one"}
+        with self._lock:
+            if self.dead:
+                return {"ok": False, "error": "cancelled: a newer run replaced this one"}
+            return self._call(fn, *args, timeout=timeout)
+
+    def _call(self, fn, *args, timeout=30.0):
         if mp.current_process().daemon:
             # already inside a guarded pool worker (batch/benchmark runs): it owns the timeout,
             # and daemonic processes may not spawn children, so run in-process
@@ -218,6 +234,16 @@ class Worker:
         self.proc = None
         return {"ok": False, "error": err}
 
+    def cancel(self):
+        """Stop this worker now, mid-call if need be: the call in progress returns an error at once and
+        later calls return without starting it again."""
+        self.dead = True
+        try:
+            if self.proc is not None and self.proc.is_alive():
+                self.proc.kill()
+        except Exception:
+            pass
+
     def close(self):
         if self.proc is not None and self.proc.is_alive():
             try:
@@ -233,8 +259,27 @@ class Worker:
 _WORKER: Worker | None = None
 
 
+_LOCAL = threading.local()   # a session's run thread uses that session's own worker (see Session.run)
+
+
+def use_worker(w):
+    """Kernel calls made on this thread go to w (None: back to the shared worker)."""
+    _LOCAL.w = w
+
+
+def warm():
+    """Load the geometry kernel, mesher and solver in a fresh worker before the first real call."""
+    import gmsh  # noqa: F401
+    import skfem  # noqa: F401
+    from defeat import fea, occ  # noqa: F401
+    return {"ok": True}
+
+
 def worker() -> Worker:
     global _WORKER
+    w = getattr(_LOCAL, "w", None)
+    if w is not None:
+        return w
     if _WORKER is None:
         _WORKER = Worker()
     return _WORKER
